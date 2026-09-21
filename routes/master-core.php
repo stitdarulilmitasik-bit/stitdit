@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 
+    // MASTER PENGATURAN => JABATAN
+    Route::get('/pengaturan/jabatan',[App\\Http\\Controllers\\Master\\Pengaturan\\JabatanController::class, 'renderJabatan'])->name('pengaturan.jabatan-render');
+    Route::post('/pengaturan/jabatan',[App\\Http\\Controllers\\Master\\Pengaturan\\JabatanController::class, 'handleJabatan'])->name('pengaturan.jabatan-handle');
+    Route::patch('/pengaturan/jabatan/{code}',[App\\Http\\Controllers\\Master\\Pengaturan\\JabatanController::class, 'updateJabatan'])->name('pengaturan.jabatan-update');
+    Route::delete('/pengaturan/jabatan/{code}',[App\\Http\\Controllers\\Master\\Pengaturan\\JabatanController::class, 'deleteJabatan'])->name('pengaturan.jabatan-delete');
+
     // MASTER PENGATURAN => FRONT PAGE CMS
     Route::get('/pengaturan/front-page', [App\Http\Controllers\Master\Pengaturan\HomepageController::class, 'index'])->name('pengaturan.front-page-render');
     Route::post('/pengaturan/front-page', [App\Http\Controllers\Master\Pengaturan\HomepageController::class, 'store'])->name('pengaturan.front-page-store');
