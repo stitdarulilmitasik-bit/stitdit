@@ -55,7 +55,7 @@
             ? (string) (2000 + (int) $tahunMasukRaw)
             : $tahunMasukRaw;
     }
-    $dosenWali = $krs->dosenPA ?? null;
+    $dosenWali = $krs->dosenPA ?? null; if (!$dosenWali) { $fallbackJabatan = \App\Models\Jabatan::with('dosen')->where('is_active', true)->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])->where(function ($q) use ($krs) { $q->whereNull('prodi_id')->orWhere('prodi_id', $krs->mahasiswa->prodi_id); })->whereNotNull('dosen_id')->orderBy('sort_order')->first(); $dosenWali = $fallbackJabatan?->dosen; }
 
     $logo = null;
     $logoCandidates = [
