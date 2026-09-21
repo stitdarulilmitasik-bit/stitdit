@@ -597,19 +597,22 @@
             }
         }
 
-        const jadwalKrs = @json($jadwal_kuliah->map(function ($jadwal) {
-            return [
-                'id' => $jadwal->id,
-                'matkul_id' => $jadwal->matkul_id,
-                'dosen_id' => $jadwal->dosen_id,
-                'dosen_name' => $jadwal->dosen?->name ?? '-',
-                'hari' => $jadwal->hari,
-                'waktu' => $jadwal->waktuKuliah?->name ?? ($jadwal->waktuKuliah?->start_time ?? ''),
-                'ruang' => $jadwal->ruang?->name ?? '-',
-                'kelas_ids' => $jadwal->kelas->pluck('id')->values(),
-                'kelas_names' => $jadwal->kelas->pluck('name')->values(),
-            ];
-        }));
+        @php
+            $jadwalKrsData = $jadwal_kuliah->map(function ($jadwal) {
+                return [
+                    'id' => $jadwal->id,
+                    'matkul_id' => $jadwal->matkul_id,
+                    'dosen_id' => $jadwal->dosen_id,
+                    'dosen_name' => $jadwal->dosen?->name ?? '-',
+                    'hari' => $jadwal->hari,
+                    'waktu' => $jadwal->waktuKuliah?->name ?? ($jadwal->waktuKuliah?->start_time ?? ''),
+                    'ruang' => $jadwal->ruang?->name ?? '-',
+                    'kelas_ids' => $jadwal->kelas->pluck('id')->values(),
+                    'kelas_names' => $jadwal->kelas->pluck('name')->values(),
+                ];
+            })->values()->all();
+        @endphp
+        const jadwalKrs = @json($jadwalKrsData);
 
         function loadKelas() {
             const mataKuliahId = document.getElementById('mata_kuliah_id').value;
