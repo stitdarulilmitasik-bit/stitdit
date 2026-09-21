@@ -330,8 +330,11 @@ class KHSController extends Controller
                 ->where('code', $code)
                 ->firstOrFail();
 
-            if (!$khs->is_published) {
-                Alert::error('Error', 'KHS harus dipublish terlebih dahulu sebelum dapat dicetak');
+            // Jangan bergantung pada accessor is_published saat mencetak.
+            // Data lama/import dapat memiliki variasi kapitalisasi atau spasi.
+            $statusKhs = strtolower(trim((string) ($khs->getRawOriginal('status_generate') ?? '')));
+            if ($statusKhs !== 'published') {
+                Alert::error('Error', 'KHS harus dipublish terlebih dahulu sebelum dapat dicetak. Status saat ini: ' . ($khs->getRawOriginal('status_generate') ?? 'kosong'));
                 return redirect()->back();
             }
 
