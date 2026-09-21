@@ -23,18 +23,18 @@
 <div class="d-flex gap-2 flex-wrap">
 <button class="btn btn-outline-primary btn-sm" type="button" onclick="openBulkCopyModal()"><i class="fas fa-copy me-2"></i>Copy Bulk KRS</button>
 <button class="btn btn-success btn-sm" onclick="bulkAction('approve')"><i class="fas fa-check-circle me-2"></i>Approve Terpilih</button>
-<button class="btn btn-info btn-sm" onclick="bulkAction('publish')"><i class="fas fa-share me-2"></i>Publish Terpilih</button>
+<button class="btn btn-dark btn-sm" onclick="bulkAction('publish')"><i class="fas fa-lock me-2"></i>Kunci Terpilih</button>
 <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseForm" aria-expanded="false" aria-controls="collapseForm"><i class="fas fa-plus-circle me-2"></i>Tambah KRS</button>
 </div>
 </div>
 <div class="card-body">
 <div class="row mb-4">
 <div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-primary rounded"><h6 class="mb-2">Total KRS</h6><h3 class="mb-0">{{ count($krs_list) }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-warning rounded"><h6 class="mb-2">Dibuat</h6><h3 class="mb-0">{{ $krs_list->where('status','draft')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-info rounded"><h6 class="mb-2">Diajukan</h6><h3 class="mb-0">{{ $krs_list->where('status','submitted')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Disetujui</h6><h3 class="mb-0">{{ $krs_list->where('status','approved')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-danger rounded"><h6 class="mb-2">Ditolak</h6><h3 class="mb-0">{{ $krs_list->where('status','rejected')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Dipublish</h6><h3 class="mb-0">{{ $krs_list->where('status','published')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-warning rounded"><h6 class="mb-2">Dibuat</h6><h3 class="mb-0">{{ $krs_list->where('status','Draft')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-info rounded"><h6 class="mb-2">Diajukan</h6><h3 class="mb-0">{{ $krs_list->where('status','Diajukan')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Disetujui</h6><h3 class="mb-0">{{ $krs_list->where('status','Disetujui')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-danger rounded"><h6 class="mb-2">Ditolak</h6><h3 class="mb-0">{{ $krs_list->where('status','Ditolak')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Dipublish</h6><h3 class="mb-0">{{ $krs_list->where('status','Dicetak')->count() }}</h3></div></div>
 </div>
 
 <div class="collapse" id="collapseForm">
@@ -55,7 +55,7 @@
 
 <div class="row mb-3">
 <div class="col-md-3"><select class="form-select" id="filterTahunAkademik" onchange="filterTable()"><option value="">Semua Tahun Akademik</option>@foreach($tahun_akademik as $ta)<option value="{{ $ta->name }}">{{ $ta->name }} - {{ $ta->semester }}</option>@endforeach</select></div>
-<div class="col-md-3"><select class="form-select" id="filterStatus" onchange="filterTable()"><option value="">Semua Status</option><option value="draft">Dibuat</option><option value="submitted">Diajukan</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="published">Dipublish</option><option value="locked">Dikunci</option></select></div>
+<div class="col-md-3"><select class="form-select" id="filterStatus" onchange="filterTable()"><option value="">Semua Status</option><option value="Draft">Dibuat</option><option value="Diajukan">Diajukan</option><option value="Disetujui">Disetujui</option><option value="Ditolak">Ditolak</option><option value="Dicetak">Dipublish</option><option value="Dikunci">Dikunci</option></select></div>
 <div class="col-md-3"><select class="form-select" id="filterSemester" onchange="filterTable()"><option value="">Semua Semester</option>@for($i=1;$i<=8;$i++)<option value="{{ $i }}">Semester {{ $i }}</option>@endfor</select></div>
 <div class="col-md-3"><input type="text" class="form-control" id="searchInput" placeholder="Cari mahasiswa..." onkeyup="filterTable()"></div>
 </div>
@@ -72,18 +72,18 @@
 <td class="text-center" data-label="Semester">{{ $krs->semester }}</td>
 <td class="text-center" data-label="Total SKS"><span class="badge bg-info">{{ $krs->total_sks }} SKS</span></td>
 <td class="text-center" data-label="Status">
-@php $statusColors=['draft'=>'secondary','submitted'=>'warning','approved'=>'success','rejected'=>'danger','published'=>'primary','locked'=>'dark'];
-$statusLabels=['draft'=>'Dibuat','submitted'=>'Diajukan','approved'=>'Disetujui','rejected'=>'Ditolak','published'=>'Dipublish','locked'=>'Dikunci']; @endphp
+@php $statusColors=['Draft'=>'secondary','Diajukan'=>'warning','Disetujui'=>'success','Ditolak'=>'danger','Dicetak'=>'primary','Dikunci'=>'dark'];
+$statusLabels=['Draft'=>'Draft','Diajukan'=>'Diajukan','Disetujui'=>'Disetujui','Ditolak'=>'Ditolak','Dicetak'=>'Dicetak','Dikunci'=>'Dikunci']; @endphp
 <span class="badge bg-{{ $statusColors[$krs->status] ?? 'secondary' }}">{{ $statusLabels[$krs->status] ?? $krs->status }}</span>
 </td>
 <td data-label="Tanggal Dibuat">{{ $krs->created_at->format('d/m/Y H:i') }}</td>
 <td class="text-center" data-label="Aksi"><div class="btn-group" role="group">
 <a href="{{ route($spref . 'akademik.krs-detail',$krs->code) }}" class="btn btn-sm btn-info" title="Detail"><i class="fas fa-eye"></i></a>
-@if(in_array($krs->status,['Draft','Diajukan']))<button class="btn btn-sm btn-warning" onclick="editKRS('{{ $krs->code }}')" title="Edit"><i class="fas fa-edit"></i></button>@endif
-@if($krs->status=='submitted')<button class="btn btn-sm btn-success" onclick="approveKRS('{{ $krs->code }}')" title="Setujui"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectKRS('{{ $krs->code }}')" title="Tolak"><i class="fas fa-times"></i></button>@endif
-@if($krs->status=='approved')<button class="btn btn-sm btn-dark" onclick="lockKRS('{{ $krs->code }}')" title="Kunci"><i class="fas fa-lock"></i></button>@endif
-@if(in_array($krs->status,['approved','locked','published']))<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak"><i class="fas fa-print"></i></a>@endif
-@if(in_array($krs->status,['draft','rejected']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
+@if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-warning" onclick="editKRS('{{ $krs->code }}')" title="Edit"><i class="fas fa-edit"></i></button>@endif
+@if($krs->status=='Diajukan')<button class="btn btn-sm btn-success" onclick="approveKRS('{{ $krs->code }}')" title="Setujui"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectKRS('{{ $krs->code }}')" title="Tolak"><i class="fas fa-times"></i></button>@endif
+@if($krs->status=='Disetujui')<button class="btn btn-sm btn-dark" onclick="lockKRS('{{ $krs->code }}')" title="Kunci"><i class="fas fa-lock"></i></button>@endif
+@if(in_array($krs->status,['Dikunci','Dicetak']))<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak"><i class="fas fa-print"></i></a>@endif
+@if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
 </div></td>
 </tr>
 @endforeach
@@ -98,13 +98,13 @@ $statusLabels=['draft'=>'Dibuat','submitted'=>'Diajukan','approved'=>'Disetujui'
 <div class="card"><div class="card-header"><h6 class="mb-0">Informasi KRS</h6></div><div class="card-body">
 <div class="row">
 <div class="col-12 mb-3"><h6 class="text-muted">Status Workflow</h6><ol class="list-group list-group-numbered">
-<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Draft</div>KRS dalam tahap penyusunan</div><span class="badge bg-secondary rounded-pill">{{ $krs_list->where('status','draft')->count() }}</span></li>
-<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Diajukan</div>Menunggu persetujuan dosen wali</div><span class="badge bg-warning rounded-pill">{{ $krs_list->where('status','submitted')->count() }}</span></li>
-<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Disetujui</div>Siap untuk dipublish</div><span class="badge bg-success rounded-pill">{{ $krs_list->where('status','approved')->count() }}</span></li>
-<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Dipublish</div>KRS aktif dan dapat dicetak</div><span class="badge bg-primary rounded-pill">{{ $krs_list->where('status','published')->count() }}</span></li>
+<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Draft</div>KRS dalam tahap penyusunan</div><span class="badge bg-secondary rounded-pill">{{ $krs_list->where('status','Draft')->count() }}</span></li>
+<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Diajukan</div>Menunggu persetujuan</div><span class="badge bg-warning rounded-pill">{{ $krs_list->where('status','Diajukan')->count() }}</span></li>
+<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Disetujui</div>Siap untuk dikunci</div><span class="badge bg-success rounded-pill">{{ $krs_list->where('status','Disetujui')->count() }}</span></li>
+<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Dikunci</div>KRS siap dicetak</div><span class="badge bg-primary rounded-pill">{{ $krs_list->where('status','Dicetak')->count() }}</span></li>
 </ol></div>
 <div class="col-12 mb-3"><h6 class="text-muted">Statistik Semester</h6>@for($sem=1;$sem<=8;$sem++)@php $count=$krs_list->where('semester',$sem)->count(); @endphp @if($count>0)<div class="d-flex justify-content-between align-items-center mb-1"><span>Semester {{ $sem }}</span><span class="badge bg-primary">{{ $count }}</span></div>@endif @endfor</div>
-<div class="col-12"><h6 class="text-muted">Aksi Bulk</h6><div class="d-grid gap-2"><button class="btn btn-outline-primary btn-sm" onclick="openBulkCopyModal()"><i class="fas fa-copy me-2"></i>Copy Bulk KRS</button><button class="btn btn-outline-success btn-sm" onclick="bulkAction('approve')"><i class="fas fa-check-circle me-2"></i>Approve Terpilih</button><button class="btn btn-outline-info btn-sm" onclick="bulkAction('publish')"><i class="fas fa-share me-2"></i>Publish Terpilih</button></div></div>
+<div class="col-12"><h6 class="text-muted">Aksi Bulk</h6><div class="d-grid gap-2"><button class="btn btn-outline-primary btn-sm" onclick="openBulkCopyModal()"><i class="fas fa-copy me-2"></i>Copy Bulk KRS</button><button class="btn btn-outline-success btn-sm" onclick="bulkAction('approve')"><i class="fas fa-check-circle me-2"></i>Approve Terpilih</button><button class="btn btn-outline-dark btn-sm" onclick="bulkAction('publish')"><i class="fas fa-lock me-2"></i>Kunci Terpilih</button></div></div>
 </div></div></div>
 </div>
 </div>
@@ -163,13 +163,13 @@ if(!confirm('Salin KRS dari template terpilih ke '+targets.length+' mahasiswa?')
 });
 function bulkAction(action){
 const codes=Array.from(document.querySelectorAll('.krs-checkbox:checked')).map(cb=>cb.value);if(!codes.length){alert('Pilih minimal satu KRS untuk diproses!');return;}
-const actionText=action==='approve'?'menyetujui':'mempublish';if(!confirm('Apakah Anda yakin ingin '+actionText+' '+codes.length+' KRS yang dipilih?'))return;
+const actionText=action==='approve'?'menyetujui':'mengunci';if(!confirm('Apakah Anda yakin ingin '+actionText+' '+codes.length+' KRS yang dipilih?'))return;
 const form=document.createElement('form');form.method='POST';form.action=action==='approve'?'{{ route($spref."akademik.krs-bulk-approve") }}':'{{ route($spref."akademik.krs-bulk-publish") }}';addCsrf(form);codes.forEach(code=>addHidden(form,'codes[]',code));document.body.appendChild(form);form.submit();
 }
 function addCsrf(form){addHidden(form,'_token','{{ csrf_token() }}');}
 function addHidden(form,name,value){const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);}
 function approveKRS(code){submitAction('{{ route($spref."akademik.krs-approve",":code") }}'.replace(':code',code),'Apakah Anda yakin ingin menyetujui KRS ini?');}
-function publishKRS(code){submitAction('{{ route($spref."akademik.krs-publish",":code") }}'.replace(':code',code),'Apakah Anda yakin ingin mempublish KRS ini?');}
+function publishKRS(code){submitAction('{{ route($spref."akademik.krs-publish",":code") }}'.replace(':code',code),'Apakah Anda yakin ingin mengunci KRS ini?');}
 function lockKRS(code){submitAction('{{ route($spref."akademik.krs-lock",":code") }}'.replace(':code',code),'Apakah Anda yakin ingin mengunci KRS ini? KRS yang dikunci tidak dapat diubah lagi.');}
 function rejectKRS(code){const reason=prompt('Masukkan alasan penolakan:');if(!reason)return;const form=document.createElement('form');form.method='POST';form.action='{{ route($spref."akademik.krs-reject",":code") }}'.replace(':code',code);addCsrf(form);addHidden(form,'reason',reason);addHidden(form,'notes',reason);document.body.appendChild(form);form.submit();}
 function deleteKRS(code){if(!confirm('Apakah Anda yakin ingin menghapus KRS ini?'))return;const form=document.createElement('form');form.method='POST';form.action='{{ route($spref."akademik.krs-delete",":code") }}'.replace(':code',code);addCsrf(form);addHidden(form,'_method','DELETE');document.body.appendChild(form);form.submit();}
