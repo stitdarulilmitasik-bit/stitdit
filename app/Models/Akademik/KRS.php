@@ -213,7 +213,7 @@ class KRS extends Model
             in_array($this->status, ['submitted', 'approved'], true)
         ) {
             $this->update([
-                'status' => 'Draft',
+                'status' => 'draft',
                 'total_sks' => 0,
                 'approved_at' => null,
                 'notes' => null,
