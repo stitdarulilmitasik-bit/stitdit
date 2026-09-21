@@ -248,6 +248,7 @@ class NilaiController extends Controller
             }
 
             // Belum ada data: buat record baru dengan bobot dari form.
+            $created = false;
             try {
                 $nilai = Nilai::create(array_merge($key, [
                     'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
@@ -262,6 +263,7 @@ class NilaiController extends Controller
                     'created_by' => $actor,
                     'dosen_id' => $request->input('dosen_id'),
                 ]));
+                $created = true;
             } catch (QueryException $e) {
                 // Jika request bersamaan membuat record yang sama,
                 // ambil record yang sudah dibuat daripada menampilkan SQL error.
