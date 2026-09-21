@@ -51,7 +51,7 @@ class KRSController extends Controller
         $data['pages'] = "Detail KRS";
         $data['academy'] = $data['webs']->school_apps . ' by ' . $data['webs']->school_name;
 
-        $data['krs'] = KRS::with(['mahasiswa', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas', 'details.dosen'])
+        $data['krs'] = KRS::with(['mahasiswa', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas.jadwalKuliah.waktuKuliah', 'details.kelas.jadwalKuliah.ruang', 'details.dosen'])
             ->where('code', $code)
             ->firstOrFail();
 
