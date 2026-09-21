@@ -72,6 +72,11 @@ class Dosen extends Authenticatable
     {
         return $this->attributes['dsn_stat'];
     }
+    public function jabatans()
+    {
+        return $this->hasMany(\\App\\Models\\Jabatan::class, 'dosen_id');
+    }
+
     public function getNamaLengkapAttribute($value)
     {
         return $this->attributes['name'] ?? $value;
