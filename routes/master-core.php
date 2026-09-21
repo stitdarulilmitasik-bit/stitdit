@@ -78,6 +78,7 @@ use Illuminate\Support\Facades\Route;
     Route::post('/akademik/krs/{code}/lock',[App\Http\Controllers\Master\Akademik\KRSController::class, 'lockKRS'])->name('akademik.krs-lock');
     Route::post('/akademik/krs/bulk-approve',[App\Http\Controllers\Master\Akademik\KRSController::class, 'bulkApprove'])->name('akademik.krs-bulk-approve');
     Route::post('/akademik/krs/bulk-publish',[App\Http\Controllers\Master\Akademik\KRSController::class, 'bulkPublish'])->name('akademik.krs-bulk-publish');
+    Route::post('/akademik/krs/bulk-copy',[App\Http\Controllers\Master\Akademik\KRSController::class, 'copyBulkKrs'])->name('akademik.krs-copy-bulk');
 
     // MASTER AKADEMIK => NILAI
     Route::get('/akademik/nilai',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'renderNilai'])->name('akademik.nilai-render');
