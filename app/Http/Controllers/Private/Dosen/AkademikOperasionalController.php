@@ -42,6 +42,21 @@ class AkademikOperasionalController extends Controller
     }
 
     /**
+     * Mata kuliah yang benar-benar diampu oleh Dosen ditentukan dari
+     * dosen1_id/dosen2_id/dosen3_id pada master MataKuliah.
+     */
+    private function mataKuliahDiampu($dosenId)
+    {
+        return function ($query) use ($dosenId) {
+            $query->where(function ($q) use ($dosenId) {
+                $q->where('dosen1_id', $dosenId)
+                    ->orWhere('dosen2_id', $dosenId)
+                    ->orWhere('dosen3_id', $dosenId);
+            });
+        };
+    }
+
+    /**
      * Sinkronkan KRS yang sudah disetujui ke tabel nilais.
      * Ini juga menangani KRS yang sudah approved sebelum fitur sinkronisasi dibuat.
      */
@@ -115,7 +130,10 @@ class AkademikOperasionalController extends Controller
         $id = $data['user']->id;
         $this->syncNilaiDosen($id);
         $data['nilai'] = Nilai::with(['mahasiswa','mataKuliah','tahunAkademik','krsDetail'])
-            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id',$id))->latest()->paginate(30);
+            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $id))
+            ->whereHas('mataKuliah', $this->mataKuliahDiampu($id))
+            ->latest()
+            ->paginate(30);
         return view('private.dosen.akademik-nilai', $data);
     }
 
@@ -193,7 +211,10 @@ class AkademikOperasionalController extends Controller
     public function updateNilai(Request $request, $code)
     {
         $dosen = $this->dosen();
-        $nilai = Nilai::where('code',$code)->whereHas('krsDetail', fn($q) => $q->where('dosen_id',$dosen->id))->firstOrFail();
+        $nilai = Nilai::where('code', $code)
+            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $dosen->id))
+            ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
+            ->firstOrFail();
         abort_unless($nilai->status === 'Draft', 403, 'Nilai sudah dipublish atau dikunci.');
         $request->validate([
             'tugas_1'=>'nullable|numeric|min:0|max:100','tugas_2'=>'nullable|numeric|min:0|max:100','tugas_3'=>'nullable|numeric|min:0|max:100',
