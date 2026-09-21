@@ -24,7 +24,21 @@ class AkademikController extends Controller
         if($currentSemester){$krsHeader=KRS::firstOrCreate(['mahasiswa_id'=>$user->id,'taka_id'=>$currentSemester->id,'semester'=>(int)($user->semester??1)],['code'=>'KRS-'.($user->numb_nim??$user->id).'-'.now()->format('YmdHis'),'status'=>'Draft','total_sks'=>0,'max_sks'=>24,'ipk_sebelumnya'=>0]);}
         $details=$krsHeader?$krsHeader->details()->with(['mataKuliah','kelas','dosen'])->whereIn('status',['Aktif','Mengulang'])->get():collect();
         $availableCourses=MataKuliah::where('prodi_id',$user->prodi_id)->with(['prasyarat','dosen1'])->orderBy('semester')->orderBy('name')->get();
-        return view('private.mahasiswa.akademik.krs',['webs'=>$webs,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Rencana Studi (KRS)','academy'=>$webs?$webs->school_apps.' by '.$webs->school_name:'SIAKAD','currentSemester'=>$currentSemester,'krs'=>$details,'krsHeader'=>$krsHeader,'availableCourses'=>$availableCourses,'user'=>$user]);
+        $availableClasses=collect();
+        if ($currentSemester) {
+            $availableClasses=Kelas::where('prodi_id',$user->prodi_id)
+                ->where('taka_id',$currentSemester->id)
+                ->orderBy('name')
+                ->get(['id','name','prodi_id','taka_id']);
+        }
+        $courseClasses=[];
+        foreach ($availableCourses as $course) {
+            $courseClasses[$course->id]=$availableClasses->values()->map(fn($kelas)=>[
+                'id'=>$kelas->id,
+                'name'=>$kelas->name,
+            ])->all();
+        }
+        return view('private.mahasiswa.akademik.krs',['webs'=>$webs,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Rencana Studi (KRS)','academy'=>$webs?$webs->school_apps.' by '.$webs->school_name:'SIAKAD','currentSemester'=>$currentSemester,'krs'=>$details,'krsHeader'=>$krsHeader,'availableCourses'=>$availableCourses,'availableClasses'=>$availableClasses,'courseClasses'=>$courseClasses,'user'=>$user]);
     }
 
     public function cetakKrs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $s=$this->getCurrentSemester(); $h=$s?KRS::where('mahasiswa_id',$user->id)->where('taka_id',$s->id)->with(['dosenPA','mahasiswa.programStudi.fakultas','tahunAkademik'])->first():null; $d=$h?$h->details()->with(['mataKuliah','kelas','dosen'])->whereIn('status',['Aktif','Mengulang'])->get():collect(); return PDF::loadView('private.mahasiswa.akademik.cetak-krs',['webs'=>WebSetting::first(),'mahasiswa'=>$user,'currentSemester'=>$s,'krsHeader'=>$h,'krs'=>$d])->setPaper('a4','portrait')->download('KRS-'.preg_replace('/[^A-Za-z0-9_-]+/','-',$user->name??$user->numb_nim??'mahasiswa').'.pdf'); }
