@@ -373,10 +373,10 @@ class KRSController extends Controller
             }
 
             $request->validate([
-                'notes' => 'required|string',
+                'notes' => 'nullable|string',
             ]);
 
-            $krs->reject($request->notes);
+            $krs->reject($request->notes ?: $request->reason);
 
             DB::commit();
             Alert::success('Success', 'KRS berhasil ditolak');
@@ -494,9 +494,8 @@ class KRSController extends Controller
     {
         $krs = KRS::where('code',$code)->firstOrFail();
         if ($krs->status !== 'approved') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
-        $krs->update(['status' => 'locked']);
+        $krs->update(['status' => 'locked', 'updated_by' => Auth::id()]);
         return redirect()->back()->with('success','KRS berhasil dikunci. Status menjadi Dikunci.');
-        return redirect()->back()->with('success','KRS berstatus disetujui dan tidak dapat diedit.');
     }
 
     public function bulkApprove(Request $request)
