@@ -183,7 +183,11 @@
             </div>
 
             <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
-                <div class="small text-muted">Kehadiran dihitung otomatis dari tabel <code>kehadiran_mahasiswas</code>. Nilai Akhir, Nilai Huruf, Mutu, dan Hasil dihitung otomatis dari komponen nilai.</div>
+                <div class="small text-muted">
+                    <div>Kehadiran dihitung otomatis dari tabel <code>kehadiran_mahasiswas</code>. Nilai Akhir, Nilai Huruf, Mutu, dan Hasil dihitung otomatis dari komponen nilai.</div>
+                    <div class="mt-1"><strong>Rumus Nilai Akhir:</strong> (Tugas × 20%) + (Quiz × 10%) + (UTS × 25%) + (UAS × 30%) + (Praktikum × 0%) + (Kehadiran × 15%).</div>
+                    <div><strong>Nilai Huruf:</strong> A ≥ 85, A− = 80–84,99, B+ = 75–79,99, B = 70–74,99, B− = 65–69,99, C+ = 60–64,99, C = 55–59,99, C− = 50–54,99, D+ = 45–49,99, D = 40–44,99, E &lt; 40.</div>
+                </div>
                 <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i> Simpan Draft</button>
             </div>
         </form>
