@@ -63,37 +63,52 @@
             <table class="table table-vcenter card-table align-middle text-nowrap">
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width:55px">No.</th>
-                        <th rowspan="2" style="width:125px">NIM</th>
-                        <th rowspan="2" style="min-width:210px">Nama Mahasiswa</th>
-                        <th rowspan="2" style="min-width:210px">Mata Kuliah</th>
-                        <th rowspan="2" style="width:80px">PDF</th>
+                        <th style="width:55px">No.</th>
+                        <th style="width:125px">NIM</th>
+                        <th style="min-width:210px">Nama Mahasiswa</th>
                         <th colspan="16" class="text-center bg-light">Pertemuan</th>
-                        <th rowspan="2" style="width:100px">Rekap</th>
-                        <th rowspan="2" style="min-width:190px">Status Pertemuan {{ $pertemuan }}</th>
-                        <th rowspan="2" style="width:95px">Aksi</th>
+                        <th style="width:100px">Rekap</th>
+                        <th style="min-width:190px">Status Pertemuan {{ $pertemuan }}</th>
+                        <th style="width:95px">Aksi</th>
                     </tr>
                     <tr>
+                        <th colspan="3"></th>
                         @for($i = 1; $i <= 16; $i++)
                             <th class="text-center" style="min-width:52px">P{{ $i }}</th>
                         @endfor
+                        <th colspan="3"></th>
                     </tr>
                 </thead>
                 <tbody>
                 @php
-                    $groupedNilai = $nilai->getCollection()
+                    $groupedMataKuliah = $nilai->getCollection()
                         ->sortBy([
-                            [fn($item) => mb_strtolower($item->mahasiswa->name ?? ''), 'asc'],
                             [fn($item) => mb_strtolower($item->mataKuliah->name ?? ''), 'asc'],
+                            [fn($item) => mb_strtolower($item->mahasiswa->name ?? ''), 'asc'],
                         ])
-                        ->groupBy(fn($item) => $item->mahasiswa_id);
+                        ->groupBy(fn($item) => $item->mata_kuliah_id);
+                    $nomor = $nilai->firstItem();
                 @endphp
-                @forelse($groupedNilai as $mahasiswaId => $rows)
+
+                @forelse($groupedMataKuliah as $mataKuliahId => $rows)
                     @php
-                        $firstRow = $rows->first();
-                        $nim = $firstRow->mahasiswa->numb_nim ?? $firstRow->mahasiswa->nim ?? $firstRow->mahasiswa->code ?? '-';
-                        $namaMahasiswa = $firstRow->mahasiswa->name ?? '-';
+                        $mk = $rows->first()->mataKuliah;
                     @endphp
+                    <tr class="table-light">
+                        <td colspan="23" class="fw-bold">
+                            <i class="fas fa-book me-1"></i>
+                            {{ $mk->name ?? '-' }}
+                            @if($mk->code) <span class="text-muted fw-normal">({{ $mk->code }})</span> @endif
+                            <span class="text-muted fw-normal ms-2">{{ $rows->count() }} mahasiswa</span>
+                            <a href="{{ route('dosen.akademik.kehadiran.mata-kuliah.pdf', ['mataKuliahId' => $mataKuliahId, 'semester' => $semester]) }}"
+                               class="btn btn-sm btn-outline-danger float-end"
+                               target="_blank"
+                               title="Export seluruh mahasiswa {{ $mk->name ?? '' }}">
+                                <i class="fas fa-file-pdf me-1"></i> Export PDF Rekap
+                            </a>
+                        </td>
+                    </tr>
+
                     @foreach($rows as $n)
                         @php
                             $existing = $n->kehadiranMahasiswa->keyBy('pertemuan');
@@ -103,38 +118,9 @@
                             $currentAttendance = $existing[(int)$pertemuan] ?? null;
                         @endphp
                         <tr>
-                            @if($loop->first)
-                                <td rowspan="{{ $rows->count() }}" class="text-center fw-semibold text-muted align-middle">
-                                    {{ $nilai->firstItem() + $nilai->getCollection()->search($n) }}
-                                </td>
-                                <td rowspan="{{ $rows->count() }}" class="fw-semibold align-middle">{{ $nim }}</td>
-                                <td rowspan="{{ $rows->count() }}" class="fw-semibold align-middle">
-                                    {{ $namaMahasiswa }}
-                                </td>
-                            @endif
-
-                            <td>
-                                <div class="fw-semibold">{{ $n->mataKuliah->name ?? '-' }}</div>
-                                @if($n->mataKuliah->code ?? null)
-                                    <small class="text-muted">{{ $n->mataKuliah->code }}</small>
-                                @endif
-                            </td>
-
-                            @if($loop->first)
-                                <td rowspan="{{ $rows->count() }}" class="text-center align-middle">
-                                    <a href="{{ $spref === 'dosen.'
-                                            ? route('dosen.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester])
-                                            : route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
-                                       class="btn btn-sm btn-outline-danger text-nowrap"
-                                       target="_blank"
-                                       title="Export rekap kehadiran {{ $namaMahasiswa }}">
-                                        <i class="fas fa-file-pdf me-1"></i> Export PDF
-                                    </a>
-                                    @if($spref === 'dosen.')
-                                        <small class="d-block text-muted mt-1">Mata kuliah yang diampu</small>
-                                    @endif
-                                </td>
-                            @endif
+                            <td class="text-center fw-semibold text-muted">{{ $nomor++ }}</td>
+                            <td class="fw-semibold">{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</td>
+                            <td class="fw-semibold">{{ $n->mahasiswa->name ?? '-' }}</td>
 
                             @for($i = 1; $i <= 16; $i++)
                                 @php $attendance = $existing[$i] ?? null; @endphp
@@ -183,7 +169,7 @@
                         </tr>
                     @endforeach
                 @empty
-                    <tr><td colspan="24" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
+                    <tr><td colspan="23" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
                 @endforelse
                 </tbody>
             </table>
