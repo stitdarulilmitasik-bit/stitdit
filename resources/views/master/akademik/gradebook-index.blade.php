@@ -199,7 +199,11 @@
                                         <form method="POST" action="{{ route('web-admin.akademik.gradebook.lock',$n->code) }}">@csrf<button class="btn btn-dark btn-sm">Lock</button></form>
                                     @endif
                                     @if(!$isDosen && $n->status === 'Locked')
-                                        <button class="btn btn-outline-secondary btn-sm" disabled>Terkunci</button>
+                                        <form method="POST" action="{{ route('web-admin.akademik.gradebook.reopen',$n->code) }}" onsubmit="return confirm('Buka kembali nilai ini? Alasan wajib dicatat untuk audit.');">
+                                            @csrf
+                                            <input type="hidden" name="reason" value="Koreksi nilai berdasarkan permintaan resmi/hasil verifikasi akademik.">
+                                            <button class="btn btn-outline-danger btn-sm">Buka untuk Koreksi</button>
+                                        </form>
                                     @endif
                                 </td>
                                 <td>{{ $n->grade_version ?? 1 }}</td>
