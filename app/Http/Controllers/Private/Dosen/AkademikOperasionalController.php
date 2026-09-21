@@ -307,31 +307,32 @@ class AkademikOperasionalController extends Controller
     {
         $webs = WebSetting::first();
         $semester = max(1, min(8, (int)$request->input('semester', 1)));
-        $pertemuan = max(1, min(16, (int)$request->input('pertemuan', 1)));
 
-        // Pastikan KRS yang sudah disetujui memiliki record nilai.
-        KRS::where('status', 'Disetujui')
-            ->with('details')
-            ->get()
-            ->each(fn($krs) => $krs->syncNilai());
+        $nilai = Nilai::with([
+            'mahasiswa.programStudi',
+            'mataKuliah',
+            'kehadiranMahasiswa',
+            'tahunAkademik',
+        ])
+            ->where('semester', $semester)
+            ->whereHas('mataKuliah')
+            ->orderBy('matkul_id')
+            ->orderBy('mahasiswa_id')
+            ->paginate(100)
+            ->withQueryString();
 
         $data = [
             'user' => Auth::guard('web')->user(),
             'webs' => $webs,
             'spref' => 'web-admin.',
             'menus' => 'Akademik',
-            'pages' => 'Input Kehadiran Mahasiswa',
+            'pages' => 'Report Global Kehadiran',
             'academy' => $webs ? $webs->school_apps . ' by ' . $webs->school_name : 'SIAKAD',
             'semester' => $semester,
-            'pertemuan' => $pertemuan,
-            'nilai' => Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
-                ->where('semester', $semester)
-                ->latest()
-                ->paginate(50)
-                ->withQueryString(),
+            'nilai' => $nilai,
         ];
 
-        return view('private.dosen.akademik-kehadiran', $data);
+        return view('private.dosen.akademik-kehadiran-global', $data);
     }
 
     /**
