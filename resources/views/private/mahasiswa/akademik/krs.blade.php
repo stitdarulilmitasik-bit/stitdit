@@ -14,14 +14,30 @@
         <div class="ms-auto">
             <a href="{{ route('mahasiswa.akademik.krs-cetak') }}" class="btn btn-primary" target="_blank">🖨 Cetak KRS</a>
             @if(($krsHeader->is_editable ?? false))
+                <a href="#tambahKrsModal" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#tambahKrsModal">✎ Edit KRS</a>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahKrsModal">＋ Tambah Mata Kuliah</button>
+                @if($krs->count() > 0)
+                    <form method="POST" action="{{ route('mahasiswa.akademik.krs.submit') }}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin mengajukan KRS ini? Setelah diajukan, KRS tidak dapat diedit sampai diproses oleh akademik.')">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">✓ Submit KRS</button>
+                    </form>
+                @endif
+            @else
+                @if(in_array($krsHeader->status ?? '', ['submitted','approved','published','locked']))
+                    <span class="badge bg-success align-self-center">KRS {{ ucfirst($krsHeader->status) }}</span>
+                @endif
             @endif
         </div>
     </div>
 
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Mata Kuliah yang Diambil</h3>
+            <div>
+                <h3 class="card-title mb-1">Mata Kuliah yang Diambil</h3>
+                @if($krsHeader)
+                    <small class="text-muted">Status KRS: <strong>{{ ucfirst($krsHeader->status) }}</strong></small>
+                @endif
+            </div>
             <div class="ms-auto text-muted">Total SKS: <strong>{{ $krs->sum('sks') }}</strong> / {{ $krsHeader->batas_sks ?? 24 }}</div>
         </div>
         <div class="table-responsive">
@@ -69,7 +85,7 @@
 <option value="{{ $course->id }}">{{ $course->code }} - {{ $course->name }} ({{ $course->sks }} SKS)</option>
 @endforeach
 </select>
-<div class="form-hint mt-2">Kelas dapat ditetapkan oleh pengelola akademik jika belum tersedia.</div>
+<div class="form-hint mt-2">Mode edit aktif selama KRS masih Draft atau ditolak. Setelah Submit KRS, perubahan dikunci sampai KRS diproses oleh akademik.</div>
 </div>
 <div class="modal-footer"><button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Tambah ke KRS</button></div>
 </form>
