@@ -38,8 +38,8 @@ class KRSController extends Controller
             ->latest()
             ->paginate(20);
         $data['tahun_akademik'] = TahunAkademik::all();
-        $data['mahasiswa'] = Mahasiswa::where('type', 1)->get(); // Mahasiswa Aktif
-        $data['dosens'] = Dosen::where('type', 1)->get(); // Dosen Aktif
+        $data['mahasiswa'] = Mahasiswa::where('type', 1)->get();
+        $data['dosens'] = Dosen::where('type', 1)->get();
 
         return view('master.akademik.krs-index', $data, compact('user'));
     }
@@ -82,7 +82,6 @@ class KRSController extends Controller
                 'notes' => 'nullable|string',
             ]);
 
-            // Cek apakah KRS untuk mahasiswa, tahun akademik, dan semester ini sudah ada
             $existingKRS = KRS::where('mahasiswa_id', $request->mahasiswa_id)
                 ->where('taka_id', $request->tahun_akademik_id)
                 ->where('semester', $request->semester)
@@ -93,12 +92,9 @@ class KRSController extends Controller
                 return redirect()->back()->withInput();
             }
 
-            // Ambil IPK semester sebelumnya
             $mahasiswa = Mahasiswa::find($request->mahasiswa_id);
             $ipkSebelumnya = $this->getIPKSebelumnya($mahasiswa->id, $request->semester);
 
-            // Gunakan NIM sebagai identitas mahasiswa pada kode KRS.
-            // Jangan gunakan $mahasiswa->code karena field tersebut dapat berisi kode acak seperti Jx7Uce.
             $nim = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $mahasiswa->numb_nim);
             if ($nim === '') {
                 throw new \RuntimeException('NIM mahasiswa tidak tersedia sehingga kode KRS tidak dapat dibuat.');
@@ -136,7 +132,6 @@ class KRSController extends Controller
 
             $krs = KRS::where('code', $code)->firstOrFail();
 
-            // Cek apakah KRS masih bisa diedit
             if (!$krs->is_editable) {
                 Alert::error('Error', 'KRS tidak dapat diedit. Perubahan hanya dapat dilakukan saat KRS berstatus Draft atau Diajukan.');
                 return redirect()->back();
@@ -177,7 +172,6 @@ class KRSController extends Controller
 
             $krs = KRS::where('code', $code)->firstOrFail();
 
-            // Cek apakah KRS masih bisa diedit
             if (!$krs->is_editable) {
                 Alert::error('Error', 'KRS tidak dapat diedit');
                 return redirect()->back();
@@ -190,7 +184,6 @@ class KRSController extends Controller
                 'notes' => 'nullable|string',
             ]);
 
-            // Cek apakah mata kuliah sudah diambil
             $existingDetail = KrsDetail::where('krs_id', $krs->id)
                 ->where('matkul_id', $request->mata_kuliah_id)
                 ->where('status', 'Aktif')
@@ -213,14 +206,10 @@ class KRSController extends Controller
 
             $dosenId = $jadwalKuliah->dosen_id;
 
-            // Cek batas SKS
             if (!$krs->canAddMatakuliah($mataKuliah->sks)) {
                 Alert::error('Error', 'Menambah mata kuliah ini akan melebihi batas SKS yang diizinkan (' . $krs->batas_sks . ' SKS)');
                 return redirect()->back();
             }
-
-            // Cek prasyarat (implementasi sederhana)
-            // TODO: Implementasi logic prasyarat yang lebih kompleks
 
             KrsDetail::create([
                 'code' => 'KRSD-' . date('Ymd') . '-' . Str::random(6),
@@ -231,7 +220,7 @@ class KRSController extends Controller
                 'dosen_id' => $dosenId,
                 'sks' => $mataKuliah->sks,
                 'notes' => $request->notes,
-                'prasyarat_terpenuhi' => true, // TODO: Implementasi cek prasyarat
+                'prasyarat_terpenuhi' => true,
                 'created_by' => Auth::id(),
             ]);
 
@@ -319,7 +308,6 @@ class KRSController extends Controller
                 ->where('krs_id', $krs->id)
                 ->firstOrFail();
 
-            // Cek apakah KRS masih bisa diedit
             if (!$krs->is_editable) {
                 Alert::error('Error', 'KRS tidak dapat diedit');
                 return redirect()->back();
@@ -333,7 +321,7 @@ class KRSController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            Alert::error('Error', 'Gagal menghapus mata kuliah: ' . $e->getMessage());
+            Alert::error('Error', 'Gagal menghapus mata kuliah dari KRS: ' . $e->getMessage());
             return redirect()->back();
         }
     }
@@ -404,7 +392,6 @@ class KRSController extends Controller
 
             $krs = KRS::where('code', $code)->firstOrFail();
 
-            // Hanya bisa hapus jika status Draft
             if ($krs->status !== 'Draft') {
                 Alert::error('Error', 'Hanya KRS dengan status Draft yang dapat dihapus');
                 return redirect()->back();
@@ -463,18 +450,15 @@ class KRSController extends Controller
 
     public function detailKRS($code)
     {
-        // Redirect to viewKRS since they serve the same purpose
         return $this->viewKRS($code);
     }
 
-    // HELPER METHODS
     private function getIPKSebelumnya($mahasiswaId, $semester)
     {
         if ($semester <= 1) {
             return 0.00;
         }
 
-        // Ambil KHS semester sebelumnya
         $khsSebelumnya = \App\Models\Akademik\KHS::byMahasiswa($mahasiswaId)
             ->where('semester', $semester - 1)
             ->orderBy('semester', 'desc')
@@ -485,22 +469,19 @@ class KRSController extends Controller
 
     private function hitungBatasSKS($ipk)
     {
-        if ($ipk >= 3.50) {
-            return 24;
-        } elseif ($ipk >= 3.00) {
-            return 22;
-        } elseif ($ipk >= 2.50) {
-            return 20;
-        } elseif ($ipk >= 2.00) {
-            return 18;
-        } else {
-            return 15;
-        }
+        if ($ipk >= 3.50) return 24;
+        if ($ipk >= 3.00) return 22;
+        if ($ipk >= 2.50) return 20;
+        if ($ipk >= 2.00) return 18;
+        return 15;
     }
+
     public function publishKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if (!in_array($krs->status, ['approved','submitted'])) { return redirect()->back()->with('error','KRS belum siap dipublish.'); }
+        if (!in_array($krs->status, ['approved','submitted'])) {
+            return redirect()->back()->with('error','KRS belum siap dipublish.');
+        }
         $krs->update(['status'=>'published']);
         return redirect()->back()->with('success','KRS berhasil dipublish.');
     }
@@ -528,8 +509,6 @@ class KRSController extends Controller
             $krsList = KRS::whereIn('code', $ids)->get();
 
             foreach ($krsList as $krs) {
-                // Gunakan accessor KRS->status agar data lama seperti
-                // "Diajukan" tetap dikenali sebagai "submitted".
                 if ($krs->status !== 'submitted') {
                     $skipped++;
                     continue;
@@ -562,4 +541,144 @@ class KRSController extends Controller
         return redirect()->back()->with('success','KRS terpilih dipublish.');
     }
 
+    /**
+     * Menyalin satu atau beberapa KRS terpilih sebagai template ke mahasiswa lain.
+     * Detail KRS digabung, duplikat mata kuliah di target diabaikan.
+     * KRS target yang sudah diajukan/disetujui/dipublish/dikunci tidak diubah.
+     */
+    public function copyBulkKrs(Request $request)
+    {
+        $request->validate([
+            'source_codes' => 'required|array|min:1',
+            'source_codes.*' => 'string',
+            'target_mahasiswa_ids' => 'required|array|min:1',
+            'target_mahasiswa_ids.*' => 'integer|exists:mahasiswas,id',
+        ]);
+
+        $sourceCodes = array_values(array_unique(array_filter($request->input('source_codes', []))));
+        $targetIds = array_values(array_unique(array_map('intval', $request->input('target_mahasiswa_ids', []))));
+
+        if (!$sourceCodes || !$targetIds) {
+            return redirect()->back()->with('error', 'Pilih KRS sumber dan minimal satu mahasiswa tujuan.');
+        }
+
+        $dosen = Auth::guard('dosen')->user();
+        $sourceQuery = KRS::with('details')
+            ->whereIn('code', $sourceCodes);
+
+        // Jika dijalankan dari akun Dosen, hanya KRS yang memiliki
+        // mata kuliah yang benar-benar diampu dosen tersebut yang boleh
+        // dijadikan template.
+        if ($dosen) {
+            $sourceQuery->whereHas('details', function ($q) use ($dosen) {
+                $q->where('dosen_id', $dosen->id)
+                    ->orWhereHas('mataKuliah', function ($mk) use ($dosen) {
+                        $mk->where('dosen1_id', $dosen->id)
+                            ->orWhere('dosen2_id', $dosen->id)
+                            ->orWhere('dosen3_id', $dosen->id);
+                    });
+            });
+        }
+
+        $sources = $sourceQuery->get();
+
+        if ($sources->isEmpty()) {
+            return redirect()->back()->with('error', 'KRS sumber tidak ditemukan atau bukan KRS yang dapat digunakan oleh dosen ini.');
+        }
+
+        $targetStudents = Mahasiswa::whereIn('id', $targetIds)
+            ->where('type', 1)
+            ->get();
+
+        $createdKrs = 0;
+        $addedDetails = 0;
+        $skippedTargets = 0;
+        $skippedDetails = 0;
+        $sourceDetailCount = 0;
+
+        DB::transaction(function () use ($sources, $targetStudents, &$createdKrs, &$addedDetails, &$skippedTargets, &$skippedDetails, &$sourceDetailCount) {
+            foreach ($sources as $source) {
+                foreach ($source->details->whereIn('status', ['Aktif', 'Mengulang']) as $detail) {
+                    $sourceDetailCount++;
+
+                    foreach ($targetStudents as $student) {
+                        // Jangan menyalin KRS mahasiswa ke dirinya sendiri.
+                        if ((int) $student->id === (int) $source->mahasiswa_id) {
+                            $skippedTargets++;
+                            continue;
+                        }
+
+                        $rawStatus = $source->getRawOriginal('status') ?: 'draft';
+                        $target = KRS::firstOrCreate(
+                            [
+                                'mahasiswa_id' => $student->id,
+                                'taka_id' => $source->taka_id,
+                                'semester' => $source->semester,
+                            ],
+                            [
+                                'code' => 'KRS-' . date('Ymd') . '-' . preg_replace('/[^A-Za-z0-9_-]/', '', (string) $student->numb_nim) . '-S' . $source->semester . '-' . Str::upper(Str::random(4)),
+                                'dosen_pa_id' => $source->dosen_pa_id,
+                                'periode_mulai' => $source->periode_mulai,
+                                'periode_selesai' => $source->periode_selesai,
+                                'notes' => 'Template KRS dari ' . ($source->mahasiswa->name ?? $source->code),
+                                'ipk_sebelumnya' => $source->ipk_sebelumnya,
+                                'max_sks' => $source->max_sks ?: 15,
+                                'status' => 'draft',
+                                'created_by' => Auth::id(),
+                            ]
+                        );
+
+                        $targetStatus = $target->getRawOriginal('status');
+                        if (in_array($targetStatus, ['submitted', 'Diajukan', 'approved', 'Disetujui', 'published', 'Dipublish', 'locked', 'Dikunci'], true)) {
+                            $skippedTargets++;
+                            continue;
+                        }
+
+                        $exists = $target->details()
+                            ->where('matkul_id', $detail->matkul_id)
+                            ->whereIn('status', ['Aktif', 'Mengulang'])
+                            ->exists();
+
+                        if ($exists) {
+                            $skippedDetails++;
+                            continue;
+                        }
+
+                        $target->details()->create([
+                            'code' => 'KRSD-' . date('Ymd') . '-' . Str::upper(Str::random(8)),
+                            'matkul_id' => $detail->matkul_id,
+                            'kelas_id' => $detail->kelas_id,
+                            'jadwal_kuliah_id' => $detail->jadwal_kuliah_id,
+                            'dosen_id' => $detail->dosen_id,
+                            'sks' => $detail->sks,
+                            'notes' => $detail->notes,
+                            'prasyarat_terpenuhi' => $detail->prasyarat_terpenuhi ?? true,
+                            'status' => 'Aktif',
+                            'created_by' => Auth::id(),
+                        ]);
+
+                        $target->hitungTotalSks();
+                        $addedDetails++;
+                    }
+                }
+            }
+        });
+
+        if ($addedDetails === 0) {
+            return redirect()->back()->with('error', 'Tidak ada mata kuliah yang disalin. Periksa KRS tujuan atau status KRS tujuan.');
+        }
+
+        $message = $addedDetails . ' mata kuliah berhasil disalin ke ' . $targetStudents->count() . ' mahasiswa sebagai template KRS.';
+        if ($createdKrs > 0) {
+            $message .= ' ' . $createdKrs . ' KRS baru dibuat.';
+        }
+        if ($skippedDetails > 0) {
+            $message .= ' ' . $skippedDetails . ' mata kuliah dilewati karena sudah ada.';
+        }
+        if ($skippedTargets > 0) {
+            $message .= ' Beberapa KRS tujuan dilewati karena sudah diajukan, disetujui, dipublish, atau dikunci.';
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
 }
