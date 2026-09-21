@@ -39,12 +39,17 @@ class KRS extends Model
 
     public function getIsEditableAttribute()
     {
-        return in_array($this->status, ['draft', 'rejected'], true);
+        // Status lama dapat tersimpan dengan variasi huruf besar/kecil.
+        // Normalisasi agar KRS Draft tetap dapat diedit/dibatalkan.
+        $status = strtolower(trim((string) ($this->attributes['status'] ?? $this->status ?? '')));
+
+        return in_array($status, ['draft', 'rejected'], true);
     }
 
     public function getIsApprovableAttribute()
     {
-        return $this->status === 'submitted';
+        $status = strtolower(trim((string) ($this->attributes['status'] ?? $this->status ?? '')));
+        return $status === 'submitted';
     }
 
     public function getBatasSksAttribute()
