@@ -47,6 +47,104 @@
 
             <hr>
 
+            <hr>
+
+            @if(($nilai->status ?? 'Draft') === 'Draft')
+            <h5 class="mb-3">Input Nilai & Bobot</h5>
+            <form method="POST" action="{{ route($spref.'akademik.nilai-update', $nilai->code) }}" id="form-nilai">
+                @csrf
+                @method('PATCH')
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-3">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%">Komponen</th>
+                                <th class="text-center" style="width: 30%">Nilai (0-100)</th>
+                                <th class="text-center" style="width: 25%">Bobot (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tugas <small class="text-muted">(rata-rata Tugas 1-3)</small></td>
+                                <td><input type="number" class="form-control" name="tugas_1" value="{{ old('tugas_1', $nilai->tugas_1) }}" min="0" max="100" step="0.01" placeholder="Nilai tugas"></td>
+                                <td><input type="number" class="form-control bobot-input" name="bobot_tugas" value="{{ old('bobot_tugas', $nilai->bobot_tugas ?? 20) }}" min="0" max="100" step="0.01"></td>
+                            </tr>
+                            <tr>
+                                <td>Quiz <small class="text-muted">(rata-rata Quiz 1-2)</small></td>
+                                <td><input type="number" class="form-control" name="quiz_1" value="{{ old('quiz_1', $nilai->quiz_1) }}" min="0" max="100" step="0.01" placeholder="Nilai quiz"></td>
+                                <td><input type="number" class="form-control bobot-input" name="bobot_quiz" value="{{ old('bobot_quiz', $nilai->bobot_quiz ?? 10) }}" min="0" max="100" step="0.01"></td>
+                            </tr>
+                            <tr>
+                                <td>UTS</td>
+                                <td><input type="number" class="form-control" name="uts" value="{{ old('uts', $nilai->uts) }}" min="0" max="100" step="0.01"></td>
+                                <td><input type="number" class="form-control bobot-input" name="bobot_uts" value="{{ old('bobot_uts', $nilai->bobot_uts ?? 25) }}" min="0" max="100" step="0.01"></td>
+                            </tr>
+                            <tr>
+                                <td>UAS</td>
+                                <td><input type="number" class="form-control" name="uas" value="{{ old('uas', $nilai->uas) }}" min="0" max="100" step="0.01"></td>
+                                <td><input type="number" class="form-control bobot-input" name="bobot_uas" value="{{ old('bobot_uas', $nilai->bobot_uas ?? 25) }}" min="0" max="100" step="0.01"></td>
+                            </tr>
+                            <tr>
+                                <td>Praktikum</td>
+                                <td><input type="number" class="form-control" name="praktikum" value="{{ old('praktikum', $nilai->praktikum) }}" min="0" max="100" step="0.01"></td>
+                                <td><input type="number" class="form-control bobot-input" name="bobot_praktikum" value="{{ old('bobot_praktikum', $nilai->bobot_praktikum ?? 5) }}" min="0" max="100" step="0.01"></td>
+                            </tr>
+                            <tr>
+                                <td>Kehadiran <small class="text-muted">(otomatis dari absensi)</small></td>
+                                <td><input type="number" class="form-control" name="kehadiran" value="{{ old('kehadiran', $nilai->kehadiran) }}" min="0" max="100" step="0.01"></td>
+                                <td><input type="number" class="form-control" name="bobot_kehadiran" value="20" readonly></td>
+                            </tr>
+                            <tr class="table-light">
+                                <th colspan="2" class="text-end">Total Bobot</th>
+                                <th class="text-center"><span id="total-bobot">0</span>%</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="bobot-warning" class="alert alert-warning d-none">
+                    Total bobot harus tepat 100%. Kehadiran ditetapkan 20%, sehingga lima komponen akademik harus berjumlah 80%.
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btn-simpan-nilai">
+                    <i class="bi bi-save me-1"></i> Simpan Nilai & Bobot
+                </button>
+            </form>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const inputs = document.querySelectorAll('.bobot-input');
+                const total = document.getElementById('total-bobot');
+                const warning = document.getElementById('bobot-warning');
+                const form = document.getElementById('form-nilai');
+                const button = document.getElementById('btn-simpan-nilai');
+
+                function hitungBobot() {
+                    let jumlah = 20;
+                    inputs.forEach(input => jumlah += parseFloat(input.value || 0));
+                    total.textContent = jumlah.toFixed(2).replace(/\\.00$/, '');
+
+                    const valid = Math.abs(jumlah - 100) < 0.01;
+                    warning.classList.toggle('d-none', valid);
+                    total.classList.toggle('text-danger', !valid);
+                    total.classList.toggle('text-success', valid);
+                    button.disabled = !valid;
+                }
+
+                inputs.forEach(input => input.addEventListener('input', hitungBobot));
+                hitungBobot();
+
+                form.addEventListener('submit', function () {
+                    button.disabled = true;
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+                });
+            });
+            </script>
+            @endif
+
+            <hr>
+
             <h5 class="mb-3">Komponen Nilai</h5>
             <div class="table-responsive">
                 <table class="table table-bordered align-middle">
