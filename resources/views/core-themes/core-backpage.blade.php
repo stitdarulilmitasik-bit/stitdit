@@ -6,7 +6,13 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     @PwaHead
 
-    <title>{{ (isset($menus) ? $menus . ' - ' : '') . $pages . ' - ' . $academy }}</title>
+    @php
+        // Sebagian halaman backend tidak mengirim $academy. Gunakan nama aplikasi
+        // sebagai fallback agar layout tetap aman tanpa mengubah data halaman.
+        $layoutAcademy = $academy ?? config('app.name', 'STIT Darul Ilmi Tasikmalaya');
+    @endphp
+
+    <title>{{ (isset($menus) ? $menus . ' - ' : '') . ($pages ?? 'Halaman') . ' - ' . $layoutAcademy }}</title>
 
     <link href="{{ asset('dashboard') }}/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet" />
     <link href="{{ asset('dashboard') }}/dist/css/tabler.css" rel="stylesheet" />
@@ -206,7 +212,7 @@
                     <div class="col-12">
                         <div class="text-secondary">
                             Copyright &copy; {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}
-                            <span class="ms-1">{{ $academy }}</span>. Seluruh hak cipta dilindungi.
+                            <span class="ms-1">{{ $layoutAcademy }}</span>. Seluruh hak cipta dilindungi.
                         </div>
                     </div>
                 </div>
