@@ -398,29 +398,29 @@ class KRSController extends Controller
     public function publishKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if (!in_array($krs->status, ['Disetujui','Diajukan'])) { return redirect()->back()->with('error','KRS belum siap dipublish.'); }
-        $krs->update(['status'=>'Disetujui']);
+        if (!in_array($krs->status, ['approved','submitted'])) { return redirect()->back()->with('error','KRS belum siap dipublish.'); }
+        $krs->update(['status'=>'published']);
         return redirect()->back()->with('success','KRS berhasil dipublish.');
     }
 
     public function lockKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if ($krs->status !== 'Disetujui') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
+        if ($krs->status !== 'approved') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
         return redirect()->back()->with('success','KRS berstatus disetujui dan tidak dapat diedit.');
     }
 
     public function bulkApprove(Request $request)
     {
         $ids = $request->input('codes', $request->input('krs_codes', []));
-        foreach ((array)$ids as $code) { $krs=KRS::where('code',$code)->first(); if($krs && $krs->status==='Diajukan') $krs->approve(); }
+        foreach ((array)$ids as $code) { $krs=KRS::where('code',$code)->first(); if($krs && $krs->status==='submitted') $krs->approve(); }
         return redirect()->back()->with('success','KRS terpilih diproses.');
     }
 
     public function bulkPublish(Request $request)
     {
         $ids = $request->input('codes', $request->input('krs_codes', []));
-        KRS::whereIn('code',(array)$ids)->where('status','Disetujui')->update(['status'=>'Disetujui']);
+        KRS::whereIn('code',(array)$ids)->where('status','approved')->update(['status'=>'published']);
         return redirect()->back()->with('success','KRS terpilih dipublish.');
     }
 
