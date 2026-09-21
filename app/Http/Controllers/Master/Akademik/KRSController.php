@@ -287,7 +287,7 @@ class KRSController extends Controller
             DB::commit();
             Alert::success('Success', 'Mata kuliah dalam KRS berhasil diperbarui.');
             return redirect()->back();
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Alert::error('Error', 'Gagal memperbarui mata kuliah: ' . $e->getMessage());
             return redirect()->back()->withInput();
