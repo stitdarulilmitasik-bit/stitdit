@@ -64,7 +64,7 @@ th { background:#eee; }
 </div>
 <div style="text-align:center; margin-bottom:14px;">
     <h3 style="margin:2px 0;">KARTU RENCANA STUDI (KRS)</h3>
-    <p style="margin:2px 0;">{{ $currentSemester->name ?? '' }} - {{ $currentSemester->type ?? '' }}</p>
+    <p style="margin:2px 0;">{{ $currentSemester->name ?? '' }}</p>
 </div>
 <table class="meta">
 <tr><td width="18%">Nama</td><td>: {{ $mahasiswa->name ?? '-' }}</td><td width="18%">NIM</td><td>: {{ $mahasiswa->numb_nim ?? '-' }}</td></tr>
