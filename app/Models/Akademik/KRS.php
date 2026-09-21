@@ -4,6 +4,7 @@ namespace App\Models\Akademik;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use App\Traits\HasLogAktivitas;
 use App\Models\Mahasiswa;
 use App\Models\Dosen;
