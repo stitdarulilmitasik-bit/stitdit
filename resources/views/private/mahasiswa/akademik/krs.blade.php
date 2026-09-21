@@ -23,8 +23,8 @@
                     </form>
                 @endif
             @else
-                @if(in_array($krsHeader->status ?? '', ['Diajukan','Disetujui','Dipublish','Dikunci']))
-                    <span class="badge bg-success align-self-center">KRS {{ $krsHeader->status }}</span>
+                @if(in_array($krsHeader->status ?? '', ['submitted','approved','published','locked']))
+                    <span class="badge bg-success align-self-center">KRS {{ ['draft'=>'Dibuat','submitted'=>'Diajukan','approved'=>'Disetujui','rejected'=>'Ditolak','published'=>'Dipublish','locked'=>'Dikunci'][$krsHeader->status] ?? $krsHeader->status }}</span>
                 @endif
             @endif
         </div>
@@ -55,7 +55,7 @@
                         <td>{{ $item->dosen->name ?? '-' }}</td>
                         <td><span class="badge {{ $status === 'Aktif' ? 'bg-success' : ($status === 'Mengulang' ? 'bg-warning' : 'bg-secondary') }}">{{ $status }}</span></td>
                         <td>
-                            @if(in_array($krsHeader->status ?? '', ['Draft','Diajukan','Ditolak']))
+                            @if(in_array($krsHeader->status ?? '', ['draft','submitted','rejected']))
                             <form method="POST" action="{{ route('mahasiswa.akademik.krs.destroy', $item->id) }}" onsubmit="return confirm('Batalkan mata kuliah ini dari KRS?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">Batalkan</button>
@@ -103,7 +103,7 @@
 </select>
 <div class="form-text">Dosen pembimbing akan disimpan pada KRS dan digunakan pada laporan KRS.</div>
 
-<div class="form-hint mt-2">Mode edit aktif selama KRS masih Draft atau ditolak. Setelah Submit KRS, perubahan dikunci sampai KRS diproses oleh akademik.</div>
+<div class="form-hint mt-2">Mode edit aktif selama KRS masih berstatus Dibuat atau ditolak. Setelah Submit KRS, perubahan dikunci sampai KRS diproses oleh akademik.</div>
 </div>
 <div class="modal-footer"><button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Tambah ke KRS</button></div>
 </form>
