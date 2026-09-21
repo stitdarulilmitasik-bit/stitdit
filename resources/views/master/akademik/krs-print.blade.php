@@ -5,29 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kartu Rencana Studi - {{ $krs->mahasiswa->name }}</title>
     <style>
-        @page { size: A4 portrait; margin: 0.75cm 0.7cm; }
-        body { font-family: 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.2; color: #000; margin: 0; padding: 0; }
+        @page { size: A4 portrait; margin: 10mm 15mm 15mm; }
+        body { font-family: Arial, sans-serif; color:#111; font-size:12px; margin:0; }
         .page-width { width: 100%; }
 
-        .kop { width: 100%; border-bottom: 2px solid #111; padding-bottom: 7px; margin-bottom: 10px; }
-        .kop-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .kop-logo { width: 88px; text-align: center; vertical-align: middle; }
-        .kop-logo img { width: 70px; height: 70px; object-fit: contain; }
-        .kop-text { text-align: center; vertical-align: middle; line-height: 1.25; }
-        .kop-text .line1 { font-size: 13pt; font-weight: bold; }
-        .kop-text .line2 { font-size: 16pt; font-weight: bold; }
-        .kop-text .line3 { font-size: 9pt; font-weight: bold; }
-        .kop-text .address { font-size: 8.5pt; }
-        .header { text-align: center; margin-bottom: 9px; }
-        .faculty-name { font-size: 11.5pt; font-weight: bold; margin-bottom: 3px; }
-        .document-title { display: inline-block; width: auto; max-width: 80%; font-size: 13pt; font-weight: bold; text-decoration: underline; margin: 4px auto 0; padding: 0 18px; }
-        .semester-line { font-size: 10.5pt; font-weight: bold; margin-top: 4px; }
+        .kop { width:100%; border-bottom:3px solid #111; padding-bottom:7px; margin-top:0; margin-bottom:12px; }
+        .kop-table { width:100%; border-collapse:collapse; }
+        .kop-table td { border:0; padding:0; }
+        .kop-logo { width:105px; text-align:center; vertical-align:middle; }
+        .kop-logo img { width:82px; height:82px; object-fit:contain; }
+        .kop-text { text-align:center; line-height:1.3; }
+        .kop-text .line1 { font-size:15px; font-weight:bold; }
+        .kop-text .line2 { font-size:18px; font-weight:bold; }
+        .kop-text .line3 { font-size:10px; font-weight:bold; }
+        .kop-text .address { font-size:9px; }
+        .header { text-align:center; margin-bottom:14px; }
+        .faculty-name { font-size:12px; font-weight:bold; margin-bottom:3px; }
+        .document-title { display:inline-block; width:auto; max-width:80%; font-size:15px; font-weight:bold; text-decoration:underline; margin:2px auto 0; padding:0; }
+        .semester-line { font-size:12px; font-weight:normal; margin-top:2px; }
         .student-info { margin: 9px 0; }
-        .student-info table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .student-info td { padding: 4px 3px; vertical-align: middle; }
-        .student-info .label { width: 92px; font-weight: bold; white-space: nowrap; }
-        .student-info .colon { width: 8px; text-align: center; }
-        .student-info .value { white-space: nowrap; overflow: hidden; }
+        .student-info table { width:100%; border-collapse:collapse; table-layout:fixed; }
+        .student-info td { border:0; padding:3px 2px; vertical-align:middle; }
+        .student-info .label { width:18%; font-weight:bold; white-space:nowrap; }
+        .student-info .colon { width:2%; text-align:center; }
+        .student-info .value { width:30%; white-space:nowrap; overflow:hidden; }
 
         .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 8px 0; border: 1px solid #000; }
         .courses-table th, .courses-table td { border: 1px solid #000; padding: 5px 4px; text-align: center; font-size: 9.5pt; line-height: 1.15; vertical-align: middle; overflow-wrap: anywhere; word-break: normal; }
@@ -115,20 +116,20 @@
 <div class="student-info">
     <table>
         <tr>
-            <td class="label">Nama Mahasiswa</td><td class="colon">:</td><td class="value" style="width:27%;">{{ $krs->mahasiswa->name }}</td>
-            <td class="label" style="padding-left:15px;">Program Studi</td><td class="colon">:</td><td class="value">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
+            <td class="label">Nama Mahasiswa</td><td class="colon">:</td><td class="value">{{ $krs->mahasiswa->name }}</td>
+            <td class="label">Program Studi</td><td class="colon">:</td><td class="value">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">NIM</td><td class="colon">:</td><td class="value" style="width:27%;">{{ $nim }}</td>
-            <td class="label" style="padding-left:15px;">Tahun Masuk</td><td class="colon">:</td><td class="value">{{ $tahunMasuk }}</td>
+            <td class="label">NIM</td><td class="colon">:</td><td class="value">{{ $nim }}</td>
+            <td class="label">Tahun Masuk</td><td class="colon">:</td><td class="value">{{ $tahunMasuk }}</td>
         </tr>
         <tr>
-            <td class="label">Semester</td><td class="colon">:</td><td class="value" style="width:27%;">{{ $krs->semester }}</td>
-            <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td class="value">{{ $dosenWali->name ?? '-' }}</td>
+            <td class="label">Semester</td><td class="colon">:</td><td class="value">{{ $krs->semester }}</td>
+            <td class="label">Dosen Wali</td><td class="colon">:</td><td class="value">{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">{{ $krs->status }}</span></td>
-            <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td class="value"><strong>{{ $krs->total_sks }} SKS</strong></td>
+            <td class="label">Status KRS</td><td class="colon">:</td><td class="value"><span class="status-badge">{{ $krs->status }}</span></td>
+            <td class="label">Total SKS</td><td class="colon">:</td><td class="value"><strong>{{ $krs->total_sks }} SKS</strong></td>
         </tr>
     </table>
 </div>
