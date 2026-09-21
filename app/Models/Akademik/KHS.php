@@ -79,7 +79,9 @@ class KHS extends Model
 
     public function getIsPublishedAttribute()
     {
-        return $this->attributes['status_generate'] === 'Published';
+        // Status lama/hasil import bisa tersimpan dengan variasi huruf.
+        // Secara bisnis, Published/published/PUBLISHED tetap berarti sudah publish.
+        return strtolower(trim((string) ($this->attributes['status_generate'] ?? ''))) === 'published';
     }
 
     // RELATIONSHIP METHODS
