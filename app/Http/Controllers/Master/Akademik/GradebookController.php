@@ -48,7 +48,17 @@ class GradebookController extends Controller
             ])
             ->where('status','Aktif')
             ->whereHas('krs', function($q) use ($takaId,$semester) {
-                $q->whereIn('status',['approved','published','locked']);
+                // Status KRS pada aplikasi menggunakan Bahasa Indonesia.
+                // Tetap dukung status legacy berbahasa Inggris agar data lama
+                // tidak hilang dari gradebook.
+                $q->whereIn('status', [
+                    'Disetujui',
+                    'Dikunci',
+                    'Dicetak',
+                    'approved',
+                    'published',
+                    'locked',
+                ]);
                 if ($takaId) $q->where('taka_id',$takaId);
                 if ($semester) $q->where('semester',$semester);
             });
