@@ -29,7 +29,8 @@
         .courses-table th, .courses-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; font-size: 7.5pt; line-height: 1.05; vertical-align: middle; }
         .courses-table th { background-color: #f0f0f0; font-weight: bold; }
         .courses-table .subject-name { text-align: left; padding-left: 4px; overflow-wrap: anywhere; font-size: 7.5pt; }
-        .courses-table .room { text-align: center; font-size: 7pt; white-space: nowrap; }\n        .courses-table .lecturer { text-align: left; padding-left: 4px; font-size: 7pt; overflow-wrap: anywhere; }
+        .courses-table .room { text-align: center; font-size: 7pt; white-space: nowrap; }
+        .courses-table .lecturer { text-align: left; padding-left: 4px; font-size: 7pt; overflow-wrap: anywhere; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
         .signature-section { margin-top: 14px; width: 100%; page-break-inside: avoid; }
@@ -129,12 +130,13 @@
 <table class="courses-table">
     <thead>
         <tr>
-            <th rowspan="2" style="width:9%;">Kode MK</th>
-            <th rowspan="2" style="width:30%;">Mata Kuliah</th>
-            <th rowspan="2" style="width:7%;">SKS</th>
-            <th rowspan="2" style="width:11%;">Kelas</th>
-            <th rowspan="2" style="width:10%;">Ruang</th>
-            <th rowspan="2" style="width:33%;">Dosen</th>
+            <th style="width:5%;">No</th>
+            <th style="width:12%;">Kode MK</th>
+            <th style="width:28%;">Mata Kuliah</th>
+            <th style="width:7%;">SKS</th>
+            <th style="width:11%;">Kelas</th>
+            <th style="width:10%;">Ruang</th>
+            <th style="width:27%;">Dosen</th>
         </tr>
     </thead>
     <tbody>
@@ -149,6 +151,7 @@
                 $dosen2 = $detail->mataKuliah?->dosen2 ?? null;
             @endphp
             <tr>
+                <td>{{ $loop->iteration }}</td>
                 <td>{{ $detail->mataKuliah->code ?? '-' }}</td>
                 <td class="subject-name">{{ $detail->mataKuliah->name ?? '-' }}</td>
                 <td>{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
@@ -166,13 +169,13 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="6" style="text-align:center;font-style:italic;">Belum ada mata kuliah yang dipilih</td></tr>
+            <tr><td colspan="7" style="text-align:center;font-style:italic;">Belum ada mata kuliah yang dipilih</td></tr>
         @endforelse
     </tbody>
     @if ($krs->details->count() > 0)
         <tfoot>
             <tr style="background-color:#f0f0f0;">
-                <td colspan="2" style="text-align:right;font-weight:bold;">TOTAL SKS</td>
+                <td colspan="3" style="text-align:right;font-weight:bold;">TOTAL SKS</td>
                 <td style="font-weight:bold;">{{ $krs->total_sks }}</td>
                 <td colspan="3"></td>
             </tr>
