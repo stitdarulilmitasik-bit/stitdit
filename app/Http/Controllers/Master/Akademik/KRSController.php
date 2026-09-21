@@ -413,8 +413,44 @@ class KRSController extends Controller
     public function bulkApprove(Request $request)
     {
         $ids = $request->input('codes', $request->input('krs_codes', []));
-        foreach ((array)$ids as $code) { $krs=KRS::where('code',$code)->first(); if($krs && $krs->status==='submitted') $krs->approve(); }
-        return redirect()->back()->with('success','KRS terpilih diproses.');
+        $ids = array_values(array_filter((array) $ids));
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Tidak ada KRS yang dipilih.');
+        }
+
+        $processed = 0;
+        $skipped = 0;
+
+        DB::transaction(function () use ($ids, &$processed, &$skipped) {
+            $krsList = KRS::whereIn('code', $ids)->get();
+
+            foreach ($krsList as $krs) {
+                // Gunakan accessor KRS->status agar data lama seperti
+                // "Diajukan" tetap dikenali sebagai "submitted".
+                if ($krs->status !== 'submitted') {
+                    $skipped++;
+                    continue;
+                }
+
+                $krs->approve();
+                $processed++;
+            }
+        });
+
+        if ($processed === 0) {
+            return redirect()->back()->with(
+                'error',
+                'Tidak ada KRS yang dapat disetujui. Pastikan status KRS adalah Diajukan.'
+            );
+        }
+
+        $message = $processed . ' KRS berhasil disetujui dan statusnya menjadi Approved.';
+        if ($skipped > 0) {
+            $message .= ' ' . $skipped . ' KRS dilewati karena statusnya bukan Diajukan.';
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     public function bulkPublish(Request $request)
