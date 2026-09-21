@@ -134,7 +134,7 @@ class KRSController extends Controller
 
             // Cek apakah KRS masih bisa diedit
             if (!$krs->is_editable) {
-                Alert::error('Error', 'KRS tidak dapat diedit karena sudah disetujui atau dikunci');
+                Alert::error('Error', 'KRS tidak dapat diedit. Perubahan hanya dapat dilakukan saat KRS berstatus Draft atau Diajukan.');
                 return redirect()->back();
             }
 
@@ -143,7 +143,7 @@ class KRSController extends Controller
                 'periode_mulai' => 'nullable|date',
                 'periode_selesai' => 'nullable|date|after:periode_mulai',
                 'notes' => 'nullable|string',
-                'status' => 'nullable|in:Draft,Diajukan,Disetujui,Ditolak',
+                'status' => 'nullable|in:draft,submitted,approved,rejected,published,locked,Draft,Diajukan,Disetujui,Ditolak,Dipublish,Dikunci',
             ]);
 
             $krs->update([
