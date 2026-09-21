@@ -35,32 +35,77 @@
         .card-header {
             background: none;
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 1.5rem;
+            padding: .75rem .9rem;
         }
 
         .card-body {
-            padding: 1.5rem;
+            padding: .85rem .9rem;
         }
 
-        /* Table styling */
+        /* Nilai table: compact and dense */
+        .nilai-table-wrap {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .nilai-table {
+            width: 100%;
+            table-layout: auto;
+            margin-bottom: 0;
+            font-size: 11px;
+        }
+
+        .nilai-table th,
+        .nilai-table td {
+            padding: 4px 5px !important;
+            line-height: 1.2;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .nilai-table thead th {
+            border-top: none;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 10px;
+            text-align: left;
+        }
+
+        .nilai-table td:first-child,
+        .nilai-table th:first-child {
+            width: 32px;
+            text-align: center;
+        }
+
+        .nilai-table .btn {
+            padding: 2px 5px !important;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        .nilai-table .badge {
+            padding: 2px 4px;
+            font-size: 9px;
+        }
+
+        /* Other form/table styling */
         .table {
             margin-bottom: 0;
         }
 
         .table thead th {
             border-top: none;
-            border-bottom: 2px solid rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             font-weight: 600;
             color: #6c757d;
-            padding-top: 1rem;
-            padding-bottom: 0.75rem;
+            padding: .4rem .5rem;
             text-align: left;
         }
 
         .table td {
             vertical-align: middle;
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem;
+            padding: .4rem .5rem;
             text-align: left;
         }
 
