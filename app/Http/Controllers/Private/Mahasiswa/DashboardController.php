@@ -79,15 +79,45 @@ class DashboardController extends Controller
         $todayRows = (clone $query)->where('hari', $day)->get()->sortBy(fn ($item) => $item->waktuKuliah?->time_start ?? '99:99');
         $data['tanggal_hari_ini'] = $today->locale('id')->translatedFormat('l, d F Y');
         $data['jadwal_hari_ini'] = $todayRows->map(fn ($item) => $this->scheduleRow($item))->values()->all();
-        $data['jadwal_minggu_ini'] = (clone $query)->orderBy('tanggal')->get()->map(fn ($item) => $this->scheduleRow($item))->values()->all();
+
+        // Tampilkan seluruh jadwal mahasiswa di dashboard, termasuk jadwal
+        // yang akan datang dan yang sudah dilaksanakan.
+        $allRows = (clone $query)
+            ->orderBy('tanggal')
+            ->orderBy('waktu_kuliah_id')
+            ->get();
+
+        $data['jadwal_dashboard'] = $allRows
+            ->map(fn ($item) => $this->scheduleRow($item))
+            ->values()
+            ->all();
+
+        $data['jadwal_akan_datang'] = collect($data['jadwal_dashboard'])
+            ->whereIn('status', ['akan_datang', 'berlangsung'])
+            ->values()
+            ->all();
+
+        $data['jadwal_sudah_dilaksanakan'] = collect($data['jadwal_dashboard'])
+            ->where('status', 'selesai')
+            ->sortByDesc(fn ($item) => $item['tanggal_sort'] ?? '')
+            ->values()
+            ->all();
     }
 
     private function scheduleRow($item)
     {
-        $start = $item->waktuKuliah?->time_start; $end = $item->waktuKuliah?->time_ended; $now = now(); $status = 'selesai';
+        $start = $item->waktuKuliah?->time_start;
+        $end = $item->waktuKuliah?->time_ended;
+        $scheduleDate = $item->tanggal ? Carbon::parse($item->tanggal) : Carbon::today();
+        $status = 'selesai';
+
         if ($start && $end) {
-            $s = Carbon::today()->setTimeFromTimeString($start); $e = Carbon::today()->setTimeFromTimeString($end);
+            $s = $scheduleDate->copy()->setTimeFromTimeString($start);
+            $e = $scheduleDate->copy()->setTimeFromTimeString($end);
+            $now = now();
             $status = $now->between($s, $e) ? 'berlangsung' : ($now->lt($s) ? 'akan_datang' : 'selesai');
+        } elseif ($scheduleDate->isFuture()) {
+            $status = 'akan_datang';
         }
         $dosen = $item->dosen; $namaDosen = $dosen?->name ?? $dosen?->nama ?? '-';
         return [
@@ -95,7 +125,7 @@ class DashboardController extends Controller
             'mata_kuliah' => $item->mataKuliah?->name ?? $item->mataKuliah?->nama_mk ?? '-',
             'kode' => $item->mataKuliah?->code ?? '-', 'bsks' => $item->mataKuliah?->bsks ?? 0,
             'dosen' => trim($namaDosen), 'ruang' => $item->ruang?->name ?? $item->ruang?->nama_ruang ?? '-',
-            'hari' => $item->hari ?? '-', 'tanggal' => $item->tanggal ? Carbon::parse($item->tanggal)->locale('id')->translatedFormat('d F Y') : '-',
+            'hari' => $item->hari ?? '-', 'tanggal' => $item->tanggal ? Carbon::parse($item->tanggal)->locale('id')->translatedFormat('d F Y') : '-', 'tanggal_sort' => $scheduleDate->format('Y-m-d'),
             'time_start' => $start ? Carbon::parse($start)->format('H:i') : '-', 'time_ended' => $end ? Carbon::parse($end)->format('H:i') : '-',
             'metode' => $item->metode ?? $item->metode_pembelajaran ?? '-', 'status' => $status,
         ];
