@@ -9,8 +9,9 @@
     .schedule-card { margin-bottom: 1rem; transition: all .2s ease-in-out; }
     .schedule-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
     .day-header { background: #f5f7fb; padding: .75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-weight: 600; color: #3b82f6; display:flex; justify-content:space-between; align-items:center; }
-    .time-badge { font-size:.75rem; font-weight:600; padding:.25rem .5rem; border-radius:4px; background:#e0f2fe; color:#0369a1; }
-    .course-code,.lecturer,.room-info { font-size:.8125rem; color:#4b5563; margin-top:.5rem; }
+    .time-badge { font-size:.75rem; font-weight:600; padding:.25rem .5rem; border-radius:4px; background:#e0f2fe; color:#0369a1; white-space:nowrap; }
+    .course-code,.lecturer,.room-info,.schedule-date { font-size:.8125rem; color:#4b5563; margin-top:.5rem; }
+    .schedule-date { font-weight:600; color:#2563eb; }
     .room-info { display:flex; align-items:center; }
     .room-icon { margin-right:.375rem; color:#6b7280; }
 </style>
@@ -65,6 +66,11 @@
                                             <div>
                                                 <h3 class="card-title mb-1">{{ $schedule->mataKuliah->nama ?? $schedule->mataKuliah->name ?? 'Mata Kuliah' }}</h3>
                                                 <div class="course-code">{{ $schedule->mataKuliah->kode_mk ?? $schedule->mataKuliah->code ?? '-' }} - {{ $schedule->mataKuliah->sks ?? $schedule->mataKuliah->bsks ?? 0 }} SKS</div>
+                                                @if($schedule->tanggal)
+                                                    <div class="schedule-date">📅 {{ \Carbon\Carbon::parse($schedule->tanggal)->locale('id')->translatedFormat('d F Y') }}</div>
+                                                @else
+                                                    <div class="schedule-date">📅 Tanggal belum ditentukan</div>
+                                                @endif
                                             </div>
                                             <span class="time-badge">{{ $schedule->waktuKuliah ? \Carbon\Carbon::parse($schedule->waktuKuliah->time_start)->format('H:i') : '-' }} - {{ $schedule->waktuKuliah ? \Carbon\Carbon::parse($schedule->waktuKuliah->time_ended)->format('H:i') : '-' }}</span>
                                         </div>
