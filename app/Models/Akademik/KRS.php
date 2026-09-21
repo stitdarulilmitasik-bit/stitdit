@@ -28,11 +28,12 @@ class KRS extends Model
     public function getStatusBadgeAttribute()
     {
         return match ($this->attributes['status'] ?? null) {
-            'draft' => 'badge bg-secondary',
-            'submitted' => 'badge bg-warning text-dark',
-            'approved' => 'badge bg-success',
-            'rejected' => 'badge bg-danger',
-            'locked' => 'badge bg-dark',
+            'Draft' => 'badge bg-secondary',
+            'Diajukan' => 'badge bg-warning text-dark',
+            'Disetujui' => 'badge bg-success',
+            'Ditolak' => 'badge bg-danger',
+            'Dikunci' => 'badge bg-dark',
+            'Dicetak' => 'badge bg-primary',
             default => 'badge bg-secondary',
         };
     }
@@ -43,13 +44,13 @@ class KRS extends Model
         // Normalisasi agar KRS Draft tetap dapat diedit/dibatalkan.
         $status = strtolower(trim((string) ($this->attributes['status'] ?? $this->status ?? '')));
 
-        return in_array($status, ['draft', 'rejected'], true);
+        return in_array($status, ['draft', 'ditolak'], true);
     }
 
     public function getIsApprovableAttribute()
     {
         $status = strtolower(trim((string) ($this->attributes['status'] ?? $this->status ?? '')));
-        return $status === 'submitted';
+        return $status === 'diajukan';
     }
 
     public function getBatasSksAttribute()
@@ -167,7 +168,7 @@ class KRS extends Model
                     'taka_id' => $this->taka_id,
                     'semester' => $this->semester,
                     'sks' => $detail->sks,
-                    'status' => 'draft',
+                    'status' => 'Draft',
                     'bobot_tugas' => 20,
                     'bobot_quiz' => 10,
                     'bobot_uts' => 25,
@@ -184,7 +185,7 @@ class KRS extends Model
     public function approve($dosenPaId = null, $notes = null)
     {
         $this->update([
-            'status' => 'approved',
+            'status' => 'Disetujui',
             'dosen_pa_id' => $dosenPaId ?? $this->dosen_pa_id,
             'approved_at' => now(),
             'notes' => $notes
@@ -196,7 +197,7 @@ class KRS extends Model
     public function reject($notes = null)
     {
         $this->update([
-            'status' => 'rejected',
+            'status' => 'Ditolak',
             'notes' => $notes
         ]);
     }
@@ -215,10 +216,10 @@ class KRS extends Model
 
         if (
             $jumlahAktif === 0 &&
-            in_array($this->status, ['submitted', 'approved'], true)
+            in_array(strtolower(trim((string) $this->status)), ['diajukan', 'disetujui'], true)
         ) {
             $this->update([
-                'status' => 'draft',
+                'status' => 'Draft',
                 'total_sks' => 0,
                 'approved_at' => null,
                 'notes' => null,
@@ -238,7 +239,7 @@ class KRS extends Model
             ->sum('sks');
 
         if ($this->total_sks > 0) {
-            $this->update(['status' => 'submitted']);
+            $this->update(['status' => 'Diajukan']);
             return true;
         }
         return false;
