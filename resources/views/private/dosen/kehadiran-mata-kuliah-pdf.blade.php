@@ -24,7 +24,7 @@
     .info .label { width:90px; font-weight:bold; }
     table.data { width:100%; border-collapse:collapse; table-layout:fixed; word-wrap:break-word; }
     .data th,.data td { border:1px solid #333; padding:3px 1px; vertical-align:middle; overflow:hidden; white-space:nowrap; line-height:1.1; }
-    .data th { background:#eee; text-align:center; font-weight:bold; font-size:6.8pt; line-height:1.05; }
+    .data th { background:#eee; text-align:center; font-weight:bold; font-size:6.8pt; }
     .data td { font-size:6.8pt; }
     .center { text-align:center; }
     .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; padding-left:4px !important; padding-right:4px !important; }
@@ -92,10 +92,10 @@
         <col style="width:4.6%">
     </colgroup>
     <thead>
-        <tr class="header-row">
-            <th rowspan="2">No.</th><th rowspan="2">NIM</th><th rowspan="2">Nama<br>Mahasiswa</th>
-            @for($i=1;$i<=16;$i++)<th class="pertemuan-head"><span>P</span><br><span>{{ $i }}</span></th>@endfor
-            <th rowspan="2">Hadir</th><th rowspan="2">Izin</th><th rowspan="2">Sakit</th><th rowspan="2">Alpa</th><th rowspan="2">%<br>Hadir</th>
+        <tr>
+            <th>No.</th><th>NIM</th><th>Nama Mahasiswa</th>
+            @for($i=1;$i<=16;$i++)<th>P{{ $i }}</th>@endfor
+            <th>Hadir</th><th>Izin</th><th>Sakit</th><th>Alpa</th><th>% Hadir</th>
         </tr>
     </thead>
     <tbody>
