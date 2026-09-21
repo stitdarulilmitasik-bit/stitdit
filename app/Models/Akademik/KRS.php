@@ -162,7 +162,7 @@ class KRS extends Model
                     'taka_id' => $this->taka_id,
                     'semester' => $this->semester,
                     'sks' => $detail->sks,
-                    'status' => 'Draft',
+                    'status' => 'draft',
                     'bobot_tugas' => 20,
                     'bobot_quiz' => 10,
                     'bobot_uts' => 25,
@@ -180,7 +180,7 @@ class KRS extends Model
     {
         $this->update([
             'status' => 'approved',
-            'dosen_pa_id' => $dosenPaId,
+            'dosen_pa_id' => $dosenPaId ?? $this->dosen_pa_id,
             'approved_at' => now(),
             'notes' => $notes
         ]);
