@@ -17,8 +17,8 @@ class Dosen extends Authenticatable
     public function getTypeAttribute($value)
     {
         $types = [
-            0 => 'Dosen Non-Aktif',                    // => Prefix dosen-nonaktif  => For Dosen Non-Aktif
-            1 => 'Dosen Aktif',                        // => Prefix dosen           => For Dosen Aktif
+            0 => 'Dosen Non-Aktif',
+            1 => 'Dosen Aktif',
         ];
 
         return isset($types[$value]) ? $types[$value] : 'Unknown';
@@ -28,7 +28,6 @@ class Dosen extends Authenticatable
     {
         return stit_profile_image_url($value);
     }
-
 
     public function getRawTypeAttribute()
     {
@@ -51,7 +50,6 @@ class Dosen extends Authenticatable
             1 => 'dosen.',
         ];
 
-        // Jika type valid, kembalikan prefixnya, kalau tidak 'unknown'
         return isset($prefixes[$this->attributes['type']]) ? $prefixes[$this->attributes['type']] : 'unknown';
     }
 
@@ -65,21 +63,19 @@ class Dosen extends Authenticatable
         return isset($dsnstats[$value]) ? $dsnstats[$value] : 'Unknown';
     }
 
-
-
     // WILL BE DELETED
     public function getRawDsnStatAttribute()
     {
         return $this->attributes['dsn_stat'];
     }
+
     public function jabatans()
     {
-        return $this->hasMany(\\App\\Models\\Jabatan::class, 'dosen_id');
+        return $this->hasMany(\App\Models\Jabatan::class, 'dosen_id');
     }
 
     public function getNamaLengkapAttribute($value)
     {
         return $this->attributes['name'] ?? $value;
     }
-
 }
