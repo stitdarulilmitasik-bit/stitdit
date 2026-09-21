@@ -60,22 +60,33 @@
             </div>
         </div>
         <div class="table-responsive">
-            <table class="table table-vcenter card-table">
+            <table class="table table-vcenter card-table align-middle">
                 <thead>
                     <tr>
-                        <th>No.</th>
-                        <th>NIM</th>
-                        <th>Nama Mahasiswa</th>
-                        <th>Mata Kuliah</th>
-                        <th>Semester</th>
-                        <th>Pertemuan</th>
-                        <th>Status Kehadiran</th>
-                        <th>Rekap</th>
-                        <th>Simpan</th>
+                        <th style="width:60px">No.</th>
+                        <th style="width:130px">NIM</th>
+                        <th style="min-width:210px">Nama Mahasiswa</th>
+                        <th style="min-width:220px">Mata Kuliah</th>
+                        <th style="width:90px">Semester</th>
+                        <th style="width:150px">Pertemuan</th>
+                        <th style="width:145px">Status</th>
+                        <th style="width:105px">Rekap</th>
+                        <th style="width:105px">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                @forelse($nilai as $index => $n)
+                @php
+                    $groupedNilai = $nilai->getCollection()
+                        ->sortBy(fn($item) => mb_strtolower($item->mahasiswa->name ?? ''))
+                        ->groupBy(fn($item) => $item->mahasiswa_id);
+                @endphp
+                @forelse($groupedNilai as $mahasiswaId => $rows)
+                    @php
+                        $firstRow = $rows->first();
+                        $nim = $firstRow->mahasiswa->numb_nim ?? $firstRow->mahasiswa->nim ?? $firstRow->mahasiswa->code ?? '-';
+                        $namaMahasiswa = $firstRow->mahasiswa->name ?? '-';
+                    @endphp
+                    @foreach($rows as $index => $n)
                     @php
                         $nim = $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-';
                         $existing = $n->kehadiranMahasiswa->keyBy('pertemuan');
@@ -85,9 +96,15 @@
                         $persentase = $totalPertemuan > 0 ? round(($jumlahHadir / $totalPertemuan) * 100, 2) : 0;
                     @endphp
                     <tr>
-                        <td>{{ $nilai->firstItem() + $index }}</td>
-                        <td class="fw-semibold text-nowrap">{{ $nim }}</td>
-                        <td>{{ $n->mahasiswa->name ?? '-' }}</td>
+                        @if($loop->first)
+                            <td rowspan="{{ $rows->count() }}" class="text-center fw-semibold text-muted align-middle">
+                                {{ $nilai->firstItem() + $nilai->getCollection()->search($n) }}
+                            </td>
+                            <td rowspan="{{ $rows->count() }}" class="fw-semibold text-nowrap align-middle">{{ $nim }}</td>
+                            <td rowspan="{{ $rows->count() }}" class="fw-semibold align-middle">
+                                <div>{{ $namaMahasiswa }}</div>
+                            </td>
+                        @endif
                         <td>
                             <div class="fw-semibold">{{ $n->mataKuliah->name ?? '-' }}</div>
                             @if($n->mataKuliah->code ?? null)
@@ -128,8 +145,9 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" class="text-center py-4 text-muted">Belum ada data mahasiswa pada mata kuliah yang Anda ampu untuk semester ini.</td></tr>
+                    <tr><td colspan="9" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
                 @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
