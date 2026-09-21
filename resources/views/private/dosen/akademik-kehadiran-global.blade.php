@@ -16,6 +16,14 @@
             <h2 class="mb-1">Report Global Kehadiran</h2>
             <p class="text-muted mb-0">Rekap kehadiran seluruh mata kuliah pada semester yang dipilih.</p>
         </div>
+        <div class="d-flex gap-2">
+            @if($mahasiswaId)
+                <a href="{{ route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
+                   class="btn btn-danger" target="_blank">
+                    <i class="ti ti-file-type-pdf me-1"></i> Export PDF Mahasiswa
+                </a>
+            @endif
+        </div>
     </div>
 
     <div class="card mb-3">
