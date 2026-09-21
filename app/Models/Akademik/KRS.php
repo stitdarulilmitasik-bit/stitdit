@@ -167,6 +167,42 @@ class KRS extends Model
         return ($terpakai + (int) $sks) <= $this->batas_sks;
     }
 
+    /**
+     * Pastikan setiap detail KRS yang aktif dan sudah disetujui
+     * mempunyai record Nilai sebagai sumber nilai dan kehadiran.
+     */
+    public function syncNilai()
+    {
+        $this->loadMissing('details');
+
+        foreach ($this->details as $detail) {
+            if (!in_array($detail->status, ['Aktif', 'Mengulang'], true)) {
+                continue;
+            }
+
+            Nilai::firstOrCreate(
+                ['krs_detail_id' => $detail->id],
+                [
+                    'code' => 'NIL-' . Str::upper(Str::random(12)),
+                    'mahasiswa_id' => $this->mahasiswa_id,
+                    'matkul_id' => $detail->matkul_id,
+                    'taka_id' => $this->taka_id,
+                    'semester' => $this->semester,
+                    'sks' => $detail->sks,
+                    'status' => 'Draft',
+                    'bobot_tugas' => 20,
+                    'bobot_quiz' => 10,
+                    'bobot_uts' => 25,
+                    'bobot_uas' => 25,
+                    'bobot_praktikum' => 0,
+                    'bobot_kehadiran' => 20,
+                ]
+            );
+        }
+
+        return $this;
+    }
+
     public function approve($dosenPaId = null, $notes = null)
     {
         $this->update([
@@ -175,6 +211,8 @@ class KRS extends Model
             'approved_at' => now(),
             'notes' => $notes
         ]);
+
+        $this->syncNilai();
     }
 
     public function reject($notes = null)
