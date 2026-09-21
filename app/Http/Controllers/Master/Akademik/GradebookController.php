@@ -108,12 +108,22 @@ class GradebookController extends Controller
         // without a valid enrollment detail.
         foreach ($details as $detail) {
             if (!$detail->nilai) {
-                $detail->nilai = Nilai::firstOrCreate(
-                    ['krs_detail_id' => $detail->id],
-                    [
+                $detail->nilai = Nilai::where('mahasiswa_id', $detail->krs->mahasiswa_id)
+                    ->where('matkul_id', $detail->matkul_id)
+                    ->where('taka_id', $detail->krs->taka_id)
+                    ->where('semester', $detail->krs->semester)
+                    ->first();
+
+                if ($detail->nilai) {
+                    if (!$detail->nilai->krs_detail_id) {
+                        $detail->nilai->update(['krs_detail_id' => $detail->id]);
+                    }
+                } else {
+                    $detail->nilai = Nilai::create([
                         'code' => 'NIL-' . now()->format('Ymd') . '-' . Str::upper(Str::random(8)),
                         'mahasiswa_id' => $detail->krs->mahasiswa_id,
                         'matkul_id' => $detail->matkul_id,
+                        'krs_detail_id' => $detail->id,
                         'taka_id' => $detail->krs->taka_id,
                         'semester' => $detail->krs->semester,
                         'sks' => $detail->sks,
@@ -125,8 +135,8 @@ class GradebookController extends Controller
                         'bobot_praktikum' => 0,
                         'bobot_kehadiran' => 15,
                         'created_by' => Auth::guard('web')->id() ?: Auth::id(),
-                    ]
-                );
+                    ]);
+                }
             }
         }
 
