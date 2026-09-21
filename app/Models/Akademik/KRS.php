@@ -197,6 +197,35 @@ class KRS extends Model
         ]);
     }
 
+    /**
+     * Jika seluruh mata kuliah dalam KRS sudah dibatalkan/dihapus,
+     * KRS induk boleh digunakan kembali untuk pengisian ulang.
+     *
+     * KRS yang sudah Dipublish/Dikunci tidak pernah di-reset otomatis.
+     */
+    public function resetIfEmpty()
+    {
+        $jumlahAktif = $this->details()
+            ->whereIn('status', ['Aktif', 'Mengulang'])
+            ->count();
+
+        if (
+            $jumlahAktif === 0 &&
+            in_array($this->status, ['Diajukan', 'Disetujui'], true)
+        ) {
+            $this->update([
+                'status' => 'Draft',
+                'total_sks' => 0,
+                'approved_at' => null,
+                'notes' => null,
+            ]);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function submit()
     {
         if ($this->total_sks > 0) {
