@@ -75,8 +75,8 @@
 
 <table class="info">
     <tr>
-        <td class="label">Nama Mahasiswa</td><td>: {{ $mahasiswa->name ?? '-' }}</td>
-        <td class="label">NIM</td><td>: {{ $mahasiswa->numb_nim ?? $mahasiswa->nim ?? '-' }}</td>
+        <td class="label">Nama Mahasiswa</td><td><strong>: {{ $mahasiswa->name ?? '-' }}</strong></td>
+        <td class="label">NIM</td><td><strong>: {{ $mahasiswa->numb_nim ?? $mahasiswa->nim ?? '-' }}</strong></td>
     </tr>
     <tr>
         <td class="label">Program Studi</td><td>: {{ $mahasiswa->programStudi->name ?? '-' }}</td>
