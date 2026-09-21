@@ -25,6 +25,93 @@
         }
     </style>
     <style>
+        /* Compact dashboard tables: keep data dense without making forms/cards cramped. */
+        .page-body .card {
+            border-radius: 10px;
+        }
+
+        .page-body .card-header {
+            padding: .65rem .85rem;
+        }
+
+        .page-body .card-body {
+            padding: .85rem;
+        }
+
+        .page-body .table-responsive {
+            margin-bottom: 0;
+        }
+
+        .page-body .table {
+            font-size: .8125rem;
+            margin-bottom: 0;
+        }
+
+        .page-body .table > :not(caption) > * > * {
+            padding: .42rem .55rem;
+            vertical-align: middle;
+        }
+
+        .page-body .table thead th {
+            font-size: .75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            line-height: 1.25;
+        }
+
+        .page-body .table tbody td {
+            line-height: 1.3;
+        }
+
+        .page-body .table .btn {
+            padding: .22rem .48rem;
+            font-size: .72rem;
+            line-height: 1.35;
+        }
+
+        .page-body .table .btn.btn-icon {
+            padding: .3rem;
+        }
+
+        .page-body .table .badge {
+            font-size: .68rem;
+        }
+
+        /* Preserve readability for long names, courses, addresses and notes. */
+        .page-body .table td.text-wrap,
+        .page-body .table td .text-wrap {
+            white-space: normal;
+        }
+
+        /* Tables that explicitly need horizontal scrolling remain scrollable. */
+        .page-body .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-body .card-header,
+            .page-body .card-body {
+                padding: .7rem;
+            }
+
+            .page-body .table {
+                font-size: .77rem;
+            }
+
+            .page-body .table > :not(caption) > * > * {
+                padding: .35rem .45rem;
+            }
+        }
+
+        @media print {
+            .page-body .card-header,
+            .page-body .card-body {
+                padding: .35rem;
+            }
+        }
+    </style>
+    <style>
         @import url("https://rsms.me/inter/inter.css");
     </style>
 </head>
