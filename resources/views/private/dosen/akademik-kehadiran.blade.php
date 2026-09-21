@@ -55,29 +55,36 @@
     <div class="card">
         <div class="card-header">
             <div>
-                <h3 class="card-title mb-1">Daftar Kehadiran</h3>
-                <div class="text-muted small">Pilih status pada pertemuan yang aktif, kemudian tekan Simpan.</div>
+                <h3 class="card-title mb-1">Rekap Kehadiran Mahasiswa</h3>
+                <div class="text-muted small">Setiap kolom menunjukkan pertemuan 1–16. Tanda <strong>✓</strong> berarti Hadir. Untuk mengubah status, pilih Pertemuan Aktif lalu gunakan kolom Status dan Simpan.</div>
             </div>
         </div>
         <div class="table-responsive">
-            <table class="table table-vcenter card-table align-middle">
+            <table class="table table-vcenter card-table align-middle text-nowrap">
                 <thead>
                     <tr>
-                        <th style="width:60px">No.</th>
-                        <th style="width:130px">NIM</th>
-                        <th style="min-width:210px">Nama Mahasiswa</th>
-                        <th style="min-width:220px">Mata Kuliah</th>
-                        <th style="width:90px">Semester</th>
-                        <th style="width:150px">Pertemuan</th>
-                        <th style="width:145px">Status</th>
-                        <th style="width:105px">Rekap</th>
-                        <th style="width:105px">Aksi</th>
+                        <th rowspan="2" style="width:55px">No.</th>
+                        <th rowspan="2" style="width:125px">NIM</th>
+                        <th rowspan="2" style="min-width:210px">Nama Mahasiswa</th>
+                        <th rowspan="2" style="min-width:210px">Mata Kuliah</th>
+                        <th colspan="16" class="text-center bg-light">Pertemuan</th>
+                        <th rowspan="2" style="width:100px">Rekap</th>
+                        <th rowspan="2" style="min-width:190px">Status Pertemuan {{ $pertemuan }}</th>
+                        <th rowspan="2" style="width:95px">Aksi</th>
+                    </tr>
+                    <tr>
+                        @for($i = 1; $i <= 16; $i++)
+                            <th class="text-center" style="min-width:52px">P{{ $i }}</th>
+                        @endfor
                     </tr>
                 </thead>
                 <tbody>
                 @php
                     $groupedNilai = $nilai->getCollection()
-                        ->sortBy(fn($item) => mb_strtolower($item->mahasiswa->name ?? ''))
+                        ->sortBy([
+                            [fn($item) => mb_strtolower($item->mahasiswa->name ?? ''), 'asc'],
+                            [fn($item) => mb_strtolower($item->mataKuliah->name ?? ''), 'asc'],
+                        ])
                         ->groupBy(fn($item) => $item->mahasiswa_id);
                 @endphp
                 @forelse($groupedNilai as $mahasiswaId => $rows)
@@ -86,66 +93,80 @@
                         $nim = $firstRow->mahasiswa->numb_nim ?? $firstRow->mahasiswa->nim ?? $firstRow->mahasiswa->code ?? '-';
                         $namaMahasiswa = $firstRow->mahasiswa->name ?? '-';
                     @endphp
-                    @foreach($rows as $index => $n)
-                    @php
-                        $existing = $n->kehadiranMahasiswa->keyBy('pertemuan');
-                        $currentAttendance = $existing[(int)$pertemuan] ?? null;
-                        $totalPertemuan = $existing->count();
-                        $jumlahHadir = $existing->where('status', 'Hadir')->count();
-                        $persentase = $totalPertemuan > 0 ? round(($jumlahHadir / $totalPertemuan) * 100, 2) : 0;
-                    @endphp
-                    <tr>
-                        @if($loop->first)
-                            <td rowspan="{{ $rows->count() }}" class="text-center fw-semibold text-muted align-middle">
-                                {{ $nilai->firstItem() + $nilai->getCollection()->search($n) }}
-                            </td>
-                            <td rowspan="{{ $rows->count() }}" class="fw-semibold text-nowrap align-middle">{{ $nim }}</td>
-                            <td rowspan="{{ $rows->count() }}" class="fw-semibold align-middle">
-                                <div>{{ $namaMahasiswa }}</div>
-                            </td>
-                        @endif
-                        <td>
-                            <div class="fw-semibold">{{ $n->mataKuliah->name ?? '-' }}</div>
-                            @if($n->mataKuliah->code ?? null)
-                                <small class="text-muted">{{ $n->mataKuliah->code }}</small>
+                    @foreach($rows as $n)
+                        @php
+                            $existing = $n->kehadiranMahasiswa->keyBy('pertemuan');
+                            $totalPertemuan = $existing->count();
+                            $jumlahHadir = $existing->where('status', 'Hadir')->count();
+                            $persentase = $totalPertemuan > 0 ? round(($jumlahHadir / $totalPertemuan) * 100, 2) : 0;
+                            $currentAttendance = $existing[(int)$pertemuan] ?? null;
+                        @endphp
+                        <tr>
+                            @if($loop->first)
+                                <td rowspan="{{ $rows->count() }}" class="text-center fw-semibold text-muted align-middle">
+                                    {{ $nilai->firstItem() + $nilai->getCollection()->search($n) }}
+                                </td>
+                                <td rowspan="{{ $rows->count() }}" class="fw-semibold align-middle">{{ $nim }}</td>
+                                <td rowspan="{{ $rows->count() }}" class="fw-semibold align-middle">
+                                    {{ $namaMahasiswa }}
+                                </td>
                             @endif
-                        </td>
-                        <td class="text-nowrap">{{ $n->semester }}</td>
-                        <td>
-                            <select name="pertemuan" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" style="min-width:135px">
-                                @for($i = 1; $i <= 16; $i++)
-                                    <option value="{{ $i }}" {{ $i === (int)$pertemuan ? 'selected' : '' }}>Pertemuan {{ $i }}</option>
-                                @endfor
-                            </select>
-                        </td>
-                        <td>
-                            <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" style="min-width:115px" required>
-                                <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
-                                @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
-                                    <option value="{{ $status }}" {{ (($currentAttendance->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td class="text-nowrap">
-                            <div class="fw-semibold">{{ number_format($persentase, 2) }}%</div>
-                            <small class="text-muted">{{ $jumlahHadir }}/{{ $totalPertemuan }} hadir</small>
-                        </td>
-                        <td class="text-nowrap">
-                            <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route($spref . 'akademik.kehadiran.store') }}">
-                                @csrf
-                                <input type="hidden" name="nilai_id" value="{{ $n->id }}">
-                                <input type="hidden" name="semester" value="{{ $n->semester }}">
-                                <input type="hidden" name="redirect_semester" value="{{ $semester }}">
-                                <input type="hidden" name="redirect_pertemuan" value="{{ $pertemuan }}">
-                                <button class="btn btn-sm btn-primary">
-                                    <i class="fas fa-save me-1"></i>Simpan
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+
+                            <td>
+                                <div class="fw-semibold">{{ $n->mataKuliah->name ?? '-' }}</div>
+                                @if($n->mataKuliah->code ?? null)
+                                    <small class="text-muted">{{ $n->mataKuliah->code }}</small>
+                                @endif
+                            </td>
+
+                            @for($i = 1; $i <= 16; $i++)
+                                @php $attendance = $existing[$i] ?? null; @endphp
+                                <td class="text-center attendance-cell">
+                                    @if(($attendance->status ?? '') === 'Hadir')
+                                        <span class="text-success fw-bold fs-4" title="Hadir">✓</span>
+                                    @elseif(($attendance->status ?? '') === 'Izin')
+                                        <span class="text-warning fw-semibold" title="Izin">I</span>
+                                    @elseif(($attendance->status ?? '') === 'Sakit')
+                                        <span class="text-info fw-semibold" title="Sakit">S</span>
+                                    @elseif(($attendance->status ?? '') === 'Alpa')
+                                        <span class="text-danger fw-semibold" title="Alpa">A</span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                            @endfor
+
+                            <td>
+                                <div class="fw-semibold">{{ number_format($persentase, 2) }}%</div>
+                                <small class="text-muted">{{ $jumlahHadir }}/{{ $totalPertemuan }} hadir</small>
+                            </td>
+
+                            <td>
+                                <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" required>
+                                    <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
+                                    @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
+                                        <option value="{{ $status }}" {{ (($currentAttendance->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="pertemuan" value="{{ $pertemuan }}" form="attendance-form-{{ $n->id }}">
+                            </td>
+
+                            <td>
+                                <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route($spref . 'akademik.kehadiran.store') }}">
+                                    @csrf
+                                    <input type="hidden" name="nilai_id" value="{{ $n->id }}">
+                                    <input type="hidden" name="semester" value="{{ $n->semester }}">
+                                    <input type="hidden" name="redirect_semester" value="{{ $semester }}">
+                                    <input type="hidden" name="redirect_pertemuan" value="{{ $pertemuan }}">
+                                    <button class="btn btn-sm btn-primary" title="Simpan status pertemuan {{ $pertemuan }}">
+                                        <i class="fas fa-save me-1"></i>Simpan
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
                     @endforeach
                 @empty
-                    <tr><td colspan="9" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
+                    <tr><td colspan="24" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
                 @endforelse
                 </tbody>
             </table>
