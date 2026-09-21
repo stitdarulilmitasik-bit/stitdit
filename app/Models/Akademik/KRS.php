@@ -28,24 +28,23 @@ class KRS extends Model
     public function getStatusBadgeAttribute()
     {
         return match ($this->attributes['status'] ?? null) {
-            'Draft' => 'badge bg-secondary',
-            'Diajukan' => 'badge bg-warning',
-            'Disetujui' => 'badge bg-success',
-            'Ditolak' => 'badge bg-danger',
-            'Dipublish' => 'badge bg-primary',
-            'Dikunci' => 'badge bg-dark',
+            'draft' => 'badge bg-secondary',
+            'submitted' => 'badge bg-warning text-dark',
+            'approved' => 'badge bg-success',
+            'rejected' => 'badge bg-danger',
+            'locked' => 'badge bg-dark',
             default => 'badge bg-secondary',
         };
     }
 
     public function getIsEditableAttribute()
     {
-        return in_array($this->status, ['Draft', 'Diajukan', 'Ditolak']);
+        return in_array($this->status, ['draft', 'rejected'], true);
     }
 
     public function getIsApprovableAttribute()
     {
-        return $this->status === 'Diajukan';
+        return $this->status === 'submitted';
     }
 
     public function getBatasSksAttribute()
@@ -180,7 +179,7 @@ class KRS extends Model
     public function approve($dosenPaId = null, $notes = null)
     {
         $this->update([
-            'status' => 'Disetujui',
+            'status' => 'approved',
             'dosen_pa_id' => $dosenPaId,
             'approved_at' => now(),
             'notes' => $notes
@@ -192,7 +191,7 @@ class KRS extends Model
     public function reject($notes = null)
     {
         $this->update([
-            'status' => 'Ditolak',
+            'status' => 'rejected',
             'notes' => $notes
         ]);
     }
@@ -211,7 +210,7 @@ class KRS extends Model
 
         if (
             $jumlahAktif === 0 &&
-            in_array($this->status, ['Diajukan', 'Disetujui', 'submitted', 'approved'], true)
+            in_array($this->status, ['submitted', 'approved'], true)
         ) {
             $this->update([
                 'status' => 'Draft',
@@ -228,8 +227,13 @@ class KRS extends Model
 
     public function submit()
     {
+        $this->loadMissing('details');
+        $this->total_sks = (int) $this->details()
+            ->whereIn('status', ['Aktif', 'Mengulang'])
+            ->sum('sks');
+
         if ($this->total_sks > 0) {
-            $this->update(['status' => 'Diajukan']);
+            $this->update(['status' => 'submitted']);
             return true;
         }
         return false;
