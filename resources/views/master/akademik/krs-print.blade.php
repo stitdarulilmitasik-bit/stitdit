@@ -102,7 +102,7 @@
 <div class="header">
     <div class="faculty-name">{{ $krs->mahasiswa->programStudi->fakultas->name ?? 'FAKULTAS' }}</div>
     <div class="document-title">KARTU RENCANA STUDI (KRS)</div>
-    <div class="semester-line">Semester {{ $krs->semester }} | {{ $krs->tahunAkademik->name ?? '-' }} - {{ $krs->tahunAkademik->type ?? '-' }}</div>
+    <div class="semester-line">Semester {{ $krs->semester }} | {{ $krs->tahunAkademik->name ?? '-' }}</div>
 </div>
 
 <div class="student-info">
