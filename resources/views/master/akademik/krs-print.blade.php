@@ -18,8 +18,8 @@
         .kop-text .address { font-size: 8pt; }
         .header { text-align: center; margin-bottom: 8px; }
         .faculty-name { font-size: 10.5pt; font-weight: bold; margin-bottom: 3px; }
-        .document-title { font-size: 12.5pt; font-weight: bold; text-decoration: underline; margin-top: 5px; }
-        .semester-line { font-size: 10pt; margin-top: 5px; }
+        .document-title { display: inline-block; width: auto; max-width: 80%; font-size: 12pt; font-weight: bold; text-decoration: underline; margin: 4px auto 0; padding: 0 18px; }
+        .semester-line { font-size: 9pt; margin-top: 4px; }
         .student-info { margin: 8px 0; }
         .student-info table { width: 100%; border-collapse: collapse; }
         .student-info td { padding: 2px 2px; vertical-align: top; }
