@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 // Use System
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\MataKuliahExport;
@@ -79,6 +78,7 @@ class MataKuliahController extends Controller
 
             $request->validate([
                 'name' => 'required|string|max:255',
+                'code' => 'required|string|max:50|unique:mata_kuliahs,code',
                 'kurikulum_id' => 'required|integer',
                 'prodi_id' => 'required|integer',
                 'requi_id' => 'nullable|integer',
@@ -93,9 +93,6 @@ class MataKuliahController extends Controller
                 'docs_kontrak_kuliah' => 'nullable|file|mimes:pdf|max:2048',
             ]);
 
-            // Generate unique code
-            $code = 'MK-' . Str::random(8);
-            
             // Handle file uploads
             $photo = $request->hasFile('photo') ? $request->file('photo')->store('mata-kuliah/photo', 'public') : 'default.png';
             $docs_rps = $request->hasFile('docs_rps') ? $request->file('docs_rps')->store('mata-kuliah/rps', 'public') : null;
@@ -104,7 +101,7 @@ class MataKuliahController extends Controller
             // Create new MataKuliah
             MataKuliah::create([
                 'name' => $request->name,
-                'code' => $code,
+                'code' => trim($request->code),
                 'kurikulum_id' => $request->kurikulum_id,
                 'prodi_id' => $request->prodi_id,
                 'requi_id' => $request->requi_id,
@@ -136,8 +133,11 @@ class MataKuliahController extends Controller
         try {
             DB::beginTransaction();
 
+            $mataKuliah = MataKuliah::where('code', $code)->firstOrFail();
+
             $request->validate([
                 'name' => 'required|string|max:255',
+                'code' => 'required|string|max:50|unique:mata_kuliahs,code,' . $mataKuliah->id,
                 'kurikulum_id' => 'required|integer',
                 'prodi_id' => 'required|integer',
                 'requi_id' => 'nullable|integer',
@@ -152,8 +152,6 @@ class MataKuliahController extends Controller
                 'docs_kontrak_kuliah' => 'nullable|file|mimes:pdf|max:2048',
             ]);
 
-            $mataKuliah = MataKuliah::where('code', $code)->firstOrFail();
-
             // Handle file uploads
             $photo = $request->hasFile('photo') ? $request->file('photo')->store('mata-kuliah/photo', 'public') : $mataKuliah->photo;
             $docs_rps = $request->hasFile('docs_rps') ? $request->file('docs_rps')->store('mata-kuliah/rps', 'public') : $mataKuliah->docs_rps;
@@ -161,6 +159,7 @@ class MataKuliahController extends Controller
 
             $mataKuliah->update([
                 'name' => $request->name,
+                'code' => trim($request->code),
                 'kurikulum_id' => $request->kurikulum_id,
                 'prodi_id' => $request->prodi_id,
                 'requi_id' => $request->requi_id,
