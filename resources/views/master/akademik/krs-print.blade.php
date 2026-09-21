@@ -26,13 +26,13 @@
         .student-info .label { width: 105px; font-weight: bold; }
         .student-info .colon { width: 8px; text-align: center; }
         .courses-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #000; }
-        .courses-table th, .courses-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 8.5pt; }
+        .courses-table th, .courses-table td { border: 1px solid #000; padding: 5px 4px; text-align: center; font-size: 8.5pt; }
         .courses-table th { background-color: #f0f0f0; font-weight: bold; }
         .courses-table .subject-name { text-align: left; padding-left: 6px; }
-        .courses-table .schedule { text-align: left; padding-left: 6px; font-size: 8pt; }
+        .courses-table .room { text-align: center; font-size: 8pt; white-space: nowrap; }\n        .courses-table .lecturer { text-align: left; padding-left: 6px; font-size: 8pt; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
-        .signature-section { margin-top: 18px; width: 100%; }
+        .signature-section { margin-top: 20px; width: 100%; page-break-inside: avoid; }
         .signature-table { width: 100%; border-collapse: collapse; }
         .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 10px 18px; }
         .signature-title { font-weight: bold; margin: 0 auto 52px; min-height: 32px; line-height: 1.25; }
@@ -131,11 +131,11 @@
         <tr>
             <th rowspan="2" style="width:5%;">No</th>
             <th rowspan="2" style="width:11%;">Kode MK</th>
-            <th rowspan="2" style="width:27%;">Mata Kuliah</th>
+            <th rowspan="2" style="width:26%;">Mata Kuliah</th>
             <th rowspan="2" style="width:6%;">SKS</th>
             <th rowspan="2" style="width:12%;">Kelas</th>
             <th rowspan="2" style="width:11%;">Ruang</th>
-            <th rowspan="2" style="width:28%;">Dosen</th>
+            <th rowspan="2" style="width:29%;">Dosen</th>
         </tr>
     </thead>
     <tbody>
@@ -155,8 +155,8 @@
                 <td class="subject-name">{{ $detail->mataKuliah->name ?? '-' }}</td>
                 <td>{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
                 <td>{{ $detail->kelas->name ?? '-' }}</td>
-                <td>{{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}</td>
-                <td class="schedule">
+                <td class="room">{{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}</td>
+                <td class="lecturer">
                     @if ($dosenDetail)
                         {{ $dosenDetail->name }}
                     @elseif ($detail->mataKuliah->dosen1)
