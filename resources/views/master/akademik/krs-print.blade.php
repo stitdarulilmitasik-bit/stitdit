@@ -133,47 +133,21 @@
             <th rowspan="2" style="width:11%;">Kode MK</th>
             <th rowspan="2" style="width:28%;">Mata Kuliah</th>
             <th rowspan="2" style="width:6%;">SKS</th>
-            <th rowspan="2" style="width:9%;">Kelas</th>
-            <th colspan="3" style="width:25%;">Jadwal</th>
-            <th rowspan="2" style="width:16%;">Dosen</th>
+            <th rowspan="2" style="width:12%;">Kelas</th>
+            <th rowspan="2" style="width:20%;">Dosen</th>
         </tr>
         <tr>
-            <th style="width:8%;">Hari</th>
-            <th style="width:10%;">Waktu</th>
-            <th style="width:7%;">Ruang</th>
         </tr>
     </thead>
     <tbody>
         @php $no = 1; @endphp
         @forelse ($krs->details as $detail)
-            @php
-                // Jadwal tersimpan pada relasi kelas -> jadwalKuliah.
-                // Pilih jadwal yang sesuai dengan mata kuliah pada KRS detail.
-                $jadwal = $detail->kelas?->jadwalKuliah
-                    ?->first(function ($item) use ($detail) {
-                        return (int) ($item->matkul_id ?? 0) === (int) ($detail->matkul_id ?? 0);
-                    });
-
-                // Fallback jika jadwal belum menyimpan matkul_id.
-                $jadwal = $jadwal ?: $detail->kelas?->jadwalKuliah?->first();
-            @endphp
             <tr>
                 <td>{{ $no++ }}</td>
                 <td>{{ $detail->mataKuliah->code ?? '-' }}</td>
                 <td class="subject-name">{{ $detail->mataKuliah->name ?? '-' }}</td>
                 <td>{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
-                <td>{{ $detail->kelas->name ?? '-' }}</td>
-                <td>{{ $jadwal->hari ?? $jadwal->day ?? '-' }}</td>
-                <td>
-                    @if ($jadwal)
-                        {{ $jadwal->jam_mulai ?? $jadwal->waktuKuliah?->time_start ?? '-' }}<br>
-                        {{ $jadwal->jam_selesai ?? $jadwal->waktuKuliah?->time_ended ?? '-' }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td>{{ $jadwal?->ruang?->name ?? $jadwal->ruang ?? '-' }}</td>
-                <td class="schedule">
+NaN
                     @if ($detail->mataKuliah->dosen1)
                         {{ $detail->mataKuliah->dosen1->name }}
                     @endif
@@ -183,7 +157,7 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="9" style="text-align:center;font-style:italic;">Tidak ada mata kuliah yang dipilih</td></tr>
+            <tr><td colspan="6" style="text-align:center;font-style:italic;">Tidak ada mata kuliah yang dipilih</td></tr>
         @endforelse
     </tbody>
     @if ($krs->details->count() > 0)
@@ -191,39 +165,13 @@
             <tr style="background-color:#f0f0f0;">
                 <td colspan="3" style="text-align:center;font-weight:bold;">TOTAL SKS</td>
                 <td style="font-weight:bold;">{{ $krs->total_sks }}</td>
-                <td colspan="5"></td>
+                <td colspan="3"></td>
             </tr>
         </tfoot>
     @endif
 </table>
 
-<div class="summary-section">
-    <div class="summary-title">RINGKASAN KRS</div>
-    <table style="width:100%;border-collapse:collapse;">
-        <tr>
-            <td style="width:50%;padding:7px;border:1px solid #000;">
-                <strong>Informasi Akademik:</strong><br>
-                - Semester: {{ $krs->semester }}<br>
-                - Total Mata Kuliah: {{ $krs->details->count() }} mata kuliah<br>
-                - Total SKS: {{ $krs->total_sks }} SKS<br>
-                - Tahun Akademik: {{ $krs->tahunAkademik->name ?? '-' }} - {{ $krs->tahunAkademik->type ?? '-' }}
-            </td>
-            <td style="width:50%;padding:7px;border:1px solid #000;">
-                <strong>Batas SKS:</strong><br>
-                - Maksimal SKS Normal: 24 SKS<br>
-                - Maksimal SKS dengan IP ≥ 3.0: 24 SKS<br>
-                - Maksimal SKS dengan IP < 3.0: 20 SKS<br>
-                - Status: {{ $krs->total_sks <= 24 ? 'Normal' : 'Melebihi Batas' }}
-            </td>
-        </tr>
-    </table>
-    @if ($krs->catatan)
-        <div style="margin-top:8px;padding:6px;border:1px solid #000;"><strong>Catatan:</strong><br>{{ $krs->catatan }}</div>
-    @endif
-    @if ($krs->rejection_reason)
-        <div style="margin-top:8px;padding:6px;border:1px solid #000;"><strong>Alasan Penolakan:</strong><br>{{ $krs->rejection_reason }}</div>
-    @endif
-</div>
+
 
 <div style="margin-top:10px;padding:7px;border:1px dashed #000;font-size:8.5pt;">
     <strong>CATATAN PENTING:</strong>
