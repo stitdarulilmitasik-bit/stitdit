@@ -183,45 +183,67 @@ class NilaiController extends Controller
                 'semester' => (int) $request->semester,
             ];
 
-            // Cek lebih dulu. Jika dua request masuk bersamaan, UNIQUE index
-            // tetap menjadi pengaman terakhir. Jika INSERT kedua terkena
-            // duplicate key, ambil record yang sudah berhasil dibuat.
+            // Kombinasi ini sudah memiliki data Nilai.
+            // Jangan INSERT ulang karena tabel nilais memiliki UNIQUE index.
+            // Jika data sudah ada, cukup perbarui bobot yang dikirim dari form.
             $nilai = Nilai::where($key)->first();
-            $created = false;
 
-            if (!$nilai) {
-                try {
-                    $nilai = Nilai::create(array_merge($key, [
-                        'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
-                        'krs_detail_id' => $request->krs_detail_id,
-                        'sks' => $mataKuliah->sks,
-                        'bobot_tugas' => $request->bobot_tugas,
-                        'bobot_quiz' => $request->bobot_quiz,
-                        'bobot_uts' => $request->bobot_uts,
-                        'bobot_uas' => $request->bobot_uas,
-                        'bobot_praktikum' => $request->bobot_praktikum,
-                        'bobot_kehadiran' => $request->bobot_kehadiran,
-                        'created_by' => $actor,
-                    ]));
-                    $created = true;
-                } catch (QueryException $e) {
-                    $isDuplicate = (int) ($e->errorInfo[1] ?? $e->getCode()) === 1062;
+            if ($nilai) {
+                $nilai->update([
+                    'bobot_tugas' => $request->bobot_tugas,
+                    'bobot_quiz' => $request->bobot_quiz,
+                    'bobot_uts' => $request->bobot_uts,
+                    'bobot_uas' => $request->bobot_uas,
+                    'bobot_praktikum' => $request->bobot_praktikum,
+                    'bobot_kehadiran' => $request->bobot_kehadiran,
+                    'krs_detail_id' => $request->krs_detail_id ?: $nilai->krs_detail_id,
+                    'sks' => $nilai->sks ?: $mataKuliah->sks,
+                ]);
 
-                    if (!$isDuplicate) {
-                        throw $e;
-                    }
+                DB::commit();
 
-                    // Request lain sudah membuat baris dengan kombinasi yang
-                    // sama. Jangan tampilkan SQL error kepada pengguna.
-                    DB::rollBack();
-                    DB::beginTransaction();
+                Alert::info(
+                    'Informasi',
+                    'Data nilai untuk mahasiswa, mata kuliah, tahun akademik, dan semester tersebut sudah ada. Bobot nilai telah diperbarui.'
+                );
 
-                    $nilai = Nilai::where($key)->first();
+                $prefix = $this->isDosen()
+                    ? 'dosen.'
+                    : (Auth::user()->prefix ?? '');
 
-                    if (!$nilai) {
-                        throw $e;
-                    }
+                return redirect()->route($prefix . 'akademik.nilai-view', $nilai->code);
+            }
+
+            // Belum ada data: buat record baru dengan bobot dari form.
+            try {
+                $nilai = Nilai::create(array_merge($key, [
+                    'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
+                    'krs_detail_id' => $request->krs_detail_id,
+                    'sks' => $mataKuliah->sks,
+                    'bobot_tugas' => $request->bobot_tugas,
+                    'bobot_quiz' => $request->bobot_quiz,
+                    'bobot_uts' => $request->bobot_uts,
+                    'bobot_uas' => $request->bobot_uas,
+                    'bobot_praktikum' => $request->bobot_praktikum,
+                    'bobot_kehadiran' => $request->bobot_kehadiran,
+                    'created_by' => $actor,
+                ]));
+            } catch (QueryException $e) {
+                // Jika request bersamaan membuat record yang sama,
+                // ambil record yang sudah dibuat daripada menampilkan SQL error.
+                if ((int) ($e->errorInfo[1] ?? 0) !== 1062) {
+                    throw $e;
                 }
+
+                $nilai = Nilai::where($key)->firstOrFail();
+                $nilai->update([
+                    'bobot_tugas' => $request->bobot_tugas,
+                    'bobot_quiz' => $request->bobot_quiz,
+                    'bobot_uts' => $request->bobot_uts,
+                    'bobot_uas' => $request->bobot_uas,
+                    'bobot_praktikum' => $request->bobot_praktikum,
+                    'bobot_kehadiran' => $request->bobot_kehadiran,
+                ]);
             }
 
             DB::commit();
