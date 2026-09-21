@@ -211,7 +211,7 @@ class KRS extends Model
 
         if (
             $jumlahAktif === 0 &&
-            in_array($this->status, ['Diajukan', 'Disetujui'], true)
+            in_array($this->status, ['Diajukan', 'Disetujui', 'submitted', 'approved'], true)
         ) {
             $this->update([
                 'status' => 'Draft',
