@@ -93,7 +93,7 @@
                             <tr>
                                 <td>Kehadiran <small class="text-muted">(otomatis dari absensi)</small></td>
                                 <td><input type="number" class="form-control" name="kehadiran" value="{{ old('kehadiran', $nilai->kehadiran) }}" min="0" max="100" step="0.01"></td>
-                                <td><input type="number" class="form-control" name="bobot_kehadiran" value="20" readonly></td>
+                                <td><input type="number" class="form-control" name="bobot_kehadiran" value="15" readonly></td>
                             </tr>
                             <tr class="table-light">
                                 <th colspan="2" class="text-end">Total Bobot</th>
@@ -104,7 +104,7 @@
                 </div>
 
                 <div id="bobot-warning" class="alert alert-warning d-none">
-                    Total bobot harus tepat 100%. Kehadiran ditetapkan 20%, sehingga lima komponen akademik harus berjumlah 80%.
+                    Total bobot harus tepat 100%. Kehadiran ditetapkan 15%, sehingga lima komponen akademik harus berjumlah 85%.
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="btn-simpan-nilai">
@@ -121,7 +121,7 @@
                 const button = document.getElementById('btn-simpan-nilai');
 
                 function hitungBobot() {
-                    let jumlah = 20;
+                    let jumlah = 15;
                     inputs.forEach(input => jumlah += parseFloat(input.value || 0));
                     total.textContent = jumlah.toFixed(2).replace(/\\.00$/, '');
 
@@ -161,7 +161,7 @@
                         <tr><td>UTS</td><td class="text-center">{{ $nilai->uts !== null ? number_format((float)$nilai->uts, 2) : '-' }}</td><td class="text-center">{{ $nilai->bobot_uts ?? 0 }}%</td></tr>
                         <tr><td>UAS</td><td class="text-center">{{ $nilai->uas !== null ? number_format((float)$nilai->uas, 2) : '-' }}</td><td class="text-center">{{ $nilai->bobot_uas ?? 0 }}%</td></tr>
                         <tr><td>Praktikum</td><td class="text-center">{{ $nilai->praktikum !== null ? number_format((float)$nilai->praktikum, 2) : '-' }}</td><td class="text-center">{{ $nilai->bobot_praktikum ?? 0 }}%</td></tr>
-                        <tr><td>Kehadiran</td><td class="text-center">{{ $nilai->kehadiran !== null ? number_format((float)$nilai->kehadiran, 2) : '-' }}</td><td class="text-center">{{ $nilai->bobot_kehadiran ?? 20 }}%</td></tr>
+                        <tr><td>Kehadiran</td><td class="text-center">{{ $nilai->kehadiran !== null ? number_format((float)$nilai->kehadiran, 2) : '-' }}</td><td class="text-center">{{ $nilai->bobot_kehadiran ?? 15 }}%</td></tr>
                     </tbody>
                 </table>
             </div>
