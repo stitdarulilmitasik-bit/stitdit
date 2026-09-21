@@ -162,7 +162,7 @@ class Nilai extends Model
 
         $nilaiKehadiran = $this->kehadiran !== null ? (float) $this->kehadiran : 0;
         $nilaiAkhir = $nilaiAkademik + ($nilaiKehadiran * 0.20);
-        $this->bobot_kehadiran = 20;
+        $this->bobot_kehadiran = 15;
         $this->nilai_angka = round($nilaiAkhir, 2);
         $this->updateNilaiHurufDanMutu();
         $this->mutu_x_sks = $this->nilai_mutu * $this->sks;
