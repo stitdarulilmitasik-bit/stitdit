@@ -13,10 +13,15 @@ return new class extends Migration
             return;
         }
 
-        // KRS menggunakan status workflow: draft, submitted, approved,
-        // rejected, locked, dan published. Gunakan VARCHAR agar MySQL
-        // tidak menolak status baru dengan "Data truncated".
-        DB::statement("ALTER TABLE k_r_s MODIFY status VARCHAR(30) NULL DEFAULT 'draft'");
+        DB::statement("ALTER TABLE k_r_s MODIFY status VARCHAR(30) NULL DEFAULT 'Draft'");
+
+        // Konversi seluruh status lama ke satu standar bahasa Indonesia.
+        DB::table('k_r_s')->whereIn('status', ['draft', 'Draft'])->update(['status' => 'Draft']);
+        DB::table('k_r_s')->whereIn('status', ['submitted', 'Submitted', 'diajukan', 'Diajukan'])->update(['status' => 'Diajukan']);
+        DB::table('k_r_s')->whereIn('status', ['approved', 'Approved', 'disetujui', 'Disetujui'])->update(['status' => 'Disetujui']);
+        DB::table('k_r_s')->whereIn('status', ['rejected', 'Rejected', 'ditolak', 'Ditolak'])->update(['status' => 'Ditolak']);
+        DB::table('k_r_s')->whereIn('status', ['locked', 'Locked', 'dikunci', 'Dikunci'])->update(['status' => 'Dikunci']);
+        DB::table('k_r_s')->whereIn('status', ['published', 'Published', 'dicetak', 'Dicetak'])->update(['status' => 'Dicetak']);
     }
 
     public function down(): void
@@ -25,8 +30,12 @@ return new class extends Migration
             return;
         }
 
-        // Pertahankan nilai status yang dipakai aplikasi dan kembalikan
-        // bentuk enum hanya untuk rollback.
-        DB::statement("ALTER TABLE k_r_s MODIFY status ENUM('draft','submitted','approved','rejected','locked','published') NULL DEFAULT 'draft'");
+        DB::table('k_r_s')->where('status', 'Draft')->update(['status' => 'draft']);
+        DB::table('k_r_s')->where('status', 'Diajukan')->update(['status' => 'submitted']);
+        DB::table('k_r_s')->where('status', 'Disetujui')->update(['status' => 'approved']);
+        DB::table('k_r_s')->where('status', 'Ditolak')->update(['status' => 'rejected']);
+        DB::table('k_r_s')->where('status', 'Dikunci')->update(['status' => 'locked']);
+        DB::table('k_r_s')->where('status', 'Dicetak')->update(['status' => 'published']);
+        DB::statement("ALTER TABLE k_r_s MODIFY status VARCHAR(30) NULL DEFAULT 'draft'");
     }
 };
