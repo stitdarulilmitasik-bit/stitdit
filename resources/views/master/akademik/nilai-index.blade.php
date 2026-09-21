@@ -248,6 +248,21 @@
                                         @enderror
                                     </div>
                                     <div class="col-md-6 mb-3">
+                                        <label for="semester" class="form-label">Semester</label>
+                                        <select class="form-select" name="semester" id="semester" required>
+                                            <option value="">Pilih Semester</option>
+                                            @for ($s = 1; $s <= 8; $s++)
+                                                <option value="{{ $s }}" {{ old('semester') == $s ? 'selected' : '' }}>
+                                                    Semester {{ $s }}
+                                                </option>
+                                            @endfor
+                                        </select>
+                                        @error('semester')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
                                         <label for="dosen_id" class="form-label">Dosen</label>
                                         <select class="form-select" name="dosen_id" id="dosen_id">
                                             <option value="">Pilih Dosen</option>
