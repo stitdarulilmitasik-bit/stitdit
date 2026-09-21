@@ -349,7 +349,7 @@
                                                     </div>
                                                     <div class="col-md-2 col-6">
                                                         <label class="form-label small">Kehadiran (%)</label>
-                                                        <input type="number" class="form-control bobot-tambah" name="bobot_kehadiran" value="20" min="0" max="100" step="0.01" required>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_kehadiran" value="15" min="0" max="100" step="0.01" required>
                                                     </div>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center mt-3">
