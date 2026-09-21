@@ -319,13 +319,9 @@
                                         </td>
                                         @if (in_array($krs->status, ['draft', 'submitted']))
                                             <td class="text-center" data-label="Aksi">
-                                                <button type="button" class="btn btn-sm btn-warning me-1 js-edit-mata-kuliah"
-                                                    data-detail-id="{{ $detail->id }}"
-                                                    data-matkul-id="{{ $detail->matkul_id }}"
-                                                    data-kelas-id="{{ $detail->kelas_id ?? '' }}"
-                                                    data-dosen-id="{{ $detail->dosen_id ?? '' }}"
-                                                    data-notes="{{ e($detail->notes ?? '') }}"
-                                                    data-action="{{ route($spref . 'akademik.krs-update-matakuliah', [$krs->code, $detail->id]) }}"
+                                                <button type="button" class="btn btn-sm btn-warning me-1"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editMataKuliahModal{{ $detail->id }}"
                                                     title="Edit Mata Kuliah">
                                                     <i class="fas fa-pen"></i>
                                                 </button>
@@ -361,61 +357,80 @@
 
 
 
-    <!-- Edit Mata Kuliah Modal -->
+    <!-- Edit Mata Kuliah Modals -->
     @if (in_array($krs->status, ['draft', 'submitted']))
-        <div class="modal fade" id="editMataKuliahModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Edit Mata Kuliah dalam KRS</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        @foreach ($krs->details as $detail)
+            <div class="modal fade" id="editMataKuliahModal{{ $detail->id }}" tabindex="-1" aria-labelledby="editMataKuliahLabel{{ $detail->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editMataKuliahLabel{{ $detail->id }}">
+                                <i class="fas fa-pen me-2"></i>Edit Mata Kuliah dalam KRS
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        </div>
+                        <form action="{{ route($spref . 'akademik.krs-update-matakuliah', [$krs->code, $detail->id]) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <div class="modal-body">
+                                <div class="alert alert-info py-2">
+                                    Perubahan hanya dapat dilakukan selama KRS berstatus Draft atau Diajukan.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Mata Kuliah</label>
+                                    <select class="form-select" name="mata_kuliah_id" required>
+                                        @foreach ($available_matakuliah as $mk)
+                                            <option value="{{ $mk->id }}" @selected((int) $detail->matkul_id === (int) $mk->id)>
+                                                {{ $mk->code }} - {{ $mk->name }} ({{ $mk->sks }} SKS)
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Kelas</label>
+                                        <select class="form-select" name="kelas_id">
+                                            <option value="">-- Pilih Kelas --</option>
+                                            @foreach ($kelas as $kls)
+                                                <option value="{{ $kls->id }}" @selected((int) $detail->kelas_id === (int) $kls->id)>
+                                                    {{ $kls->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Dosen</label>
+                                        <select class="form-select" name="dosen_id">
+                                            <option value="">-- Pilih Dosen --</option>
+                                            @foreach ($dosens as $dosen)
+                                                <option value="{{ $dosen->id }}" @selected((int) $detail->dosen_id === (int) $dosen->id)>
+                                                    {{ $dosen->name }}{{ $dosen->nidn ? ' - NIDN '.$dosen->nidn : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Catatan</label>
+                                    <textarea class="form-control" name="notes" rows="3">{{ $detail->notes ?? '' }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save me-2"></i>Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <form id="editMataKuliahForm" method="POST">
-                        @csrf
-                        @method('PATCH')
-                        <div class="modal-body">
-                            <div class="alert alert-info py-2">Perubahan hanya dapat dilakukan selama KRS berstatus Draft atau Diajukan.</div>
-                            <div class="mb-3">
-                                <label class="form-label">Mata Kuliah</label>
-                                <select class="form-select" name="mata_kuliah_id" id="edit_mata_kuliah_id" required>
-                                    @foreach ($available_matakuliah as $mk)
-                                        <option value="{{ $mk->id }}">{{ $mk->code }} - {{ $mk->name }} ({{ $mk->sks }} SKS)</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Kelas</label>
-                                    <select class="form-select" name="kelas_id" id="edit_kelas_id">
-                                        <option value="">-- Pilih Kelas --</option>
-                                        @foreach ($kelas as $kls)
-                                            <option value="{{ $kls->id }}">{{ $kls->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Dosen</label>
-                                    <select class="form-select" name="dosen_id" id="edit_dosen_id">
-                                        <option value="">-- Pilih Dosen --</option>
-                                        @foreach ($dosens as $dosen)
-                                            <option value="{{ $dosen->id }}">{{ $dosen->name }}{{ $dosen->nidn ? ' - NIDN '.$dosen->nidn : '' }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Catatan</label>
-                                <textarea class="form-control" name="notes" id="edit_notes" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-warning"><i class="fas fa-save me-2"></i>Simpan Perubahan</button>
-                        </div>
-                    </form>
                 </div>
             </div>
-        </div>
+        @endforeach
     @endif
 
     <!-- Add Mata Kuliah Modal -->
@@ -471,65 +486,6 @@
 
 @section('custom-js')
     <script>
-
-        function openEditMataKuliah(button) {
-            const modalElement = document.getElementById('editMataKuliahModal');
-            const form = document.getElementById('editMataKuliahForm');
-
-            if (!modalElement || !form) {
-                alert('Form Edit Mata Kuliah tidak ditemukan. Silakan refresh halaman.');
-                return;
-            }
-
-            form.action = button.dataset.action;
-            document.getElementById('edit_mata_kuliah_id').value = button.dataset.matkulId || '';
-            document.getElementById('edit_kelas_id').value = button.dataset.kelasId || '';
-            document.getElementById('edit_dosen_id').value = button.dataset.dosenId || '';
-            document.getElementById('edit_notes').value = button.dataset.notes || '';
-
-            if (window.bootstrap && bootstrap.Modal) {
-                bootstrap.Modal.getOrCreateInstance(modalElement).show();
-                return;
-            }
-
-            modalElement.classList.add('show');
-            modalElement.style.display = 'block';
-            modalElement.removeAttribute('aria-hidden');
-            document.body.classList.add('modal-open');
-
-            let backdrop = document.getElementById('editMataKuliahBackdrop');
-            if (!backdrop) {
-                backdrop = document.createElement('div');
-                backdrop.id = 'editMataKuliahBackdrop';
-                backdrop.className = 'modal-backdrop fade show';
-                document.body.appendChild(backdrop);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.js-edit-mata-kuliah').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    openEditMataKuliah(this);
-                });
-            });
-
-            document.querySelectorAll('#editMataKuliahModal [data-bs-dismiss="modal"]').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    const modalElement = document.getElementById('editMataKuliahModal');
-                    const backdrop = document.getElementById('editMataKuliahBackdrop');
-
-                    if (window.bootstrap && bootstrap.Modal) {
-                        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
-                    } else {
-                        modalElement.classList.remove('show');
-                        modalElement.style.display = 'none';
-                        modalElement.setAttribute('aria-hidden', 'true');
-                        document.body.classList.remove('modal-open');
-                        if (backdrop) backdrop.remove();
-                    }
-                });
-            });
-        }
 
         function approveKRS() {
             if (confirm('Apakah Anda yakin ingin menyetujui KRS ini?')) {
