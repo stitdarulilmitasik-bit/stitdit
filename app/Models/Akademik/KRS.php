@@ -25,53 +25,27 @@ class KRS extends Model
     ];
 
     // ACCESSOR METHODS
-    public function getStatusAttribute($value)
-    {
-        $statuses = [
-            'Draft' => 'draft',
-            'draft' => 'draft',
-            'Diajukan' => 'submitted',
-            'diajukan' => 'submitted',
-            'submitted' => 'submitted',
-            'Disetujui' => 'approved',
-            'disetujui' => 'approved',
-            'approved' => 'approved',
-            'Ditolak' => 'rejected',
-            'ditolak' => 'rejected',
-            'rejected' => 'rejected',
-            'Dipublish' => 'published',
-            'dipublish' => 'published',
-            'published' => 'published',
-            'Dikunci' => 'locked',
-            'dikunci' => 'locked',
-            'locked' => 'locked'
-        ];
-
-        return $statuses[$value] ?? 'Unknown';
-    }
-
     public function getStatusBadgeAttribute()
     {
-        $badges = [
-            'draft' => 'badge bg-secondary',
-            'submitted' => 'badge bg-warning',
-            'approved' => 'badge bg-success',
-            'rejected' => 'badge bg-danger',
-            'published' => 'badge bg-primary',
-            'locked' => 'badge bg-dark'
-        ];
-
-        return $badges[$this->attributes['status']] ?? 'badge bg-secondary';
+        return match ($this->attributes['status'] ?? null) {
+            'Draft' => 'badge bg-secondary',
+            'Diajukan' => 'badge bg-warning',
+            'Disetujui' => 'badge bg-success',
+            'Ditolak' => 'badge bg-danger',
+            'Dipublish' => 'badge bg-primary',
+            'Dikunci' => 'badge bg-dark',
+            default => 'badge bg-secondary',
+        };
     }
 
     public function getIsEditableAttribute()
     {
-        return in_array($this->status, ['draft', 'submitted', 'rejected']);
+        return in_array($this->status, ['Draft', 'Diajukan', 'Ditolak']);
     }
 
     public function getIsApprovableAttribute()
     {
-        return $this->status === 'submitted';
+        return $this->status === 'Diajukan';
     }
 
     public function getBatasSksAttribute()
@@ -206,7 +180,7 @@ class KRS extends Model
     public function approve($dosenPaId = null, $notes = null)
     {
         $this->update([
-            'status' => 'approved',
+            'status' => 'Disetujui',
             'dosen_pa_id' => $dosenPaId,
             'approved_at' => now(),
             'notes' => $notes
@@ -218,7 +192,7 @@ class KRS extends Model
     public function reject($notes = null)
     {
         $this->update([
-            'status' => 'rejected',
+            'status' => 'Ditolak',
             'notes' => $notes
         ]);
     }
@@ -226,7 +200,7 @@ class KRS extends Model
     public function submit()
     {
         if ($this->total_sks > 0) {
-            $this->update(['status' => 'submitted']);
+            $this->update(['status' => 'Diajukan']);
             return true;
         }
         return false;
