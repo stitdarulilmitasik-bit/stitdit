@@ -35,6 +35,42 @@ class AkademikController extends Controller
 
     public function storeKrs(Request $request){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $v=$request->validate(['mata_kuliah_id'=>['required','integer','exists:mata_kuliahs,id'],'kelas_id'=>['nullable','integer','exists:kelas,id']]); $s=$this->getCurrentSemester(); if(!$s)return back()->with('error','Tahun akademik aktif belum tersedia.'); $c=MataKuliah::findOrFail($v['mata_kuliah_id']); if((int)$c->prodi_id!==(int)$u->prodi_id)return back()->with('error','Mata kuliah bukan bagian dari program studi Anda.'); $k=KRS::firstOrCreate(['mahasiswa_id'=>$u->id,'taka_id'=>$s->id,'semester'=>(int)($u->semester??1)],['code'=>'KRS-'.$u->id.'-'.now()->format('YmdHis'),'status'=>'Draft','total_sks'=>0,'max_sks'=>24,'ipk_sebelumnya'=>0]); if(!$k->is_editable)return back()->with('error','KRS sudah diajukan/disetujui dan tidak dapat diubah.'); if($k->details()->where('matkul_id',$c->id)->whereIn('status',['Aktif','Mengulang'])->exists())return back()->with('error','Mata kuliah tersebut sudah ada di KRS.'); if(!$k->canAddMatakuliah((int)$c->sks))return back()->with('error','Batas maksimal SKS tidak mencukupi.'); $kelas=!empty($v['kelas_id'])?Kelas::find($v['kelas_id']):null; if($kelas&&((int)$kelas->prodi_id!==(int)$u->prodi_id||(int)$kelas->taka_id!==(int)$s->id))return back()->with('error','Kelas tidak sesuai dengan program studi atau semester aktif.'); $k->details()->create(['code'=>'KRSDET-'.$u->id.'-'.$c->id.'-'.now()->format('YmdHisv'),'matkul_id'=>$c->id,'kelas_id'=>$kelas?->id,'dosen_id'=>$c->dosen1_id,'sks'=>(int)$c->sks,'status'=>'Aktif','prasyarat_terpenuhi'=>true]); return back()->with('success','Mata kuliah berhasil ditambahkan ke KRS.'); }
 
+    public function submitKrs(Request $request)
+    {
+        $u = Auth::guard('mahasiswa')->user();
+        abort_unless($u, 403);
+
+        $s = $this->getCurrentSemester();
+        if (!$s) {
+            return back()->with('error', 'Tahun akademik aktif belum tersedia.');
+        }
+
+        $k = KRS::where('mahasiswa_id', $u->id)
+            ->where('taka_id', $s->id)
+            ->where('semester', (int) ($u->semester ?? 1))
+            ->first();
+
+        if (!$k) {
+            return back()->with('error', 'KRS semester aktif belum tersedia.');
+        }
+
+        if (!$k->is_editable) {
+            return back()->with('error', 'KRS sudah diajukan atau disetujui dan tidak dapat disubmit kembali.');
+        }
+
+        $jumlahMatakuliah = $k->details()
+            ->whereIn('status', ['Aktif', 'Mengulang'])
+            ->count();
+
+        if ($jumlahMatakuliah === 0 || (int) $k->total_sks <= 0) {
+            return back()->with('error', 'KRS belum memiliki mata kuliah. Tambahkan mata kuliah terlebih dahulu.');
+        }
+
+        $k->submit();
+
+        return back()->with('success', 'KRS berhasil disubmit dan menunggu persetujuan akademik.');
+    }
+
     public function destroyKrs($id){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $d=\App\Models\Akademik\KrsDetail::where('id',$id)->whereHas('krs',fn($q)=>$q->where('mahasiswa_id',$u->id))->firstOrFail(); $d->batalkan('Dibatalkan oleh mahasiswa'); return back()->with('success','Mata kuliah berhasil dibatalkan dari KRS.'); }
 
     public function jadwalKuliah(){ try{$u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $s=$this->getCurrentSemester(); if(!$s)return back()->with('error','Tahun akademik aktif belum tersedia.'); $a=$this->getAvailableSemesters($u); return view('private.mahasiswa.akademik.jadwal-kuliah',['menus'=>'Akademik','pages'=>'Jadwal Kuliah','user'=>$u,'spref'=>$u->prefix,'currentSemester'=>$s,'availableSemesters'=>$a,'semesters'=>$a,'jadwal'=>$this->getJadwalKuliah($u->id,$s->id),'isCurrentSemester'=>true,'webs'=>WebSetting::first(),'academy'=>'SIAKAD']);}catch(\Exception $e){return redirect()->route('mahasiswa.dashboard-render')->with('error','Terjadi kesalahan saat memuat jadwal kuliah: '.$e->getMessage());} }
