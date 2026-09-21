@@ -51,7 +51,7 @@
 </head>
 <body>
 @php
-    // Label status KRS dalam bahasa Indonesia untuk report PDF.
+    // Status KRS selalu ditampilkan dalam bahasa Indonesia pada report PDF.
     $statusLabels = [
         'draft' => 'Draf',
         'submitted' => 'Diajukan',
@@ -59,7 +59,8 @@
         'approved' => 'Disetujui',
         'locked' => 'Dikunci',
     ];
-    $statusLabel = $statusLabels[$krs->status] ?? ucfirst((string) $krs->status);
+    $statusKey = strtolower(trim((string) $krs->status));
+    $statusLabel = $statusLabels[$statusKey] ?? ucfirst($statusKey);
 
     // Data identitas mahasiswa untuk report KRS.
     $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
@@ -239,7 +240,7 @@
 
 <div class="print-info">
     Dicetak pada: {{ now()->locale('id')->translatedFormat('d F Y H:i:s') }} |
-    Status: {{ strtoupper($krs->status) }} |
+    Status KRS: {{ $statusLabel }} |
     @if ($krs->approved_at)
         Disetujui: {{ $krs->approved_at->format('d F Y H:i:s') }}
     @else
