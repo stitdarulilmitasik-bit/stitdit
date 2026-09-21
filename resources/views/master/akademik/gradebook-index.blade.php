@@ -2,27 +2,27 @@
 
 @section('custom-css')
 <style>
-.gradebook-wrap { overflow:auto; max-height:70vh; }
-.gradebook { min-width:1500px; }
-.gradebook th, .gradebook td { white-space:nowrap; vertical-align:middle; }
-.gradebook thead th { position:sticky; top:0; z-index:3; background:#f8f9fa; }
-.sticky-no { position:sticky; left:0; z-index:2; background:#fff; }
-.sticky-student { position:sticky; left:55px; z-index:2; background:#fff; min-width:240px; }
-.score { width:72px; text-align:center; }
-.status-badge { min-width:95px; display:inline-block; }
+.gradebook-wrap { overflow:auto; max-height:68vh; }
+.gradebook { min-width:1180px; font-size:12px; }
+.gradebook th, .gradebook td { white-space:nowrap; vertical-align:middle; padding:4px 5px !important; }
+.gradebook thead th { position:sticky; top:0; z-index:3; background:#f8f9fa; font-size:11px; }
+.sticky-no { position:sticky; left:0; z-index:2; background:#fff; width:38px; }
+.sticky-student { position:sticky; left:38px; z-index:2; background:#fff; min-width:210px; }
+.score { width:58px; height:30px; text-align:center; padding:3px 4px !important; font-size:11px; }
+.status-badge { min-width:75px; display:inline-block; font-size:10px; padding:3px 5px; }
 </style>
 @endsection
 
 @section('content')
 <div class="container-fluid">
     <div class="card mb-3">
-        <div class="card-header">
+        <div class="card-header py-2">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
-                    <h4 class="mb-1">Gradebook Nilai</h4>
-                    <div class="text-muted small">Input nilai berbasis KRS. Nilai bergerak melalui Draft → Diajukan → Disetujui → Published → Locked.</div>
+                    <h5 class="mb-0">Input Nilai Mahasiswa</h5>
+                    <div class="text-muted small">Pilih mata kuliah untuk membuka daftar mahasiswa dari KRS.</div>
                 </div>
-                <div class="small text-muted">Validasi, perhitungan, dan audit dilakukan di server.</div>
+                <div class="small text-muted">Draft → Ajukan → Verifikasi → Publish → Lock</div>
             </div>
         </div>
         <div class="card-body">
@@ -45,8 +45,8 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Mata Kuliah</label>
+                <div class="col-md-4">
+                    <label class="form-label mb-1 fw-semibold">Mata Kuliah</label>
                     <select name="matkul_id" class="form-select">
                         <option value="">Semua</option>
                         @foreach($matkulList as $mk)
@@ -55,7 +55,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Kelas</label>
+                    <label class="form-label mb-1">Kelas</label>
                     <select name="kelas_id" class="form-select">
                         <option value="">Semua</option>
                         @foreach($kelasList as $kelas)
@@ -63,8 +63,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button class="btn btn-primary w-100"><i class="bi bi-search"></i> Tampilkan</button>
+                <div class="col-md-2 d-flex gap-1">
+                    <button class="btn btn-primary btn-sm flex-fill"><i class="bi bi-search"></i> Tampilkan</button>
+                    <a href="{{ request()->url() }}" class="btn btn-outline-secondary btn-sm" title="Reset filter"><i class="bi bi-arrow-counterclockwise"></i></a>
                 </div>
             </form>
         </div>
@@ -126,7 +127,6 @@
                                 <tr>
                                     <th class="sticky-no">No.</th>
                                     <th class="sticky-student">Nama Mahasiswa</th>
-                                    <th>Mata Kuliah / Kelas</th>
                                     <th>Tugas 1</th><th>Tugas 2</th><th>Tugas 3</th>
                                     <th>Quiz 1</th><th>Quiz 2</th>
                                     <th>UTS</th><th>UAS</th><th>Praktikum</th><th>Kehadiran</th>
@@ -162,11 +162,7 @@
                                                 </div>
                                             </td>
                                         @endif
-                                        <td>
-                                            <div class="fw-semibold">{{ $detail->mataKuliah->code }}</div>
-                                            <div class="small text-muted">{{ $detail->mataKuliah->name }} · {{ $detail->kelas?->name ?? '-' }}</div>
-                                            <input type="hidden" name="nilai[{{ $currentIndex }}][id]" value="{{ $n->id }}">
-                                        </td>
+                                        <input type="hidden" name="nilai[{{ $currentIndex }}][id]" value="{{ $n->id }}">
                                         @foreach(['tugas_1','tugas_2','tugas_3','quiz_1','quiz_2','uts','uas','praktikum','kehadiran'] as $field)
                                             <td>
                                                 <input class="form-control form-control-sm score"
@@ -193,14 +189,14 @@
                                 @endforeach
                             @empty
                                 <tr>
-                                    <td colspan="17" class="text-center text-muted py-4">Belum ada data mahasiswa.</td>
+                                    <td colspan="16" class="text-center text-muted py-4">Belum ada data mahasiswa.</td>
                                 </tr>
                             @endforelse
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-3 d-flex justify-content-between align-items-center">
-                        <div class="small text-muted">Kosongkan komponen yang memang tidak digunakan. Komponen dengan bobot &gt; 0 wajib diisi sebelum pengajuan.</div>
+                    <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
+                        <div class="small text-muted">Isi komponen nilai. Perhitungan nilai akhir tetap mengikuti bobot dan relasi data yang sudah ada.</div>
                         <button class="btn btn-primary" type="submit" @disabled(!$isDosen)>
                             <i class="bi bi-save me-1"></i> Simpan Draft
                         </button>
