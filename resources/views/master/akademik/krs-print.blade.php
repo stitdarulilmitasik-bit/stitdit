@@ -129,17 +129,15 @@
 <table class="courses-table">
     <thead>
         <tr>
-            <th rowspan="2" style="width:4%;">No</th>
-            <th rowspan="2" style="width:8%;">Kode MK</th>
-            <th rowspan="2" style="width:23%;">Mata Kuliah</th>
-            <th rowspan="2" style="width:6%;">SKS</th>
+            <th rowspan="2" style="width:9%;">Kode MK</th>
+            <th rowspan="2" style="width:30%;">Mata Kuliah</th>
+            <th rowspan="2" style="width:7%;">SKS</th>
             <th rowspan="2" style="width:11%;">Kelas</th>
             <th rowspan="2" style="width:10%;">Ruang</th>
-            <th rowspan="2" style="width:38%;">Dosen</th>
+            <th rowspan="2" style="width:33%;">Dosen</th>
         </tr>
     </thead>
     <tbody>
-        @php $no = 1; @endphp
         @forelse ($krs->details as $detail)
             @php
                 $jadwal = $detail->kelas?->jadwalKuliah
@@ -147,10 +145,10 @@
                         return (int) ($item->matkul_id ?? 0) === (int) ($detail->matkul_id ?? 0);
                     });
                 $jadwal = $jadwal ?: $detail->kelas?->jadwalKuliah?->first();
-                $dosenDetail = $detail->dosen ?? null;
+                $dosen1 = $detail->mataKuliah?->dosen1 ?? null;
+                $dosen2 = $detail->mataKuliah?->dosen2 ?? null;
             @endphp
             <tr>
-                <td>{{ $no++ }}</td>
                 <td>{{ $detail->mataKuliah->code ?? '-' }}</td>
                 <td class="subject-name">{{ $detail->mataKuliah->name ?? '-' }}</td>
                 <td>{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
@@ -170,13 +168,13 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="7" style="text-align:center;font-style:italic;">Tidak ada mata kuliah yang dipilih</td></tr>
+            <tr><td colspan="6" style="text-align:center;font-style:italic;">Belum ada mata kuliah yang dipilih</td></tr>
         @endforelse
     </tbody>
     @if ($krs->details->count() > 0)
         <tfoot>
             <tr style="background-color:#f0f0f0;">
-                <td colspan="3" style="text-align:center;font-weight:bold;">TOTAL SKS</td>
+                <td colspan="2" style="text-align:right;font-weight:bold;">TOTAL SKS</td>
                 <td style="font-weight:bold;">{{ $krs->total_sks }}</td>
                 <td colspan="3"></td>
             </tr>
