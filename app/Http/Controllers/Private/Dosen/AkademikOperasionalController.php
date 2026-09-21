@@ -306,10 +306,14 @@ class AkademikOperasionalController extends Controller
     public function webAdminKehadiran(Request $request)
     {
         $webs = WebSetting::first();
-        $semester = max(1, min(8, (int)$request->input('semester', 1)));
+        $semester = max(1, min(8, (int) $request->input('semester', 1)));
         $mahasiswaId = $request->input('mahasiswa_id');
         $mataKuliahId = $request->input('mata_kuliah_id');
 
+        // Report global mengambil seluruh nilai pada semester terpilih.
+        // Filter mahasiswa dan mata kuliah diterapkan langsung pada query Nilai,
+        // sehingga tidak bergantung pada relasi nilai() yang tidak tersedia
+        // pada model Mahasiswa/MataKuliah.
         $nilai = Nilai::with([
             'mahasiswa.programStudi',
             'mataKuliah',
@@ -318,18 +322,32 @@ class AkademikOperasionalController extends Controller
         ])
             ->where('semester', $semester)
             ->whereHas('mataKuliah')
+            ->when($mahasiswaId, fn ($q) => $q->where('mahasiswa_id', $mahasiswaId))
+            ->when($mataKuliahId, fn ($q) => $q->where('matkul_id', $mataKuliahId))
             ->orderBy('matkul_id')
             ->orderBy('mahasiswa_id')
             ->paginate(100)
             ->withQueryString();
 
+        // Model Mahasiswa tidak memiliki relasi nilai(), jadi gunakan subquery
+        // berdasarkan tabel nilais agar daftar filter tetap akurat.
         $mahasiswaOptions = \App\Models\Mahasiswa::query()
-            ->whereHas('nilai', fn ($q) => $q->where('semester', $semester))
+            ->whereIn('id', Nilai::query()
+                ->select('mahasiswa_id')
+                ->where('semester', $semester)
+                ->whereNotNull('mahasiswa_id')
+                ->distinct())
             ->orderBy('name')
             ->get(['id', 'name', 'numb_nim']);
 
-        $mataKuliahOptions = \App\Models\MataKuliah::query()
-            ->whereHas('nilai', fn ($q) => $q->where('semester', $semester))
+        // Model MataKuliah juga tidak memiliki relasi nilai(), sehingga
+        // gunakan subquery berdasarkan matkul_id pada tabel nilais.
+        $mataKuliahOptions = MataKuliah::query()
+            ->whereIn('id', Nilai::query()
+                ->select('matkul_id')
+                ->where('semester', $semester)
+                ->whereNotNull('matkul_id')
+                ->distinct())
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
 
