@@ -155,12 +155,10 @@
                 <td>{{ $detail->kelas->name ?? '-' }}</td>
                 <td class="room">{{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}</td>
                 <td class="lecturer">
-                    @if ($dosenDetail)
-                        {{ $dosenDetail->name }}
-                    @elseif ($detail->mataKuliah->dosen1)
-                        {{ $detail->mataKuliah->dosen1->name }}
-                        @if ($detail->mataKuliah->dosen2)
-                            <br>{{ $detail->mataKuliah->dosen2->name }}
+                    @if ($dosen1)
+                        {{ $dosen1->name }}
+                        @if ($dosen2)
+                            <br>{{ $dosen2->name }}
                         @endif
                     @else
                         -
