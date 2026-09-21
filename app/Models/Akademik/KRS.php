@@ -194,8 +194,8 @@ class KRS extends Model
                     'bobot_quiz' => 10,
                     'bobot_uts' => 25,
                     'bobot_uas' => 25,
-                    'bobot_praktikum' => 0,
-                    'bobot_kehadiran' => 20,
+                    'bobot_praktikum' => 5,
+                    'bobot_kehadiran' => 15,
                 ]
             );
         }
