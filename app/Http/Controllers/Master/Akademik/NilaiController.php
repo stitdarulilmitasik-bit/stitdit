@@ -287,9 +287,29 @@ class NilaiController extends Controller
                 return redirect()->back();
             }
 
-            // Validasi nilai sudah lengkap
-            if (is_null($nilai->nilai_angka) || $nilai->nilai_angka == 0) {
-                Alert::error('Error', 'Nilai belum lengkap. Pastikan semua komponen nilai sudah diisi');
+            // Hitung ulang nilai akhir dari seluruh komponen sebelum publish.
+            // Nilai 0 adalah nilai yang sah, jadi jangan dianggap sebagai "belum diisi".
+            $nilai->refresh();
+            $nilai->hitungNilaiAkhir();
+            $nilai->refresh();
+
+            // Pastikan bobot sudah lengkap 100% (termasuk kehadiran 20%).
+            $totalBobot = (float) $nilai->bobot_tugas
+                + (float) $nilai->bobot_quiz
+                + (float) $nilai->bobot_uts
+                + (float) $nilai->bobot_uas
+                + (float) $nilai->bobot_praktikum
+                + (float) $nilai->bobot_kehadiran;
+
+            if (abs($totalBobot - 100) > 0.01) {
+                Alert::error('Error', 'Nilai belum lengkap. Total bobot harus 100%. Saat ini: ' . $totalBobot . '%');
+                return redirect()->back();
+            }
+
+            // Nilai 0 tetap valid. Yang dianggap belum lengkap hanya jika
+            // nilai akhir benar-benar tidak terbentuk (NULL).
+            if (is_null($nilai->nilai_angka)) {
+                Alert::error('Error', 'Nilai belum lengkap. Pastikan komponen nilai sudah diisi dan disimpan.');
                 return redirect()->back();
             }
 
