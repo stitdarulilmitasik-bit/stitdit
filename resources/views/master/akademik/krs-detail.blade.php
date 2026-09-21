@@ -319,6 +319,9 @@
                                         </td>
                                         @if (in_array($krs->status, ['draft', 'submitted']))
                                             <td class="text-center" data-label="Aksi">
+                                                <button class="btn btn-sm btn-warning me-1" onclick="editDetail({{ $detail->id }}, {{ $detail->matkul_id }}, {{ $detail->kelas_id ?? 'null' }}, {{ $detail->dosen_id ?? 'null' }}, @js($detail->notes ?? ''))" title="Edit Mata Kuliah">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
                                                 <button class="btn btn-sm btn-danger" onclick="removeDetail('{{ $detail->id }}')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -348,6 +351,65 @@
             </div>
         </div>
     </div>
+
+
+
+    <!-- Edit Mata Kuliah Modal -->
+    @if (in_array($krs->status, ['draft', 'submitted']))
+        <div class="modal fade" id="editMataKuliahModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Edit Mata Kuliah dalam KRS</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="editMataKuliahForm" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2">Perubahan hanya dapat dilakukan selama KRS berstatus Draft atau Diajukan.</div>
+                            <div class="mb-3">
+                                <label class="form-label">Mata Kuliah</label>
+                                <select class="form-select" name="mata_kuliah_id" id="edit_mata_kuliah_id" required>
+                                    @foreach ($available_matakuliah as $mk)
+                                        <option value="{{ $mk->id }}">{{ $mk->code }} - {{ $mk->name }} ({{ $mk->sks }} SKS)</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Kelas</label>
+                                    <select class="form-select" name="kelas_id" id="edit_kelas_id">
+                                        <option value="">-- Pilih Kelas --</option>
+                                        @foreach ($kelas as $kls)
+                                            <option value="{{ $kls->id }}">{{ $kls->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Dosen</label>
+                                    <select class="form-select" name="dosen_id" id="edit_dosen_id">
+                                        <option value="">-- Pilih Dosen --</option>
+                                        @foreach ($dosens as $dosen)
+                                            <option value="{{ $dosen->id }}">{{ $dosen->name }}{{ $dosen->nidn ? ' - NIDN '.$dosen->nidn : '' }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Catatan</label>
+                                <textarea class="form-control" name="notes" id="edit_notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-warning"><i class="fas fa-save me-2"></i>Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Add Mata Kuliah Modal -->
     @if (in_array($krs->status, ['draft', 'submitted']))
@@ -402,6 +464,18 @@
 
 @section('custom-js')
     <script>
+
+        function editDetail(detailId, matkulId, kelasId, dosenId, notes) {
+            const form = document.getElementById('editMataKuliahForm');
+            const baseAction = @json(route($spref . 'akademik.krs-update-matakuliah', [$krs->code, 0]));
+            form.action = baseAction.replace(/\/0$/, '/' + detailId);
+            document.getElementById('edit_mata_kuliah_id').value = matkulId || '';
+            document.getElementById('edit_kelas_id').value = kelasId || '';
+            document.getElementById('edit_dosen_id').value = dosenId || '';
+            document.getElementById('edit_notes').value = notes || '';
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('editMataKuliahModal')).show();
+        }
+
         function approveKRS() {
             if (confirm('Apakah Anda yakin ingin menyetujui KRS ini?')) {
                 const form = document.createElement('form');
