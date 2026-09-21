@@ -900,8 +900,10 @@
         }
 
         function editNilai(code) {
-            // In a real implementation, this would open an edit modal or redirect to edit page
-            console.log('Edit nilai:', code);
+            // Buka halaman detail/edit nilai. Jangan hanya menulis ke console,
+            // karena tombol Edit sebelumnya tidak melakukan navigasi apa pun.
+            const url = `{{ route($spref . 'akademik.nilai-view', ':code') }}`.replace(':code', encodeURIComponent(code));
+            window.location.href = url;
         }
     </script>
 @endsection
