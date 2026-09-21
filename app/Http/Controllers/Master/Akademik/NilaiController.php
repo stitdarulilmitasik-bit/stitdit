@@ -107,16 +107,26 @@ class NilaiController extends Controller
 
     public function viewNilai($code)
     {
-        $user = Auth::user();
+        // Halaman detail/edit harus mengikuti guard yang membuka halaman.
+        // Sebelumnya selalu memakai Auth::user(), sehingga Dosen tidak
+        // mendapatkan prefix/identitas yang benar dan dapat gagal membuka Edit.
+        $user = $this->isDosen() ? Auth::guard('dosen')->user() : Auth::user();
         $data['webs'] = WebSetting::first();
-        $data['spref'] = $user ? $user->prefix : '';
+        $data['spref'] = $this->isDosen() ? 'dosen.' : ($user ? $user->prefix : '');
         $data['menus'] = "Master";
         $data['pages'] = "Detail Nilai";
         $data['academy'] = $data['webs']->school_apps . ' by ' . $data['webs']->school_name;
 
-        $data['nilai'] = Nilai::with(['mahasiswa', 'mataKuliah', 'krsDetail', 'tahunAkademik'])
-            ->where('code', $code)
-            ->firstOrFail();
+        $query = Nilai::with(['mahasiswa', 'mataKuliah', 'krsDetail', 'tahunAkademik'])
+            ->where('code', $code);
+
+        if ($this->isDosen()) {
+            $query->whereHas('mataKuliah', function ($q) {
+                $this->mataKuliahDiampuQuery($q, $this->dosenId());
+            });
+        }
+
+        $data['nilai'] = $query->firstOrFail();
 
         return view('master.akademik.nilai-view', $data, compact('user'));
     }
