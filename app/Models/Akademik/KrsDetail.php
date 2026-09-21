@@ -8,6 +8,7 @@ use App\Traits\HasLogAktivitas;
 use App\Models\Akademik\KRS;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\Kelas;
+use App\Models\Akademik\JadwalKuliah;
 use App\Models\Dosen;
 
 class KrsDetail extends Model
@@ -64,6 +65,11 @@ class KrsDetail extends Model
     public function dosen()
     {
         return $this->belongsTo(Dosen::class, 'dosen_id');
+    }
+
+    public function jadwalKuliah()
+    {
+        return $this->belongsTo(JadwalKuliah::class, 'jadwal_kuliah_id');
     }
 
     public function nilai()
