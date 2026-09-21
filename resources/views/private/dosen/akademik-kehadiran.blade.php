@@ -95,7 +95,7 @@
                         $mk = $rows->first()->mataKuliah;
                     @endphp
                     <tr class="table-light">
-                        <td colspan="23" class="fw-bold">
+                        <td colspan="22" class="fw-bold">
                             <i class="fas fa-book me-1"></i>
                             {{ $mk->name ?? '-' }}
                             @if($mk->code) <span class="text-muted fw-normal">({{ $mk->code }})</span> @endif
@@ -169,7 +169,7 @@
                         </tr>
                     @endforeach
                 @empty
-                    <tr><td colspan="23" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
+                    <tr><td colspan="22" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
                 @endforelse
                 </tbody>
             </table>
