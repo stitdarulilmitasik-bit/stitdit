@@ -80,7 +80,7 @@ class NilaiController extends Controller
             $data['nilai_list'] = Nilai::with(['mahasiswa', 'mataKuliah', 'tahunAkademik'])
                 ->latest()
                 ->paginate(20);
-            $data['mata_kuliah'] = MataKuliah::all();
+            $data['mata_kuliah'] = MataKuliah::with(['dosen1', 'dosen2', 'dosen3'])->orderBy('name')->get();
             $data['mahasiswa'] = Mahasiswa::where('type', 1)->get();
             $data['dosens'] = Dosen::where('type', 1)->get(); // Dosen Aktif
         }
@@ -144,6 +144,7 @@ class NilaiController extends Controller
             $request->validate([
                 'mahasiswa_id' => 'required|exists:mahasiswas,id',
                 'matkul_id' => 'required|exists:mata_kuliahs,id',
+                'dosen_id' => 'nullable|exists:dosens,id',
                 'tahun_akademik_id' => 'required|exists:tahun_akademiks,id',
                 'semester' => 'required|integer|min:1|max:14',
                 'krs_detail_id' => 'nullable|exists:krs_details,id',
@@ -169,6 +170,22 @@ class NilaiController extends Controller
             }
 
             $mataKuliah = MataKuliah::findOrFail($request->matkul_id);
+
+            // Admin juga harus memilih dosen pengampu yang tercatat pada
+            // mata kuliah. Jangan izinkan dosen di luar dosen1/dosen2/dosen3.
+            if ($request->filled('dosen_id')) {
+                $isPengampu = in_array((int) $request->dosen_id, array_filter([
+                    (int) $mataKuliah->dosen1_id,
+                    (int) $mataKuliah->dosen2_id,
+                    (int) $mataKuliah->dosen3_id,
+                ], fn ($id) => $id > 0), true);
+
+                if (!$isPengampu) {
+                    throw new \InvalidArgumentException(
+                        'Dosen yang dipilih bukan dosen pengampu mata kuliah tersebut.'
+                    );
+                }
+            }
 
             // Dosen hanya boleh membuat nilai untuk mata kuliah yang diampunya.
             if ($this->isDosen()) {
@@ -243,6 +260,7 @@ class NilaiController extends Controller
                     'bobot_praktikum' => $request->bobot_praktikum,
                     'bobot_kehadiran' => $request->bobot_kehadiran,
                     'created_by' => $actor,
+                    'dosen_id' => $request->input('dosen_id'),
                 ]));
             } catch (QueryException $e) {
                 // Jika request bersamaan membuat record yang sama,
