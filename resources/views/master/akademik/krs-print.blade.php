@@ -78,17 +78,7 @@
     }
 @endphp
 
-@if ($krs->status === 'approved')
-    <div class="watermark">DISETUJUI</div>
-@elseif ($krs->status === 'locked')
-    <div class="watermark">DIKUNCI</div>
-@elseif ($krs->status === 'published')
-    <div class="watermark">DITERBITKAN</div>
-@elseif ($krs->status === 'submitted')
-    <div class="watermark">DIAJUKAN</div>
-@else
-    <div class="watermark">DRAF</div>
-@endif
+<div class="watermark">{{ strtoupper($krs->status) }}</div>
 
 <div class="kop">
     <table class="kop-table">
@@ -130,7 +120,7 @@
             <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td class="value">{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">@if($krs->status === 'submitted')Diajukan@elseif($krs->status === 'draft')Draf@elseif($krs->status === 'published')Diterbitkan@elseif($krs->status === 'approved')Disetujui@elseif($krs->status === 'locked')Dikunci@else{{ $krs->status }}@endif</span></td>
+            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">{{ $krs->status }}</span></td>
             <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td class="value"><strong>{{ $krs->total_sks }} SKS</strong></td>
         </tr>
     </table>
@@ -229,7 +219,7 @@
 
 <div class="print-info">
     Dicetak pada: {{ now()->locale('id')->translatedFormat('d F Y H:i:s') }} |
-    Status KRS: @if($krs->status === 'submitted')Diajukan@elseif($krs->status === 'draft')Draf@elseif($krs->status === 'published')Diterbitkan@elseif($krs->status === 'approved')Disetujui@elseif($krs->status === 'locked')Dikunci@else{{ $krs->status }}@endif |
+    Status KRS: {{ $krs->status }} |
     @if ($krs->approved_at)
         Disetujui: {{ $krs->approved_at->format('d F Y H:i:s') }}
     @else
