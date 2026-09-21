@@ -138,8 +138,6 @@ class Nilai extends Model
         ])->sum();
 
         $nilaiAkademik = 0;
-        if ($bobotAkademik > 0) {
-        }
         $komponen = [
             'tugas' => $this->rata_tugas,
             'quiz' => $this->rata_quiz,
