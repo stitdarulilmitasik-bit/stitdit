@@ -142,7 +142,7 @@ class KRSController extends Controller
                 'periode_mulai' => 'nullable|date',
                 'periode_selesai' => 'nullable|date|after:periode_mulai',
                 'notes' => 'nullable|string',
-                'status' => 'nullable|in:draft,submitted,approved,rejected,published,locked,Draft,Diajukan,Disetujui,Ditolak,Dipublish,Dikunci',
+                'status' => 'nullable|in:Draft,Diajukan,Disetujui,Ditolak,Dikunci,Dicetak',
             ]);
 
             $krs->update([
@@ -150,11 +150,7 @@ class KRSController extends Controller
                 'periode_mulai' => $request->periode_mulai,
                 'periode_selesai' => $request->periode_selesai,
                 'notes' => $request->notes,
-                'status' => $request->status ? match ($request->status) {
-                    'Draft' => 'draft', 'Diajukan' => 'submitted', 'Disetujui' => 'approved',
-                    'Ditolak' => 'rejected', 'Dipublish' => 'published', 'Dikunci' => 'locked',
-                    default => $request->status,
-                } : $krs->status,
+                'status' => $request->status ?: $krs->status,
                 'updated_by' => Auth::id(),
             ]);
 
@@ -396,7 +392,7 @@ class KRSController extends Controller
 
             $krs = KRS::where('code', $code)->firstOrFail();
 
-            if ($krs->status !== 'draft') {
+            if (strtolower(trim((string) $krs->status)) !== 'draft') {
                 Alert::error('Error', 'Hanya KRS dengan status Draft yang dapat dihapus');
                 return redirect()->back();
             }
@@ -483,18 +479,18 @@ class KRSController extends Controller
     public function publishKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if (!in_array($krs->status, ['approved','submitted'], true)) {
+        if (strtolower(trim((string) $krs->status)) !== 'disetujui') {
             return redirect()->back()->with('error','KRS belum siap dipublish.');
         }
-        $krs->update(['status'=>'Dipublish']);
+        $krs->update(['status'=>'Dicetak', 'updated_by' => Auth::id()]);
         return redirect()->back()->with('success','KRS berhasil dipublish.');
     }
 
     public function lockKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if ($krs->status !== 'approved') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
-        $krs->update(['status' => 'locked', 'updated_by' => Auth::id()]);
+        if (strtolower(trim((string) $krs->status)) !== 'disetujui') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
+        $krs->update(['status' => 'Dikunci', 'updated_by' => Auth::id()]);
         return redirect()->back()->with('success','KRS berhasil dikunci. Status menjadi Dikunci.');
     }
 
@@ -514,7 +510,7 @@ class KRSController extends Controller
             $krsList = KRS::whereIn('code', $ids)->get();
 
             foreach ($krsList as $krs) {
-                if ($krs->status !== 'submitted') {
+                if (strtolower(trim((string) $krs->status)) !== 'diajukan') {
                     $skipped++;
                     continue;
                 }
@@ -531,7 +527,7 @@ class KRSController extends Controller
             );
         }
 
-        $message = $processed . ' KRS berhasil disetujui dan statusnya menjadi Approved.';
+        $message = $processed . ' KRS berhasil disetujui dan statusnya menjadi Disetujui.';
         if ($skipped > 0) {
             $message .= ' ' . $skipped . ' KRS dilewati karena statusnya bukan Diajukan.';
         }
@@ -542,8 +538,8 @@ class KRSController extends Controller
     public function bulkPublish(Request $request)
     {
         $ids = $request->input('codes', $request->input('krs_codes', []));
-        KRS::whereIn('code',(array)$ids)->where('status','approved')->update(['status'=>'published']);
-        return redirect()->back()->with('success','KRS terpilih dipublish.');
+        KRS::whereIn('code',(array)$ids)->where('status','Disetujui')->update(['status'=>'Dikunci', 'updated_by' => Auth::id()]);
+        return redirect()->back()->with('success','KRS terpilih berhasil dikunci.');
     }
 
     /**
@@ -634,7 +630,7 @@ class KRSController extends Controller
                         );
 
                         $targetStatus = $target->getRawOriginal('status');
-                        if (in_array($targetStatus, ['Diajukan', 'Disetujui', 'Dipublish', 'Dikunci'], true)) {
+                        if (in_array($targetStatus, ['Diajukan', 'Disetujui', 'Dikunci', 'Dicetak'], true)) {
                             $skippedTargets++;
                             continue;
                         }
