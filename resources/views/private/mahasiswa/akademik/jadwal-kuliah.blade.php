@@ -70,7 +70,16 @@
                                         </div>
                                         @if($schedule->dosen)<div class="lecturer">👤 {{ $schedule->dosen->nama_lengkap ?? $schedule->dosen->name }}</div>@endif
                                         @if($schedule->ruang)<div class="room-info"><span class="room-icon">▣</span>{{ $schedule->ruang->nama_ruang ?? $schedule->ruang->name }} @if($schedule->ruang->kode_ruang)({{ $schedule->ruang->kode_ruang }})@endif</div>@endif
-                                        @if($schedule->kelas)<div class="mt-2"><span class="badge bg-azure-lt">{{ $schedule->kelas->nama_kelas ?? $schedule->kelas->name }}</span></div>@endif
+                                        @if($schedule->kelas && $schedule->kelas->isNotEmpty())
+                                            @php
+                                                $classNames = $schedule->kelas->map(function ($kelas) {
+                                                    return $kelas->nama_kelas ?? $kelas->name ?? null;
+                                                })->filter()->unique()->implode(', ');
+                                            @endphp
+                                            @if($classNames)
+                                                <div class="mt-2"><span class="badge bg-azure-lt">{{ $classNames }}</span></div>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
