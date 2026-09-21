@@ -407,6 +407,41 @@ class AkademikOperasionalController extends Controller
         return $pdf->download($filename);
     }
 
+    /** Export rekap kehadiran satu mata kuliah dari Web Admin. */
+    public function webAdminKehadiranMataKuliahPdf(Request $request, $mataKuliahId)
+    {
+        abort_unless(Auth::guard('web')->check(), 403);
+
+        $semester = max(1, min(8, (int) $request->input('semester', 1)));
+
+        $mataKuliah = MataKuliah::whereKey($mataKuliahId)->firstOrFail();
+
+        $nilai = Nilai::with([
+            'mahasiswa.programStudi.fakultas',
+            'mataKuliah',
+            'kehadiranMahasiswa',
+            'tahunAkademik',
+        ])
+            ->where('matkul_id', $mataKuliah->id)
+            ->where('semester', $semester)
+            ->get()
+            ->sortBy(fn($item) => mb_strtolower($item->mahasiswa->name ?? ''))
+            ->values();
+
+        abort_if($nilai->isEmpty(), 404, 'Belum ada mahasiswa untuk mata kuliah ini pada semester terpilih.');
+
+        $webs = WebSetting::first();
+        $pdf = PDF::loadView('private.dosen.kehadiran-mata-kuliah-pdf', [
+            'mataKuliah' => $mataKuliah,
+            'nilai' => $nilai,
+            'semester' => $semester,
+            'webs' => $webs,
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'rekap-kehadiran-' . Str::slug($mataKuliah->name ?? 'mata-kuliah') . '-semester-' . $semester . '.pdf';
+        return $pdf->download($filename);
+    }
+
     /** Simpan kehadiran dari menu Web Admin. */
     public function webAdminSimpanKehadiran(Request $request)
     {
