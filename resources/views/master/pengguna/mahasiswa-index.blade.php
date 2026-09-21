@@ -315,6 +315,20 @@
                                         @enderror
                                     </div>
                                     <div class="col-md-6 mb-3">
+                                        <label for="kelas_id" class="form-label">Kelas</label>
+                                        <select class="form-select" name="kelas_id" id="kelas_id">
+                                            <option value="">Belum ditentukan</option>
+                                            @foreach ($kelas as $k)
+                                                <option value="{{ $k->id }}">
+                                                    {{ $k->name }}{{ $k->programStudi ? ' - ' . $k->programStudi->name : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('kelas_id')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6 mb-3">
                                         <label for="type" class="form-label">Status</label>
                                         <select class="form-select" name="type" id="type" required>
                                             <option value="">Pilih Status</option>
@@ -355,6 +369,7 @@
                                     <th>Nama</th>
                                     <th>NIM</th>
                                     <th>Program Studi</th>
+                                    <th>Kelas</th>
                                     <th>Nomor Telepon</th>
                                     <th>Alamat</th>
                                     <th>Status</th>
@@ -378,6 +393,13 @@
                                         </td>
                                         <td data-label="NIM">{{ $item->numb_nim ?? '-' }}</td>
                                         <td data-label="Program Studi">{{ $item->programStudi->name ?? '-' }}</td>
+                                        <td data-label="Kelas">
+                                            @if($item->kelas)
+                                                <span class="badge bg-light-primary text-primary">{{ $item->kelas->name }}</span>
+                                            @else
+                                                <span class="badge bg-light-warning text-warning">Belum ada kelas</span>
+                                            @endif
+                                        </td>
                                         <td data-label="Nomor Telepon">{{ $item->phone ?? '-' }}</td>
                                         <td data-label="Alamat">{{ $item->ktp_addres ?? '-' }}</td>
                                         <td data-label="Status">
@@ -519,6 +541,20 @@
                                         @endforeach
                                     </select>
                                     @error('prodi_id')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="edit_kelas_id{{ $item->code }}" class="form-label">Kelas</label>
+                                    <select class="form-select" name="kelas_id" id="edit_kelas_id{{ $item->code }}">
+                                        <option value="">Belum ditentukan</option>
+                                        @foreach ($kelas as $k)
+                                            <option value="{{ $k->id }}" {{ (int) $item->kelas_id === (int) $k->id ? 'selected' : '' }}>
+                                                {{ $k->name }}{{ $k->programStudi ? ' - ' . $k->programStudi->name : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('kelas_id')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
                                 </div>
