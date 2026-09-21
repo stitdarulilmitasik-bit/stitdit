@@ -83,6 +83,6 @@ th { background:#eee; }
 </tbody>
 <tfoot><tr><th colspan="3" class="text-right">Total SKS</th><th class="text-center">{{ $krs->sum('sks') }}</th><th colspan="2"></th></tr></tfoot>
 </table>
-<div class="signature"><div class="signature-box"><p>Mengetahui,<br>Dosen Pembimbing Akademik</p><br><br><br><strong>{{ $krsHeader->dosenPA->name ?? '________________________' }}</strong></div></div>
+<div class="signature"><div class="signature-box"><p>Mengetahui,<br>Dosen Pembimbing Akademik</p><br><br><br><strong>{{ $krsHeader->dosenPA?->name ?? '________________________' }}</strong></div></div>
 </body>
 </html>
