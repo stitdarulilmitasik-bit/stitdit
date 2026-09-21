@@ -103,9 +103,10 @@
                             </select>
                         </td>
                         <td>
-                            <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" style="min-width:115px">
+                            <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" style="min-width:115px" required>
+                                <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
                                 @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
-                                    <option value="{{ $status }}" {{ (($currentAttendance->status ?? 'Hadir') === $status) ? 'selected' : '' }}>{{ $status }}</option>
+                                    <option value="{{ $status }}" {{ (($currentAttendance->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
                                 @endforeach
                             </select>
                         </td>
