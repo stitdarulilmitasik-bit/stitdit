@@ -346,7 +346,7 @@ class KRSController extends Controller
 
     public function printKRS($code)
     {
-        $krs = KRS::with(['mahasiswa.programStudi.fakultas', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas', 'details.dosen'])
+        $krs = KRS::with(['mahasiswa.programStudi.fakultas', 'mahasiswa.tahunAkademikRegistrasi', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas', 'details.dosen'])
             ->where('code', $code)->firstOrFail();
 
         $data = [
