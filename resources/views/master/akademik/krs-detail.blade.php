@@ -276,7 +276,7 @@
                                     <th>Mata Kuliah</th>
                                     <th class="text-center">SKS</th>
                                     <th>Kelas</th>
-                                    <th>Jadwal</th>
+                                    <th>Ruang</th>
                                     <th>Dosen</th>
                                     @if (in_array($krs->status, ['draft', 'submitted']))
                                         <th class="text-center">Aksi</th>
@@ -297,15 +297,13 @@
                                             <span class="badge bg-info">{{ $detail->mataKuliah->sks }}</span>
                                         </td>
                                         <td data-label="Kelas">{{ $detail->kelas->name ?? '-' }}</td>
-                                        <td data-label="Jadwal">
-                                            @if ($detail->jadwalKuliah)
-                                                <div class="d-flex flex-column">
-                                                    <span>{{ $detail->jadwalKuliah->hari }}</span>
-                                                    <small class="text-muted">{{ $detail->jadwalKuliah->jam_mulai }} - {{ $detail->jadwalKuliah->jam_selesai }}</small>
-                                                </div>
-                                            @else
-                                                -
-                                            @endif
+                                        <td data-label="Ruang">
+                                            @php
+                                                $jadwal = $detail->kelas?->jadwalKuliah?->first(function ($item) use ($detail) {
+                                                    return (int) ($item->matkul_id ?? 0) === (int) ($detail->matkul_id ?? 0);
+                                                }) ?: $detail->kelas?->jadwalKuliah?->first();
+                                            @endphp
+                                            {{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}
                                         </td>
                                         <td data-label="Dosen">
                                             <div class="d-flex flex-column">
