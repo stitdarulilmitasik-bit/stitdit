@@ -320,6 +320,51 @@
                                         @enderror
                                     </div>
                                     <div class="col-12 mb-3">
+                                        <div class="card border bg-light">
+                                            <div class="card-body">
+                                                <h6 class="mb-2">Bobot Komponen Nilai</h6>
+                                                <p class="text-muted small mb-3">
+                                                    Atur bobot penilaian. Total bobot harus tepat <strong>100%</strong>.
+                                                </p>
+                                                <div class="row g-2">
+                                                    <div class="col-md-2 col-6">
+                                                        <label class="form-label small">Tugas (%)</label>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_tugas" value="20" min="0" max="100" step="0.01" required>
+                                                    </div>
+                                                    <div class="col-md-2 col-6">
+                                                        <label class="form-label small">Quiz (%)</label>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_quiz" value="10" min="0" max="100" step="0.01" required>
+                                                    </div>
+                                                    <div class="col-md-2 col-6">
+                                                        <label class="form-label small">UTS (%)</label>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_uts" value="25" min="0" max="100" step="0.01" required>
+                                                    </div>
+                                                    <div class="col-md-2 col-6">
+                                                        <label class="form-label small">UAS (%)</label>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_uas" value="25" min="0" max="100" step="0.01" required>
+                                                    </div>
+                                                    <div class="col-md-2 col-6">
+                                                        <label class="form-label small">Praktikum (%)</label>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_praktikum" value="5" min="0" max="100" step="0.01" required>
+                                                    </div>
+                                                    <div class="col-md-2 col-6">
+                                                        <label class="form-label small">Kehadiran (%)</label>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_kehadiran" value="20" min="0" max="100" step="0.01" required>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <span class="fw-semibold">Total Bobot</span>
+                                                    <span id="total-bobot-tambah" class="badge bg-danger fs-6">105%</span>
+                                                </div>
+                                                <div id="warning-bobot-tambah" class="alert alert-warning mt-3 mb-0 py-2">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    Bobot saat ini <strong>105%</strong>. Sesuaikan bobot agar total tepat 100% sebelum menyimpan.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
                                         <label for="catatan" class="form-label">Catatan</label>
                                         <textarea class="form-control" name="catatan" id="catatan" rows="3" placeholder="Catatan untuk nilai..."></textarea>
                                         @error('catatan')
@@ -591,6 +636,50 @@
 
 @section('custom-js')
     <script>
+        // Validasi bobot pada form Tambah Nilai
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('#collapseForm form');
+            const inputs = document.querySelectorAll('.bobot-tambah');
+            const totalEl = document.getElementById('total-bobot-tambah');
+            const warningEl = document.getElementById('warning-bobot-tambah');
+
+            function updateTotalBobot() {
+                let total = 0;
+                inputs.forEach(input => total += parseFloat(input.value || 0));
+                totalEl.textContent = total.toFixed(2).replace(/\\.00$/, '') + '%';
+
+                const valid = Math.abs(total - 100) < 0.01;
+                totalEl.classList.toggle('bg-success', valid);
+                totalEl.classList.toggle('bg-danger', !valid);
+                warningEl.classList.toggle('d-none', valid);
+
+                if (valid) {
+                    warningEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Total bobot sudah tepat <strong>100%</strong>.';
+                    warningEl.classList.remove('alert-warning');
+                    warningEl.classList.add('alert-success');
+                } else {
+                    warningEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Bobot saat ini <strong>' + total.toFixed(2).replace(/\\.00$/, '') + '%</strong>. Sesuaikan bobot agar total tepat 100% sebelum menyimpan.';
+                    warningEl.classList.remove('alert-success');
+                    warningEl.classList.add('alert-warning');
+                }
+            }
+
+            inputs.forEach(input => input.addEventListener('input', updateTotalBobot));
+            if (form) {
+                form.addEventListener('submit', function (event) {
+                    let total = 0;
+                    inputs.forEach(input => total += parseFloat(input.value || 0));
+                    if (Math.abs(total - 100) > 0.01) {
+                        event.preventDefault();
+                        updateTotalBobot();
+                        alert('Total bobot harus tepat 100%. Saat ini: ' + total.toFixed(2) + '%.');
+                    }
+                });
+            }
+
+            updateTotalBobot();
+        });
+
         // Grade mapping
         const gradeMapping = {
             'A': { point: 4.0, min: 85 },
