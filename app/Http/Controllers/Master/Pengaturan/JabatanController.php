@@ -79,7 +79,7 @@ class JabatanController extends Controller
             'prodi_id' => 'nullable|exists:program_studis,id',
             'description' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0|max:9999',
-            'is_active' => nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $jabatan->update([
