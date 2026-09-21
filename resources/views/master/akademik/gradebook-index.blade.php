@@ -2,33 +2,33 @@
 
 @section('custom-css')
 <style>
-.gradebook-wrap { overflow:auto; max-height:68vh; }
-.gradebook { min-width:1180px; font-size:12px; }
-.gradebook th, .gradebook td { white-space:nowrap; vertical-align:middle; padding:4px 5px !important; }
-.gradebook thead th { position:sticky; top:0; z-index:3; background:#f8f9fa; font-size:11px; }
-.sticky-no { position:sticky; left:0; z-index:2; background:#fff; width:38px; }
-.sticky-student { position:sticky; left:38px; z-index:2; background:#fff; min-width:210px; }
-.score { width:58px; height:30px; text-align:center; padding:3px 4px !important; font-size:11px; }
-.status-badge { min-width:75px; display:inline-block; font-size:10px; padding:3px 5px; }
-</style>
+.nilai-page{--soft:#f4f7f6;--line:#e4ebe8}
+.nilai-filter{background:linear-gradient(135deg,#f2f8f5,#fff);border:1px solid var(--line);border-radius:12px}
+.nilai-title{font-weight:700;letter-spacing:-.2px}.nilai-sub{font-size:12px;color:#74817c}
+.filter-label{font-size:11px;font-weight:600;color:#66736e;margin-bottom:4px}
+.nilai-filter .form-select{height:34px;font-size:12px;border-color:#dbe4e0}
+.nilai-table-wrap{overflow:auto;max-height:66vh;border:1px solid var(--line);border-radius:10px}
+.gradebook{min-width:1050px;font-size:11px}.gradebook th,.gradebook td{white-space:nowrap;vertical-align:middle;padding:4px!important}
+.gradebook thead th{position:sticky;top:0;z-index:4;background:#f7faf9;color:#56635e;font-size:10px;text-transform:uppercase;letter-spacing:.25px}
+.sticky-no{position:sticky;left:0;z-index:3;background:#fff;width:36px}.sticky-student{position:sticky;left:36px;z-index:3;background:#fff;min-width:190px;border-right:2px solid #e6eeeb}
+.score{width:52px;height:28px;text-align:center;padding:2px!important;font-size:11px}
+.result-cell{font-weight:700;text-align:center;background:#fafcfb}.status-badge{font-size:9px;padding:3px 5px;min-width:62px}
+.nilai-info{border:1px solid var(--line);border-radius:10px;background:#fff}.stat-pill{font-size:11px;padding:5px 9px;border-radius:20px;background:#f1f5f3;color:#52605b}
+.workflow{font-size:11px;color:#6d7975}.workflow b{color:#3e4a46}
+.workflow-table th{font-size:10px;text-transform:uppercase;color:#687570}.workflow-table td{font-size:11px;padding:5px!important}
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    <div class="card mb-3">
-        <div class="card-header py-2">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <div>
-                    <h5 class="mb-0">Input Nilai Mahasiswa</h5>
-                    <div class="text-muted small">Pilih mata kuliah untuk membuka daftar mahasiswa dari KRS.</div>
-                </div>
-                <div class="small text-muted">Draft → Ajukan → Verifikasi → Publish → Lock</div>
-            </div>
+<div class="container-fluid nilai-page">
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div><h4 class="nilai-title mb-0">Input Nilai Mahasiswa</h4><div class="nilai-sub">Kelola nilai berdasarkan KRS tanpa mengubah relasi data akademik.</div></div>
+            <span class="workflow"><b>Draft</b> → Ajukan → Verifikasi → Publish → Lock</span>
         </div>
-        <div class="card-body">
+        <div class="nilai-filter p-3">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">Tahun Akademik</label>
+                    <label class="filter-label">Tahun Akademik</label>
                     <select name="taka_id" class="form-select">
                         <option value="">Semua</option>
                         @foreach($takaList as $ta)
@@ -37,7 +37,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Semester</label>
+                    <label class="filter-label">Semester</label>
                     <select name="semester" class="form-select">
                         <option value="">Semua</option>
                         @for($s=1;$s<=14;$s++)
@@ -46,7 +46,7 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label mb-1 fw-semibold">Mata Kuliah</label>
+                    <label class="filter-label">Mata Kuliah</label>
                     <select name="matkul_id" class="form-select">
                         <option value="">Semua</option>
                         @foreach($matkulList as $mk)
@@ -55,7 +55,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label mb-1">Kelas</label>
+                    <label class="filter-label">Kelas</label>
                     <select name="kelas_id" class="form-select">
                         <option value="">Semua</option>
                         @foreach($kelasList as $kelas)
@@ -92,8 +92,7 @@
         $weightTotal = array_sum($weights);
     @endphp
 
-    <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="nilai-info p-3 mb-2">
             <div>
                 <strong>{{ $first?->mataKuliah?->name ?? 'Belum memilih mata kuliah' }}</strong>
                 @if($first)
@@ -105,15 +104,11 @@
                 <span class="badge {{ abs($weightTotal-100)<0.01 ? 'bg-success':'bg-danger' }}">Bobot {{ number_format($weightTotal,2) }}%</span>
             </div>
         </div>
-        <div class="card-body">
+        <div>
             @if(!$first)
                 <div class="alert alert-info mb-0">Pilih tahun akademik, semester, mata kuliah, dan/atau kelas untuk membuka gradebook.</div>
             @else
-                <div class="alert alert-light border small">
-                    <strong>Alur resmi:</strong>
-                    Dosen mengisi dan menyimpan <b>Draft</b> → <b>Ajukan</b> → Akademik memverifikasi <b>Approved</b> → Akademik <b>Publish</b> → setelah final dapat <b>Lock</b>.
-                    Nilai yang sudah Published/Locked tidak dapat diedit langsung.
-                </div>
+                <div class="workflow mb-2"><b>Alur:</b> Draft → Ajukan → Approved → Published → Locked. Nilai Published/Locked tidak dapat diedit.</div>
 
                 @if($isDosen)
                     <form method="POST" action="{{ route('dosen.akademik.gradebook.save') }}">
@@ -121,7 +116,7 @@
                     <form method="POST" action="{{ route('web-admin.akademik.gradebook.save') }}">
                 @endif
                     @csrf
-                    <div class="gradebook-wrap border rounded">
+                    <div class="nilai-table-wrap">
                         <table class="table table-sm table-bordered gradebook mb-0">
                             <thead>
                                 <tr>
@@ -203,10 +198,9 @@
                     </div>
                 </form>
 
-                <hr>
-                <h6>Kontrol Workflow</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                <div class="mt-3 mb-2"><strong style="font-size:12px">Kontrol Workflow</strong></div>
+                <div class="table-responsive nilai-info">
+                    <table class="table table-sm align-middle workflow-table mb-0">
                         <thead><tr><th>Mahasiswa</th><th>Status</th><th>Aksi</th><th>Versi</th></tr></thead>
                         <tbody>
                         @foreach($details as $detail)
