@@ -231,6 +231,69 @@ class KRSController extends Controller
         }
     }
 
+    public function updateMatakuliah(Request $request, $code, $detailId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $krs = KRS::where('code', $code)->firstOrFail();
+            if (!$krs->is_editable) {
+                Alert::error('Error', 'KRS tidak dapat diedit karena sudah disetujui atau dikunci');
+                return redirect()->back();
+            }
+
+            $detail = KrsDetail::where('id', $detailId)->where('krs_id', $krs->id)->firstOrFail();
+
+            $request->validate([
+                'mata_kuliah_id' => 'required|exists:mata_kuliahs,id',
+                'kelas_id' => 'nullable|exists:kelas,id',
+                'dosen_id' => 'nullable|exists:dosens,id',
+                'notes' => 'nullable|string',
+            ]);
+
+            $mataKuliah = MataKuliah::findOrFail($request->mata_kuliah_id);
+
+            $duplicate = KrsDetail::where('krs_id', $krs->id)
+                ->where('matkul_id', $mataKuliah->id)
+                ->where('id', '!=', $detail->id)
+                ->where('status', 'Aktif')
+                ->exists();
+
+            if ($duplicate) {
+                Alert::error('Error', 'Mata kuliah tersebut sudah ada dalam KRS ini.');
+                return redirect()->back()->withInput();
+            }
+
+            $currentSks = $krs->details()
+                ->where('id', '!=', $detail->id)
+                ->whereIn('status', ['Aktif', 'Mengulang'])
+                ->sum('sks');
+            $newTotal = $currentSks + (int) $mataKuliah->sks;
+
+            if ($newTotal > $krs->batas_sks) {
+                Alert::error('Error', 'Perubahan mata kuliah melebihi batas maksimal ' . $krs->batas_sks . ' SKS.');
+                return redirect()->back()->withInput();
+            }
+
+            $detail->update([
+                'matkul_id' => $mataKuliah->id,
+                'kelas_id' => $request->kelas_id,
+                'dosen_id' => $request->dosen_id,
+                'sks' => $mataKuliah->sks,
+                'notes' => $request->notes,
+                'updated_by' => Auth::id(),
+            ]);
+
+            DB::commit();
+            Alert::success('Success', 'Mata kuliah dalam KRS berhasil diperbarui.');
+            return redirect()->back();
+        } catch (\\Throwable $e) {
+            DB::rollBack();
+            Alert::error('Error', 'Gagal memperbarui mata kuliah: ' . $e->getMessage());
+            return redirect()->back()->withInput();
+        }
+    }
+
     public function removeMatakuliah($code, $detailId)
     {
         try {
