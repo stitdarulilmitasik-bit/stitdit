@@ -156,6 +156,19 @@ class AkademikOperasionalController extends Controller
             $attendance->update(['created_by' => Auth::guard('dosen')->id()]);
         }
 
+        // Kehadiran dihitung kumulatif untuk mata kuliah/mahasiswa/semester.
+        // Hanya status Hadir yang dihitung sebagai kehadiran; Izin, Sakit, dan Alpa
+        // tidak menambah persentase hadir. Komponen ini berbobot 20% dari nilai akhir.
+        $totalPertemuan = $nilai->kehadiranMahasiswa()->count();
+        $jumlahHadir = $nilai->kehadiranMahasiswa()->where('status', 'Hadir')->count();
+        $persentaseKehadiran = $totalPertemuan > 0
+            ? round(($jumlahHadir / $totalPertemuan) * 100, 2)
+            : 0;
+
+        $nilai->kehadiran = $persentaseKehadiran;
+        $nilai->bobot_kehadiran = 20;
+        $nilai->save();
+
         return redirect()->route('dosen.akademik.kehadiran', [
             'semester' => $request->input('redirect_semester', $nilai->semester),
             'pertemuan' => $request->input('redirect_pertemuan', $request->pertemuan),
