@@ -47,7 +47,6 @@
 @php
     // Data identitas mahasiswa untuk report KRS.
     $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
-    $dosenNidn = $dosenWali->nidn ?? $dosenWali->nidn_number ?? $dosenWali->numb_nidn ?? $dosenWali->number_nidn ?? '-';
     $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
     $tahunMasuk = '-';
     if ($tahunMasukRaw !== null && $tahunMasukRaw !== '') {
@@ -57,6 +56,7 @@
             : $tahunMasukRaw;
     }
     $dosenWali = $krs->dosenPA ?? null; if (!$dosenWali) { $fallbackJabatan = \App\Models\Jabatan::with('dosen')->where('is_active', true)->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])->where(function ($q) use ($krs) { $q->whereNull('prodi_id')->orWhere('prodi_id', $krs->mahasiswa->prodi_id); })->whereNotNull('dosen_id')->orderBy('sort_order')->first(); $dosenWali = $fallbackJabatan?->dosen; }
+    $dosenNidn = $dosenWali?->nidn ?? $dosenWali?->nidn_number ?? $dosenWali?->numb_nidn ?? $dosenWali?->number_nidn ?? '-';
 
     $logo = null;
     $logoCandidates = [
