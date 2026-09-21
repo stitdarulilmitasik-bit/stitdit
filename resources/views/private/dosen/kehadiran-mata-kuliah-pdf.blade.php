@@ -84,10 +84,10 @@
 <table class="data">
     <colgroup>
         <col style="width:3%">
-        <col style="width:12%">
-        <col style="width:21%">
+        <col style="width:15%">
+        <col style="width:24%">
         @for($i=1;$i<=16;$i++)<col style="width:2.5%">@endfor
-        <col style="width:5.4%"><col style="width:5.4%"><col style="width:5.4%"><col style="width:5.4%"><col style="width:5.4%">
+        <col style="width:4.6%"><col style="width:4.6%"><col style="width:4.6%"><col style="width:4.6%"><col style="width:4.6%">
     </colgroup>
     <thead>
         <tr>
