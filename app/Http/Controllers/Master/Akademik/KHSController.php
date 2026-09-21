@@ -449,13 +449,25 @@ class KHSController extends Controller
             $data['khs_list'] = $khsList;
             $data['webs'] = WebSetting::first();
 
-            // Hitung statistik keseluruhan
-            $totalSksLulus = $khsList->sum('total_sks_lulus');
-            $totalMutuKumulatif = $khsList->last()->total_mutu_kumulatif;
-            $ipkAkhir = $khsList->last()->ipk;
+            // Ambil seluruh nilai dari KHS yang sudah dipublish.
+            // View transkrip-pdf menggunakan variabel $nilai, $totalSks, dan $ipk.
+            $nilai = $khsList->flatMap(function ($khs) {
+                return $khs->nilaiSemester;
+            })->values();
 
-            $data['total_sks_lulus'] = $totalSksLulus;
-            $data['ipk_akhir'] = $ipkAkhir;
+            $totalSks = $nilai->sum(function ($item) {
+                return (float) ($item->sks ?? 0);
+            });
+
+            $totalMutu = $nilai->sum(function ($item) {
+                return (float) ($item->mutu_x_sks ?? 0);
+            });
+
+            $ipk = $totalSks > 0 ? $totalMutu / $totalSks : 0;
+
+            $data['nilai'] = $nilai;
+            $data['totalSks'] = $totalSks;
+            $data['ipk'] = $ipk;
 
             $pdf = PDF::loadView('master.akademik.transkrip-pdf', $data)
                 ->setPaper('a4', 'portrait');
