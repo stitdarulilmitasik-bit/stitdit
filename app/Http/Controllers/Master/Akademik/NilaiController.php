@@ -21,6 +21,32 @@ use Alert;
 
 class NilaiController extends Controller
 {
+    private function isDosen()
+    {
+        return Auth::guard('dosen')->check();
+    }
+
+    private function dosenId()
+    {
+        return Auth::guard('dosen')->id();
+    }
+
+    private function mataKuliahDiampuQuery($query, $dosenId)
+    {
+        return $query->where(function ($q) use ($dosenId) {
+            $q->where('dosen1_id', $dosenId)
+                ->orWhere('dosen2_id', $dosenId)
+                ->orWhere('dosen3_id', $dosenId);
+        });
+    }
+
+    private function nilaiDosen($dosenId)
+    {
+        return Nilai::whereHas('mataKuliah', function ($q) use ($dosenId) {
+            $this->mataKuliahDiampuQuery($q, $dosenId);
+        });
+    }
+
     public function renderNilai()
     {
         $user = Auth::user();
@@ -30,13 +56,31 @@ class NilaiController extends Controller
         $data['pages'] = "Nilai Mahasiswa";
         $data['academy'] = $data['webs']->school_apps . ' by ' . $data['webs']->school_name;
 
-        $data['nilai_list'] = Nilai::with(['mahasiswa', 'mataKuliah', 'tahunAkademik'])
-            ->latest()
-            ->paginate(20);
+        if ($this->isDosen()) {
+            $dosenId = $this->dosenId();
+
+            // Dashboard Dosen hanya menerima mata kuliah yang benar-benar
+            // tercatat pada dosen1_id/dosen2_id/dosen3_id.
+            $data['nilai_list'] = $this->nilaiDosen($dosenId)
+                ->with(['mahasiswa', 'mataKuliah', 'tahunAkademik'])
+                ->latest()
+                ->paginate(20);
+
+            $data['mata_kuliah'] = MataKuliah::where(function ($q) use ($dosenId) {
+                $this->mataKuliahDiampuQuery($q, $dosenId);
+            })->orderBy('name')->get();
+
+            $data['mahasiswa'] = Mahasiswa::where('type', 1)->get();
+            $data['dosens'] = Dosen::whereKey($dosenId)->get();
+        } else {
+            $data['nilai_list'] = Nilai::with(['mahasiswa', 'mataKuliah', 'tahunAkademik'])
+                ->latest()
+                ->paginate(20);
+            $data['mata_kuliah'] = MataKuliah::all();
+            $data['mahasiswa'] = Mahasiswa::where('type', 1)->get();
+            $data['dosens'] = Dosen::where('type', 1)->get(); // Dosen Aktif
+        }
         $data['tahun_akademik'] = TahunAkademik::all();
-        $data['mata_kuliah'] = MataKuliah::all();
-        $data['mahasiswa'] = Mahasiswa::where('type', 1)->get();
-        $data['dosens'] = Dosen::where('type', 1)->get(); // Dosen Aktif
 
         return view('master.akademik.nilai-index', $data, compact('user'));
     }
@@ -78,6 +122,10 @@ class NilaiController extends Controller
         try {
             DB::beginTransaction();
 
+            $request->merge([
+                'matkul_id' => $request->input('matkul_id', $request->input('mata_kuliah_id')),
+            ]);
+
             $request->validate([
                 'mahasiswa_id' => 'required|exists:mahasiswas,id',
                 'matkul_id' => 'required|exists:mata_kuliahs,id',
@@ -98,7 +146,17 @@ class NilaiController extends Controller
                 return redirect()->back()->withInput();
             }
 
-            $mataKuliah = MataKuliah::find($request->matkul_id);
+            $mataKuliah = MataKuliah::findOrFail($request->matkul_id);
+
+            // Dosen hanya boleh membuat nilai untuk mata kuliah yang diampunya.
+            if ($this->isDosen()) {
+                $allowed = $this->mataKuliahDiampuQuery(
+                    MataKuliah::whereKey($mataKuliah->id),
+                    $this->dosenId()
+                )->exists();
+
+                abort_unless($allowed, 403, 'Mata kuliah bukan mata kuliah yang Anda ampu.');
+            }
 
             $nilai = Nilai::create([
                 'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
@@ -127,7 +185,10 @@ class NilaiController extends Controller
         try {
             DB::beginTransaction();
 
-            $nilai = Nilai::where('code', $code)->firstOrFail();
+            $nilai = ($this->isDosen()
+                ? $this->nilaiDosen($this->dosenId())
+                : Nilai::query()
+            )->where('code', $code)->firstOrFail();
 
             // Cek apakah nilai masih bisa diedit
             if (!$nilai->is_editable) {
@@ -212,7 +273,10 @@ class NilaiController extends Controller
         try {
             DB::beginTransaction();
 
-            $nilai = Nilai::where('code', $code)->firstOrFail();
+            $nilai = ($this->isDosen()
+                ? $this->nilaiDosen($this->dosenId())
+                : Nilai::query()
+            )->where('code', $code)->firstOrFail();
 
             if ($nilai->status !== 'Draft') {
                 Alert::error('Error', 'Nilai sudah dipublish atau dikunci');
