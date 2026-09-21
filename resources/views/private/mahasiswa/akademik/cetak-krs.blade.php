@@ -72,27 +72,7 @@ th { background:#eee; }
 <tr><td>Status KRS</td><td>: {{ $krsHeader->status ?? 'Belum dibuat' }}</td><td>Kode KRS</td><td>: {{ $krsHeader->code ?? '-' }}</td></tr>
 </table>
 <br>
-<table>
-<thead><tr><th width="5%">No</th><th>Kode</th><th>Mata Kuliah</th><th>SKS</th><th>Kelas</th><th>Dosen</th></tr></thead>
-<tbody>
-@forelse($krs as $i => $item)
-<tr>
-<td class="text-center">{{ $i+1 }}</td>
-<td>{{ $item->mataKuliah->kode_mk ?? $item->mataKuliah->code ?? '-' }}</td>
-<td>{{ $item->mataKuliah->nama ?? $item->mataKuliah->name ?? '-' }}</td>
-<td class="text-center">{{ $item->sks ?? $item->mataKuliah->sks ?? 0 }}</td>
-<td>{{ $item->kelas->nama_kelas ?? $item->kelas->name ?? '-' }}</td>
-<td>{{ $item->dosen->nama_lengkap ?? $item->dosen->name ?? '-' }}</td>
-</tr>
-@empty
-<tr><td colspan="6" class="text-center">Belum ada mata kuliah dalam KRS.</td></tr>
-@endforelse
-</tbody>
-<tfoot><tr><th colspan="3" class="text-right">Total SKS</th><th class="text-center">{{ $krs->sum('sks') }}</th><th colspan="2"></th></tr></tfoot>
-</table>
-<div class="signature"><div class="signature-box"><p>Mengetahui,<br>Dosen Pembimbing Akademik</p><br><br><br><strong>{{ $krsHeader->dosenPA?->name ?? '________________________' }}</strong></div></div>
-</body>
-</html><table class="krs-table">
+<table class="krs-table">
 <colgroup>
 <col style="width:8mm"><col style="width:22mm"><col style="width:62mm"><col style="width:10mm"><col style="width:12mm"><col style="width:66mm">
 </colgroup>
