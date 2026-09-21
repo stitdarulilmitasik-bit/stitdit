@@ -102,7 +102,11 @@
 <div class="header">
     <div class="faculty-name">{{ $krs->mahasiswa->programStudi->fakultas->name ?? 'FAKULTAS' }}</div>
     <div class="document-title">KARTU RENCANA STUDI (KRS)</div>
-    <div class="semester-line">Semester {{ $krs->semester }} | {{ $krs->tahunAkademik->name ?? '-' }}</div>
+    @php
+    $tahunAkademik = $krs->tahunAkademik->name ?? '-';
+    $tahunAkademik = preg_replace('/\s*[-|]\s*(Ganjil|Genap)\s*$/i', '', $tahunAkademik);
+@endphp
+<div class="semester-line">Semester {{ $krs->semester }} | {{ $tahunAkademik }}</div>
 </div>
 
 <div class="student-info">
