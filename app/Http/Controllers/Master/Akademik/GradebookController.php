@@ -54,6 +54,9 @@ class GradebookController extends Controller
         $matkulId = $request->filled('matkul_id') ? (int) $request->matkul_id : null;
         $kelasId = $request->filled('kelas_id') ? (int) $request->kelas_id : null;
 
+        // A gradebook is a single course/section workset.
+        // Requiring a course prevents mixing students from different courses
+        // under one grading scheme.
         $detailsQuery = KrsDetail::query()
             ->with([
                 'krs.mahasiswa',
@@ -97,10 +100,9 @@ class GradebookController extends Controller
             });
         }
 
-        $details = $detailsQuery
-            ->orderBy('kelas_id')
-            ->orderBy('matkul_id')
-            ->get();
+        $details = $matkulId
+            ? $detailsQuery->orderBy('kelas_id')->orderBy('matkul_id')->get()
+            : collect();
 
         // The gradebook is driven by KRS. A grade row must never exist
         // without a valid enrollment detail.
