@@ -424,11 +424,19 @@ class KHSController extends Controller
     public function transkrip($mahasiswaId)
     {
         try {
-            $mahasiswa = Mahasiswa::with(['programStudi.fakultas', 'kelas'])->where('id', $mahasiswaId)->orWhere('code', $mahasiswaId)->firstOrFail();
+            // Parameter route dapat berupa ID database maupun kode mahasiswa.
+            // Setelah mahasiswa ditemukan, selalu gunakan ID database yang benar
+            // saat mencari KHS karena kolom KHS.mahasiswa_id menyimpan ID.
+            $mahasiswa = Mahasiswa::with(['programStudi.fakultas', 'kelas'])
+                ->where(function ($query) use ($mahasiswaId) {
+                    $query->where('id', $mahasiswaId)
+                        ->orWhere('code', $mahasiswaId);
+                })
+                ->firstOrFail();
 
             $khsList = KHS::with(['tahunAkademik', 'nilaiSemester.mataKuliah'])
-                ->where('mahasiswa_id', $mahasiswaId)
-                ->where('status_generate', 'Published')
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->whereRaw("LOWER(TRIM(status_generate)) = 'published'")
                 ->orderBy('semester')
                 ->get();
 
