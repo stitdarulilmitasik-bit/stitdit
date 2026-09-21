@@ -8,6 +8,7 @@ use App\Models\Akademik\Nilai;
 use App\Models\Akademik\TahunAkademik;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\Kelas;
+use App\Models\Akademik\KehadiranMahasiswa;
 use App\Services\Akademik\GradebookService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -78,6 +79,29 @@ class GradebookController extends Controller
         $details = $matkulId
             ? $detailsQuery->orderBy('kelas_id')->orderBy('matkul_id')->get()
             : collect();
+
+        // Nilai kehadiran di gradebook bersumber dari tabel kehadiran_mahasiswas.
+        // Skor kehadiran = jumlah Hadir / seluruh pertemuan yang tercatat x 100.
+        if ($details->isNotEmpty()) {
+            $nilaiIds = $details->pluck('nilai.id')->filter()->values();
+            if ($nilaiIds->isNotEmpty()) {
+                $attendanceRows = KehadiranMahasiswa::whereIn('nilai_id', $nilaiIds)->get();
+                $attendanceByNilai = $attendanceRows->groupBy('nilai_id');
+                foreach ($details as $detail) {
+                    $nilai = $detail->nilai;
+                    if (!$nilai || !$nilai->id) continue;
+                    $rows = $attendanceByNilai->get($nilai->id, collect());
+                    $totalPertemuan = $rows->count();
+                    $hadir = $rows->filter(function ($row) {
+                        $status = strtolower(trim((string) ($row->status ?? $row->kehadiran ?? $row->keterangan ?? '')));
+                        return in_array($status, ['hadir', 'h', 'present'], true);
+                    })->count();
+                    $nilai->kehadiran = $totalPertemuan > 0
+                        ? round(($hadir / $totalPertemuan) * 100, 2)
+                        : null;
+                }
+            }
+        }
 
         foreach ($details as $detail) {
             if (!$detail->nilai) {
@@ -155,9 +179,22 @@ class GradebookController extends Controller
                 $nilai->quiz_1 = array_key_exists('quiz',$row) && $row['quiz']!=='' ? $row['quiz'] : null;
                 $nilai->quiz_2 = null;
 
-                foreach(['uts','uas','praktikum','kehadiran'] as $field) {
+                foreach(['uts','uas','praktikum'] as $field) {
                     if(array_key_exists($field,$row)) $nilai->{$field}=$row[$field]===''?null:$row[$field];
                 }
+
+                // Kehadiran tidak lagi diinput manual. Ambil langsung dari
+                // tabel kehadiran_mahasiswas agar gradebook selalu mengikuti
+                // presensi mahasiswa yang sebenarnya.
+                $attendanceRows = KehadiranMahasiswa::where('nilai_id', $nilai->id)->get();
+                $totalPertemuan = $attendanceRows->count();
+                $hadir = $attendanceRows->filter(function ($attendance) {
+                    $status = strtolower(trim((string) ($attendance->status ?? $attendance->kehadiran ?? $attendance->keterangan ?? '')));
+                    return in_array($status, ['hadir', 'h', 'present'], true);
+                })->count();
+                $nilai->kehadiran = $totalPertemuan > 0
+                    ? round(($hadir / $totalPertemuan) * 100, 2)
+                    : null;
 
                 $this->grades->calculate($nilai);
                 $nilai->updated_by=Auth::guard('web')->id() ?: Auth::id();
