@@ -168,7 +168,7 @@ class AkademikOperasionalController extends Controller
         $this->syncNilaiDosen($dosenId);
         $data['nilai'] = Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
             ->where('semester', $semester)
-            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $dosenId))
+            ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosenId))
             ->latest()
             ->paginate(50)
             ->withQueryString();
@@ -190,7 +190,7 @@ class AkademikOperasionalController extends Controller
 
         $nilai = Nilai::whereKey($request->nilai_id)
             ->where('semester', $request->semester)
-            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $dosen->id))
+            ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
             ->firstOrFail();
 
         $attendance = KehadiranMahasiswa::updateOrCreate(
@@ -210,7 +210,7 @@ class AkademikOperasionalController extends Controller
 
         // Kehadiran dihitung kumulatif untuk mata kuliah/mahasiswa/semester.
         // Hanya status Hadir yang dihitung sebagai kehadiran; Izin, Sakit, dan Alpa
-        // tidak menambah persentase hadir. Komponen ini berbobot 20% dari nilai akhir.
+        // tidak menambah persentase hadir. Komponen kehadiran berbobot 15% dari nilai akhir.
         $totalPertemuan = $nilai->kehadiranMahasiswa()->count();
         $jumlahHadir = $nilai->kehadiranMahasiswa()->where('status', 'Hadir')->count();
         $persentaseKehadiran = $totalPertemuan > 0
@@ -218,7 +218,7 @@ class AkademikOperasionalController extends Controller
             : 0;
 
         $nilai->kehadiran = $persentaseKehadiran;
-        $nilai->bobot_kehadiran = 20;
+        $nilai->bobot_kehadiran = 15;
         $nilai->save();
 
         return redirect()->route('dosen.akademik.kehadiran', [
