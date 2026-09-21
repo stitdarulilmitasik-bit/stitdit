@@ -319,7 +319,14 @@
                                         </td>
                                         @if (in_array($krs->status, ['draft', 'submitted']))
                                             <td class="text-center" data-label="Aksi">
-                                                <button class="btn btn-sm btn-warning me-1" onclick="editDetail({{ $detail->id }}, {{ $detail->matkul_id }}, {{ $detail->kelas_id ?? 'null' }}, {{ $detail->dosen_id ?? 'null' }}, @js($detail->notes ?? ''))" title="Edit Mata Kuliah">
+                                                <button type="button" class="btn btn-sm btn-warning me-1 js-edit-mata-kuliah"
+                                                    data-detail-id="{{ $detail->id }}"
+                                                    data-matkul-id="{{ $detail->matkul_id }}"
+                                                    data-kelas-id="{{ $detail->kelas_id ?? '' }}"
+                                                    data-dosen-id="{{ $detail->dosen_id ?? '' }}"
+                                                    data-notes="{{ e($detail->notes ?? '') }}"
+                                                    data-action="{{ route($spref . 'akademik.krs-update-matakuliah', [$krs->code, $detail->id]) }}"
+                                                    title="Edit Mata Kuliah">
                                                     <i class="fas fa-pen"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-danger" onclick="removeDetail('{{ $detail->id }}')">
@@ -465,15 +472,63 @@
 @section('custom-js')
     <script>
 
-        function editDetail(detailId, matkulId, kelasId, dosenId, notes) {
+        function openEditMataKuliah(button) {
+            const modalElement = document.getElementById('editMataKuliahModal');
             const form = document.getElementById('editMataKuliahForm');
-            const baseAction = @json(route($spref . 'akademik.krs-update-matakuliah', [$krs->code, 0]));
-            form.action = baseAction.replace(/\/0$/, '/' + detailId);
-            document.getElementById('edit_mata_kuliah_id').value = matkulId || '';
-            document.getElementById('edit_kelas_id').value = kelasId || '';
-            document.getElementById('edit_dosen_id').value = dosenId || '';
-            document.getElementById('edit_notes').value = notes || '';
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('editMataKuliahModal')).show();
+
+            if (!modalElement || !form) {
+                alert('Form Edit Mata Kuliah tidak ditemukan. Silakan refresh halaman.');
+                return;
+            }
+
+            form.action = button.dataset.action;
+            document.getElementById('edit_mata_kuliah_id').value = button.dataset.matkulId || '';
+            document.getElementById('edit_kelas_id').value = button.dataset.kelasId || '';
+            document.getElementById('edit_dosen_id').value = button.dataset.dosenId || '';
+            document.getElementById('edit_notes').value = button.dataset.notes || '';
+
+            if (window.bootstrap && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalElement).show();
+                return;
+            }
+
+            modalElement.classList.add('show');
+            modalElement.style.display = 'block';
+            modalElement.removeAttribute('aria-hidden');
+            document.body.classList.add('modal-open');
+
+            let backdrop = document.getElementById('editMataKuliahBackdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'editMataKuliahBackdrop';
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.js-edit-mata-kuliah').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    openEditMataKuliah(this);
+                });
+            });
+
+            document.querySelectorAll('#editMataKuliahModal [data-bs-dismiss="modal"]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const modalElement = document.getElementById('editMataKuliahModal');
+                    const backdrop = document.getElementById('editMataKuliahBackdrop');
+
+                    if (window.bootstrap && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+                    } else {
+                        modalElement.classList.remove('show');
+                        modalElement.style.display = 'none';
+                        modalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        if (backdrop) backdrop.remove();
+                    }
+                });
+            });
         }
 
         function approveKRS() {
