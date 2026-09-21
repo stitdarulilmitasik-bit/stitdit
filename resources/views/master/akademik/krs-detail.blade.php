@@ -443,6 +443,9 @@
                     <form action="{{ route($spref . 'akademik.krs-add-matakuliah', $krs->code) }}" method="POST">
                         @csrf
                         <div class="modal-body">
+                            <div class="alert alert-info py-2">
+                                Pilih Mata Kuliah, kemudian Kelas. Jadwal dan Dosen akan menyesuaikan otomatis.
+                            </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="mata_kuliah_id" class="form-label">Mata Kuliah</label>
@@ -457,21 +460,28 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="kelas_id" class="form-label">Kelas</label>
-                                    <select class="form-select" name="kelas_id" id="kelas_id" onchange="loadJadwal()">
-                                        <option value="">Pilih Kelas</option>
+                                    <select class="form-select" name="kelas_id" id="kelas_id" required disabled onchange="loadJadwal()">
+                                        <option value="">Pilih Mata Kuliah terlebih dahulu</option>
                                     </select>
                                 </div>
-                                <div class="col-12 mb-3">
-                                    <label for="jadwal_kuliah_id" class="form-label">Jadwal</label>
-                                    <select class="form-select" name="jadwal_kuliah_id" id="jadwal_kuliah_id">
-                                        <option value="">Pilih Jadwal</option>
+                                <div class="col-md-8 mb-3">
+                                    <label for="jadwal_kuliah_id" class="form-label">Jadwal Kuliah</label>
+                                    <select class="form-select" name="jadwal_kuliah_id" id="jadwal_kuliah_id" required disabled onchange="loadDosen()">
+                                        <option value="">Pilih Kelas terlebih dahulu</option>
                                     </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Dosen</label>
+                                    <input type="text" class="form-control" id="dosen_display" readonly placeholder="Otomatis dari jadwal">
+                                    <input type="hidden" name="dosen_id" id="dosen_id">
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary">Tambah Mata Kuliah</button>
+                            <button type="submit" class="btn btn-primary" id="btnTambahMatakuliah" disabled>
+                                <i class="fas fa-plus me-1"></i>Tambah Mata Kuliah
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -587,39 +597,114 @@
             }
         }
 
+        const jadwalKrs = @json($jadwal_kuliah->map(function ($jadwal) {
+            return [
+                'id' => $jadwal->id,
+                'matkul_id' => $jadwal->matkul_id,
+                'dosen_id' => $jadwal->dosen_id,
+                'dosen_name' => $jadwal->dosen?->name ?? '-',
+                'hari' => $jadwal->hari,
+                'waktu' => $jadwal->waktuKuliah?->name ?? ($jadwal->waktuKuliah?->start_time ?? ''),
+                'ruang' => $jadwal->ruang?->name ?? '-',
+                'kelas_ids' => $jadwal->kelas->pluck('id')->values(),
+                'kelas_names' => $jadwal->kelas->pluck('name')->values(),
+            ];
+        }));
+
         function loadKelas() {
             const mataKuliahId = document.getElementById('mata_kuliah_id').value;
             const kelasSelect = document.getElementById('kelas_id');
             const jadwalSelect = document.getElementById('jadwal_kuliah_id');
+            const dosenDisplay = document.getElementById('dosen_display');
+            const dosenInput = document.getElementById('dosen_id');
+            const button = document.getElementById('btnTambahMatakuliah');
 
-            // Reset kelas and jadwal
             kelasSelect.innerHTML = '<option value="">Pilih Kelas</option>';
-            jadwalSelect.innerHTML = '<option value="">Pilih Jadwal</option>';
+            jadwalSelect.innerHTML = '<option value="">Pilih Kelas terlebih dahulu</option>';
+            dosenDisplay.value = '';
+            dosenInput.value = '';
+            button.disabled = true;
 
-            if (mataKuliahId) {
-                // In a real implementation, you would make an AJAX call here
-                // For now, we'll just enable the select
-                kelasSelect.disabled = false;
-            } else {
+            if (!mataKuliahId) {
                 kelasSelect.disabled = true;
                 jadwalSelect.disabled = true;
+                return;
             }
+
+            const schedules = jadwalKrs.filter(j => String(j.matkul_id) === String(mataKuliahId));
+            const classes = new Map();
+
+            schedules.forEach(j => {
+                (j.kelas_ids || []).forEach((id, index) => {
+                    if (!classes.has(String(id))) {
+                        classes.set(String(id), j.kelas_names[index] || ('Kelas #' + id));
+                    }
+                });
+            });
+
+            if (!classes.size) {
+                kelasSelect.innerHTML = '<option value="">Belum ada kelas/jadwal untuk mata kuliah ini</option>';
+                kelasSelect.disabled = true;
+                return;
+            }
+
+            classes.forEach((name, id) => {
+                kelasSelect.insertAdjacentHTML('beforeend', '<option value="' + id + '">' + escapeHtml(name) + '</option>');
+            });
+            kelasSelect.disabled = false;
         }
 
         function loadJadwal() {
+            const mataKuliahId = document.getElementById('mata_kuliah_id').value;
             const kelasId = document.getElementById('kelas_id').value;
             const jadwalSelect = document.getElementById('jadwal_kuliah_id');
+            const dosenDisplay = document.getElementById('dosen_display');
+            const dosenInput = document.getElementById('dosen_id');
+            const button = document.getElementById('btnTambahMatakuliah');
 
-            // Reset jadwal
             jadwalSelect.innerHTML = '<option value="">Pilih Jadwal</option>';
+            dosenDisplay.value = '';
+            dosenInput.value = '';
+            button.disabled = true;
 
-            if (kelasId) {
-                // In a real implementation, you would make an AJAX call here
-                // For now, we'll just enable the select
-                jadwalSelect.disabled = false;
-            } else {
+            if (!mataKuliahId || !kelasId) {
                 jadwalSelect.disabled = true;
+                return;
+            }
+
+            const schedules = jadwalKrs.filter(j =>
+                String(j.matkul_id) === String(mataKuliahId) &&
+                (j.kelas_ids || []).map(String).includes(String(kelasId))
+            );
+
+            schedules.forEach(j => {
+                const label = [j.hari, j.waktu, 'Ruang: ' + j.ruang].filter(Boolean).join(' • ');
+                jadwalSelect.insertAdjacentHTML('beforeend',
+                    '<option value="' + j.id + '">' + escapeHtml(label || ('Jadwal #' + j.id)) + '</option>'
+                );
+            });
+
+            jadwalSelect.disabled = schedules.length === 0;
+            if (!schedules.length) {
+                jadwalSelect.innerHTML = '<option value="">Belum ada jadwal untuk kelas ini</option>';
             }
         }
-    </script>
+
+        function loadDosen() {
+            const scheduleId = document.getElementById('jadwal_kuliah_id').value;
+            const jadwal = jadwalKrs.find(j => String(j.id) === String(scheduleId));
+            const dosenDisplay = document.getElementById('dosen_display');
+            const dosenInput = document.getElementById('dosen_id');
+            const button = document.getElementById('btnTambahMatakuliah');
+
+            dosenDisplay.value = jadwal?.dosen_name || '-';
+            dosenInput.value = jadwal?.dosen_id || '';
+            button.disabled = !jadwal || !jadwal.dosen_id;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function (char) {
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char];
+            });
+        }    </script>
 @endsection
