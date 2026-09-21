@@ -440,10 +440,8 @@
                         <h5 class="modal-title">Tambah Mata Kuliah</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form action="{{ route($spref . 'akademik.krs-handle') }}" method="post">
+                    <form action="{{ route($spref . 'akademik.krs-add-matakuliah', $krs->code) }}" method="POST">
                         @csrf
-                        <input type="hidden" name="krs_id" value="{{ $krs->id }}">
-                        <input type="hidden" name="action" value="add_detail">
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
