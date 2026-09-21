@@ -306,7 +306,9 @@ class AkademikOperasionalController extends Controller
     public function webAdminKehadiran(Request $request)
     {
         $webs = WebSetting::first();
-        $semester = max(1, min(8, (int)$request->input('semester', 1)));\n        $mahasiswaId = $request->input('mahasiswa_id');\n        $mataKuliahId = $request->input('mata_kuliah_id');
+        $semester = max(1, min(8, (int)$request->input('semester', 1)));
+        $mahasiswaId = $request->input('mahasiswa_id');
+        $mataKuliahId = $request->input('mata_kuliah_id');
 
         $nilai = Nilai::with([
             'mahasiswa.programStudi',
