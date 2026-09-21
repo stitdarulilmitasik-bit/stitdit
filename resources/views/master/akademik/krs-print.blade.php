@@ -5,59 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kartu Rencana Studi - {{ $krs->mahasiswa->name }}</title>
     <style>
-        @page { size: A4 portrait; margin: 0.8cm 0.75cm; }
-        body { font-family: 'Times New Roman', serif; font-size: 9.5pt; line-height: 1.15; color: #000; margin: 0; padding: 0; }
+        @page { size: A4 portrait; margin: 0.75cm 0.7cm; }
+        body { font-family: 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.2; color: #000; margin: 0; padding: 0; }
         .page-width { width: 100%; }
 
-        .kop { width: 100%; border-bottom: 2px solid #111; padding-bottom: 6px; margin-bottom: 10px; }
-        .kop-table { width: 100%; border-collapse: collapse; }
-        .kop-logo { width: 85px; text-align: center; vertical-align: middle; }
-        .kop-logo img { width: 68px; height: 68px; object-fit: contain; }
+        .kop { width: 100%; border-bottom: 2px solid #111; padding-bottom: 7px; margin-bottom: 10px; }
+        .kop-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .kop-logo { width: 88px; text-align: center; vertical-align: middle; }
+        .kop-logo img { width: 70px; height: 70px; object-fit: contain; }
         .kop-text { text-align: center; vertical-align: middle; line-height: 1.25; }
-        .kop-text .line1 { font-size: 12pt; font-weight: bold; }
-        .kop-text .line2 { font-size: 15pt; font-weight: bold; }
-        .kop-text .line3 { font-size: 8pt; font-weight: bold; }
-        .kop-text .address { font-size: 8pt; }
-        .header { text-align: center; margin-bottom: 8px; }
-        .faculty-name { font-size: 10.5pt; font-weight: bold; margin-bottom: 3px; }
-        .document-title { display: inline-block; width: auto; max-width: 80%; font-size: 12pt; font-weight: bold; text-decoration: underline; margin: 4px auto 0; padding: 0 18px; }
-        .semester-line { font-size: 9pt; margin-top: 4px; }
-        .student-info { margin: 8px 0; }
-        .student-info table { width: 100%; border-collapse: collapse; }
-        .student-info td { padding: 3px 3px; vertical-align: middle; }
+        .kop-text .line1 { font-size: 13pt; font-weight: bold; }
+        .kop-text .line2 { font-size: 16pt; font-weight: bold; }
+        .kop-text .line3 { font-size: 9pt; font-weight: bold; }
+        .kop-text .address { font-size: 8.5pt; }
+        .header { text-align: center; margin-bottom: 9px; }
+        .faculty-name { font-size: 11.5pt; font-weight: bold; margin-bottom: 3px; }
+        .document-title { display: inline-block; width: auto; max-width: 80%; font-size: 13pt; font-weight: bold; text-decoration: underline; margin: 4px auto 0; padding: 0 18px; }
+        .semester-line { font-size: 10.5pt; font-weight: bold; margin-top: 4px; }
+        .student-info { margin: 9px 0; }
+        .student-info table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .student-info td { padding: 4px 3px; vertical-align: middle; }
         .student-info .label { width: 92px; font-weight: bold; white-space: nowrap; }
         .student-info .colon { width: 8px; text-align: center; }
-        .student-info .value { white-space: nowrap; }
+        .student-info .value { white-space: nowrap; overflow: hidden; }
 
-        .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 8px 0; border: 1px solid #000; }
-        .courses-table th, .courses-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; font-size: 7.5pt; line-height: 1.05; vertical-align: middle; }
-        .courses-table th { background-color: #f0f0f0; font-weight: bold; }
-        .courses-table .subject-name { text-align: left; padding-left: 4px; overflow-wrap: anywhere; font-size: 7.5pt; }
-        .courses-table .room { text-align: center; font-size: 7pt; white-space: nowrap; }
-        .courses-table .lecturer { text-align: left; padding-left: 4px; font-size: 7pt; overflow-wrap: anywhere; }
+        .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 9px 0; border: 1px solid #000; }
+        .courses-table th, .courses-table td { border: 1px solid #000; padding: 4px 3px; text-align: center; font-size: 8.5pt; line-height: 1.15; vertical-align: middle; overflow-wrap: anywhere; word-break: normal; }
+        .courses-table th { background-color: #f0f0f0; font-weight: bold; font-size: 9pt; }
+        .courses-table .subject-name { text-align: left; padding-left: 5px; font-size: 8.5pt; }
+        .courses-table .room { text-align: center; font-size: 8.2pt; white-space: normal; }
+        .courses-table .lecturer { text-align: left; padding-left: 5px; font-size: 8.2pt; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
-        .signature-section { margin-top: 16px; width: 100%; page-break-inside: avoid; }
+        .signature-section { margin-top: 14px; width: 100%; page-break-inside: avoid; }
         .signature-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 8px 18px; }
-        .signature-title { font-weight: bold; margin: 0 auto 48px; min-height: 30px; line-height: 1.25; }
+        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 7px 12px; overflow: hidden; }
+        .signature-title { font-weight: bold; margin: 0 auto 42px; min-height: 30px; line-height: 1.25; }
         .signature-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .signature-name { font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; }
-        .signature-nip { font-size: 8pt; margin-top: 4px; }
+        .signature-nip { font-size: 8.5pt; margin-top: 4px; }
         .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100pt; color: rgba(0,0,0,0.05); z-index: -1; font-weight: bold; }
-        .status-badge { display: inline-block; padding: 2px 7px; border: 1px solid #000; font-weight: bold; font-size: 8pt; }
-        .print-info { margin-top: 8px; font-size: 7.5pt; color: #666; text-align: center; }
+        .status-badge { display: inline-block; padding: 2px 7px; border: 1px solid #000; font-weight: bold; font-size: 8.5pt; }
+        .print-info { margin-top: 7px; font-size: 8pt; color: #666; text-align: center; }
     </style>
 </head>
 <body>
 @php
-    // Data identitas mahasiswa untuk report KRS.
     $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
     $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
     $tahunMasuk = '-';
     if ($tahunMasukRaw !== null && $tahunMasukRaw !== '') {
         $tahunMasukRaw = trim((string) $tahunMasukRaw);
-        $tahunMasuk = preg_match('/^\\d{2}$/', $tahunMasukRaw)
+        $tahunMasuk = preg_match('/^\d{2}$/', $tahunMasukRaw)
             ? (string) (2000 + (int) $tahunMasukRaw)
             : $tahunMasukRaw;
     }
@@ -103,10 +102,14 @@
     <div class="faculty-name">{{ $krs->mahasiswa->programStudi->fakultas->name ?? 'FAKULTAS' }}</div>
     <div class="document-title">KARTU RENCANA STUDI (KRS)</div>
     @php
-    $tahunAkademik = $krs->tahunAkademik->name ?? '-';
-    $tahunAkademik = preg_replace('/\s*[-|]\s*(Ganjil|Genap)\s*$/i', '', $tahunAkademik);
-@endphp
-<div class="semester-line">Semester {{ $krs->semester }} | {{ $tahunAkademik }}</div>
+        $tahunAkademikRaw = (string) ($krs->tahunAkademik->name ?? '');
+        if (preg_match('/(\d{4}\s*\/\s*\d{4})/', $tahunAkademikRaw, $matches)) {
+            $tahunAkademik = preg_replace('/\s+/', '', $matches[1]);
+        } else {
+            $tahunAkademik = trim(preg_replace('/\s*[-|]\s*(Ganjil|Genap)\s*$/i', '', $tahunAkademikRaw));
+        }
+    @endphp
+    <div class="semester-line">Semester {{ $krs->semester }} | Tahun Akademik {{ $tahunAkademik ?: '-' }}</div>
 </div>
 
 <div class="student-info">
@@ -135,11 +138,11 @@
         <tr>
             <th style="width:5%;">No</th>
             <th style="width:12%;">Kode MK</th>
-            <th style="width:28%;">Mata Kuliah</th>
+            <th style="width:31%;">Mata Kuliah</th>
             <th style="width:7%;">SKS</th>
-            <th style="width:11%;">Kelas</th>
-            <th style="width:10%;">Ruang</th>
-            <th style="width:27%;">Dosen</th>
+            <th style="width:10%;">Kelas</th>
+            <th style="width:9%;">Ruang</th>
+            <th style="width:26%;">Dosen</th>
         </tr>
     </thead>
     <tbody>
@@ -186,7 +189,7 @@
     @endif
 </table>
 
-<div style="margin-top:8px;padding:7px;border:1px dashed #000;font-size:8.5pt;">
+<div style="margin-top:8px;padding:7px;border:1px dashed #000;font-size:9pt;">
     <strong>CATATAN PENTING:</strong>
     <ol style="margin:4px 0;padding-left:18px;">
         <li>KRS ini harus mendapat persetujuan dari Dosen Pembimbing Akademik.</li>
@@ -209,7 +212,7 @@
                 <div class="signature-name">{{ $dosenWali->name ?? '[Nama Dosen PA]' }}</div>
                 <div class="signature-nip">NIDN. {{ $dosenNidn !== '-' ? $dosenNidn : '[NIDN Dosen PA]' }}</div>
                 @if ($krs->approved_at)
-                    <div style="font-size:7.5pt;margin-top:4px;">Disetujui: {{ $krs->approved_at->format('d/m/Y H:i') }}</div>
+                    <div style="font-size:8pt;margin-top:4px;">Disetujui: {{ $krs->approved_at->format('d/m/Y H:i') }}</div>
                 @endif
             </td>
             <td class="signature-cell">
