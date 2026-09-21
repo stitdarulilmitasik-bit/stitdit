@@ -123,7 +123,7 @@ class Nilai extends Model
     public function scopeLulus($query) { return $query->where('nilai_mutu', '>=', 2.00); }
 
     /**
-     * Hitung nilai akhir dengan komposisi akademik 80% + kehadiran 20%.
+     * Hitung nilai akhir dengan komposisi akademik 85% + kehadiran 15%.
      * Bobot akademik yang tersimpan tetap digunakan secara proporsional agar
      * penambahan komponen kehadiran tidak membuat total bobot > 100%.
      */
@@ -155,13 +155,13 @@ class Nilai extends Model
         if ($bobotAkademik > 0) {
             foreach ($komponen as $key => $nilai) {
                 if ($nilai !== null) {
-                    $nilaiAkademik += ((float) $nilai * $bobotKomponen[$key] / $bobotAkademik) * 0.80;
+                    $nilaiAkademik += ((float) $nilai * $bobotKomponen[$key] / $bobotAkademik) * 0.85;
                 }
             }
         }
 
         $nilaiKehadiran = $this->kehadiran !== null ? (float) $this->kehadiran : 0;
-        $nilaiAkhir = $nilaiAkademik + ($nilaiKehadiran * 0.20);
+        $nilaiAkhir = $nilaiAkademik + ($nilaiKehadiran * 0.15);
         $this->bobot_kehadiran = 15;
         $this->nilai_angka = round($nilaiAkhir, 2);
         $this->updateNilaiHurufDanMutu();
