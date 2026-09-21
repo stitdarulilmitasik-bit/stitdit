@@ -30,11 +30,11 @@
 <div class="card-body">
 <div class="row mb-4">
 <div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-primary rounded"><h6 class="mb-2">Total KRS</h6><h3 class="mb-0">{{ count($krs_list) }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-warning rounded"><h6 class="mb-2">Draft</h6><h3 class="mb-0">{{ $krs_list->where('status','Draft')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-info rounded"><h6 class="mb-2">Diajukan</h6><h3 class="mb-0">{{ $krs_list->where('status','Diajukan')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Disetujui</h6><h3 class="mb-0">{{ $krs_list->where('status','Disetujui')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-danger rounded"><h6 class="mb-2">Ditolak</h6><h3 class="mb-0">{{ $krs_list->where('status','Ditolak')->count() }}</h3></div></div>
-<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Dipublish</h6><h3 class="mb-0">{{ $krs_list->where('status','Dipublish')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-warning rounded"><h6 class="mb-2">Dibuat</h6><h3 class="mb-0">{{ $krs_list->where('status','draft')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-info rounded"><h6 class="mb-2">Diajukan</h6><h3 class="mb-0">{{ $krs_list->where('status','submitted')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Disetujui</h6><h3 class="mb-0">{{ $krs_list->where('status','approved')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-danger rounded"><h6 class="mb-2">Ditolak</h6><h3 class="mb-0">{{ $krs_list->where('status','rejected')->count() }}</h3></div></div>
+<div class="col-lg-2 col-md-4 mb-2"><div class="p-3 bg-light-success rounded"><h6 class="mb-2">Dipublish</h6><h3 class="mb-0">{{ $krs_list->where('status','published')->count() }}</h3></div></div>
 </div>
 
 <div class="collapse" id="collapseForm">
@@ -55,7 +55,7 @@
 
 <div class="row mb-3">
 <div class="col-md-3"><select class="form-select" id="filterTahunAkademik" onchange="filterTable()"><option value="">Semua Tahun Akademik</option>@foreach($tahun_akademik as $ta)<option value="{{ $ta->name }}">{{ $ta->name }} - {{ $ta->semester }}</option>@endforeach</select></div>
-<div class="col-md-3"><select class="form-select" id="filterStatus" onchange="filterTable()"><option value="">Semua Status</option><option value="Draft">Draft</option><option value="Diajukan">Diajukan</option><option value="Disetujui">Disetujui</option><option value="Ditolak">Ditolak</option><option value="Dipublish">Dipublish</option><option value="Dikunci">Dikunci</option></select></div>
+<div class="col-md-3"><select class="form-select" id="filterStatus" onchange="filterTable()"><option value="">Semua Status</option><option value="draft">Dibuat</option><option value="submitted">Diajukan</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="published">Dipublish</option><option value="locked">Dikunci</option></select></div>
 <div class="col-md-3"><select class="form-select" id="filterSemester" onchange="filterTable()"><option value="">Semua Semester</option>@for($i=1;$i<=8;$i++)<option value="{{ $i }}">Semester {{ $i }}</option>@endfor</select></div>
 <div class="col-md-3"><input type="text" class="form-control" id="searchInput" placeholder="Cari mahasiswa..." onkeyup="filterTable()"></div>
 </div>
@@ -72,15 +72,16 @@
 <td class="text-center" data-label="Semester">{{ $krs->semester }}</td>
 <td class="text-center" data-label="Total SKS"><span class="badge bg-info">{{ $krs->total_sks }} SKS</span></td>
 <td class="text-center" data-label="Status">
-@php $statusColors=['Draft'=>'secondary','Diajukan'=>'warning','Disetujui'=>'success','Ditolak'=>'danger','Dipublish'=>'primary','Dikunci'=>'dark']; @endphp
-<span class="badge bg-{{ $statusColors[$krs->status] ?? 'secondary' }}">{{ $krs->status }}</span>
+@php $statusColors=['draft'=>'secondary','submitted'=>'warning','approved'=>'success','rejected'=>'danger','published'=>'primary','locked'=>'dark'];
+$statusLabels=['draft'=>'Dibuat','submitted'=>'Diajukan','approved'=>'Disetujui','rejected'=>'Ditolak','published'=>'Dipublish','locked'=>'Dikunci']; @endphp
+<span class="badge bg-{{ $statusColors[$krs->status] ?? 'secondary' }}">{{ $statusLabels[$krs->status] ?? $krs->status }}</span>
 </td>
 <td data-label="Tanggal Dibuat">{{ $krs->created_at->format('d/m/Y H:i') }}</td>
 <td class="text-center" data-label="Aksi"><div class="btn-group" role="group">
 <a href="{{ route($spref . 'akademik.krs-detail',$krs->code) }}" class="btn btn-sm btn-info" title="Detail"><i class="fas fa-eye"></i></a>
 @if(in_array($krs->status,['Draft','Diajukan']))<button class="btn btn-sm btn-warning" onclick="editKRS('{{ $krs->code }}')" title="Edit"><i class="fas fa-edit"></i></button>@endif
-@if($krs->status=='Diajukan')<button class="btn btn-sm btn-success" onclick="approveKRS('{{ $krs->code }}')" title="Approve"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectKRS('{{ $krs->code }}')" title="Reject"><i class="fas fa-times"></i></button>@endif
-@if($krs->status=='Disetujui')<button class="btn btn-sm btn-primary" onclick="publishKRS('{{ $krs->code }}')" title="Publish"><i class="fas fa-share"></i></button>@endif
+@if($krs->status=='submitted')<button class="btn btn-sm btn-success" onclick="approveKRS('{{ $krs->code }}')" title="Setujui"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectKRS('{{ $krs->code }}')" title="Tolak"><i class="fas fa-times"></i></button>@endif
+@if($krs->status=='approved')<button class="btn btn-sm btn-primary" onclick="publishKRS('{{ $krs->code }}')" title="Publish"><i class="fas fa-share"></i></button>@endif
 @if($krs->status=='Dipublish')<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak"><i class="fas fa-print"></i></a><button class="btn btn-sm btn-dark" onclick="lockKRS('{{ $krs->code }}')" title="Kunci"><i class="fas fa-lock"></i></button>@endif
 @if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
 </div></td>
