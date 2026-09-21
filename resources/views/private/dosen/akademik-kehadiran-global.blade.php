@@ -29,9 +29,31 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-9">
+                <div class="col-md-3">
+                    <label class="form-label">Mahasiswa</label>
+                    <select id="filter-mahasiswa" class="form-select">
+                        <option value="">Semua Mahasiswa</option>
+                        @foreach($mahasiswaOptions as $m)
+                            <option value="{{ $m->id }}" {{ (string)$mahasiswaId === (string)$m->id ? 'selected' : '' }}>
+                                {{ $m->numb_nim ?? '-' }} - {{ $m->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mata Kuliah</label>
+                    <select id="filter-mata-kuliah" class="form-select">
+                        <option value="">Semua Mata Kuliah</option>
+                        @foreach($mataKuliahOptions as $mk)
+                            <option value="{{ $mk->id }}" {{ (string)$mataKuliahId === (string)$mk->id ? 'selected' : '' }}>
+                                {{ $mk->code ?? '-' }} - {{ $mk->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <div class="alert alert-info mb-0 py-2">
-                        Report ini bersifat global dan menampilkan semua mata kuliah yang memiliki data nilai/kehadiran pada semester terpilih.
+                        Report global seluruh mata kuliah.
                     </div>
                 </div>
             </div>
@@ -99,8 +121,17 @@
     </div>
 </div>
 <script>
-document.getElementById('filter-semester')?.addEventListener('change', function(){
-    const url=new URL(window.location.href); url.searchParams.set('semester',this.value); window.location.href=url.toString();
-});
+function applyFilters() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('semester', document.getElementById('filter-semester').value);
+    const mahasiswa = document.getElementById('filter-mahasiswa').value;
+    const mataKuliah = document.getElementById('filter-mata-kuliah').value;
+    mahasiswa ? url.searchParams.set('mahasiswa_id', mahasiswa) : url.searchParams.delete('mahasiswa_id');
+    mataKuliah ? url.searchParams.set('mata_kuliah_id', mataKuliah) : url.searchParams.delete('mata_kuliah_id');
+    window.location.href = url.toString();
+}
+document.getElementById('filter-semester')?.addEventListener('change', applyFilters);
+document.getElementById('filter-mahasiswa')?.addEventListener('change', applyFilters);
+document.getElementById('filter-mata-kuliah')?.addEventListener('change', applyFilters);
 </script>
 @endsection
