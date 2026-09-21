@@ -13,6 +13,8 @@ use App\Models\Akademik\Nilai;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\TahunAkademik;
 use App\Models\Akademik\Kelas;
+use App\Models\Dosen;
+use App\Models\Jabatan;
 use PDF;
 
 class AkademikController extends Controller
@@ -25,12 +27,35 @@ class AkademikController extends Controller
         $details=$krsHeader?$krsHeader->details()->with(['mataKuliah','kelas','dosen'])->whereIn('status',['Aktif','Mengulang'])->get():collect();
         $availableCourses=MataKuliah::where('prodi_id',$user->prodi_id)->with(['prasyarat','dosen1'])->orderBy('semester')->orderBy('name')->get();
         $availableClasses=collect();
-        if ($currentSemester) {
-            $availableClasses=Kelas::where('prodi_id',$user->prodi_id)
+        if ($currentSemester && $user->kelas_id) {
+            $availableClasses=Kelas::where('id',$user->kelas_id)
+                ->where('prodi_id',$user->prodi_id)
                 ->where('taka_id',$currentSemester->id)
-                ->orderBy('name')
                 ->get(['id','name','prodi_id','taka_id']);
         }
+
+        $availableDosenPembimbing=Jabatan::query()
+            ->where('is_active', true)
+            ->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])
+            ->where(function ($q) use ($user) {
+                $q->whereNull('prodi_id')
+                  ->orWhere('prodi_id', $user->prodi_id);
+            })
+            ->whereNotNull('dosen_id')
+            ->with('dosen')
+            ->orderBy('sort_order')
+            ->get()
+            ->pluck('dosen')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        if ($availableDosenPembimbing->isEmpty()) {
+            $availableDosenPembimbing=Dosen::where('type', 1)
+                ->orderBy('name')
+                ->get();
+        }
+
         $courseClasses=[];
         foreach ($availableCourses as $course) {
             $courseClasses[$course->id]=$availableClasses->values()->map(fn($kelas)=>[
@@ -38,7 +63,7 @@ class AkademikController extends Controller
                 'name'=>$kelas->name,
             ])->all();
         }
-        return view('private.mahasiswa.akademik.krs',['webs'=>$webs,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Rencana Studi (KRS)','academy'=>$webs?$webs->school_apps.' by '.$webs->school_name:'SIAKAD','currentSemester'=>$currentSemester,'krs'=>$details,'krsHeader'=>$krsHeader,'availableCourses'=>$availableCourses,'availableClasses'=>$availableClasses,'courseClasses'=>$courseClasses,'user'=>$user]);
+        return view('private.mahasiswa.akademik.krs',['webs'=>$webs,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Rencana Studi (KRS)','academy'=>$webs?$webs->school_apps.' by '.$webs->school_name:'SIAKAD','currentSemester'=>$currentSemester,'krs'=>$details,'krsHeader'=>$krsHeader,'availableCourses'=>$availableCourses,'availableClasses'=>$availableClasses,'courseClasses'=>$courseClasses,'availableDosenPembimbing'=>$availableDosenPembimbing,'user'=>$user]);
     }
 
     public function cetakKrs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $s=$this->getCurrentSemester(); $h=$s?KRS::where('mahasiswa_id',$user->id)->where('taka_id',$s->id)->with(['dosenPA','mahasiswa.programStudi.fakultas','tahunAkademik'])->first():null; $d=$h?$h->details()->with(['mataKuliah','kelas','dosen'])->whereIn('status',['Aktif','Mengulang'])->get():collect(); return PDF::loadView('private.mahasiswa.akademik.cetak-krs',['webs'=>WebSetting::first(),'mahasiswa'=>$user,'currentSemester'=>$s,'krsHeader'=>$h,'krs'=>$d])->setPaper('a4','portrait')->download('KRS-'.preg_replace('/[^A-Za-z0-9_-]+/','-',$user->name??$user->numb_nim??'mahasiswa').'.pdf'); }
@@ -47,19 +72,26 @@ class AkademikController extends Controller
 
     public function cetakKhs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $k=\App\Models\Akademik\KHS::with(['mahasiswa.programStudi.fakultas','tahunAkademik','nilaiSemester.mataKuliah'])->where('mahasiswa_id',$user->id)->where('status_generate','Published')->orderByDesc('semester')->firstOrFail(); return PDF::loadView('master.akademik.khs-print',['khs'=>$k,'webs'=>WebSetting::first(),'nilai_semester'=>$k->nilaiSemester,'dosen_pa'=>null,'kaprodi'=>$k->mahasiswa->programStudi->kaprodi??null])->setPaper('a4','portrait')->download('KHS-'.$user->numb_nim.'-Semester-'.$k->semester.'.pdf'); }
 
-    public function storeKrs(Request $request){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $v=$request->validate(['mata_kuliah_id'=>['required','integer','exists:mata_kuliahs,id'],'kelas_id'=>['nullable','integer','exists:kelas,id']]); $s=$this->getCurrentSemester(); if(!$s)return back()->with('error','Tahun akademik aktif belum tersedia.'); $c=MataKuliah::findOrFail($v['mata_kuliah_id']); if((int)$c->prodi_id!==(int)$u->prodi_id)return back()->with('error','Mata kuliah bukan bagian dari program studi Anda.'); $k=KRS::firstOrCreate(['mahasiswa_id'=>$u->id,'taka_id'=>$s->id,'semester'=>(int)($u->semester??1)],['code'=>'KRS-'.$u->id.'-'.now()->format('YmdHis'),'status'=>'Draft','total_sks'=>0,'max_sks'=>24,'ipk_sebelumnya'=>0]); if(!$k->is_editable)return back()->with('error','KRS sudah diajukan/disetujui dan tidak dapat diubah.'); if($k->details()->where('matkul_id',$c->id)->whereIn('status',['Aktif','Mengulang'])->exists())return back()->with('error','Mata kuliah tersebut sudah ada di KRS.'); if(!$k->canAddMatakuliah((int)$c->sks))return back()->with('error','Batas maksimal SKS tidak mencukupi.'); // Jika mahasiswa tidak mengirim kelas_id dari form, gunakan kelas yang
+    public function storeKrs(Request $request){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $v=$request->validate(['mata_kuliah_id'=>['required','integer','exists:mata_kuliahs,id'],'kelas_id'=>['nullable','integer','exists:kelas,id'],'dosen_pembimbing_id'=>['required','integer','exists:dosens,id']]); $s=$this->getCurrentSemester(); if(!$s)return back()->with('error','Tahun akademik aktif belum tersedia.'); $c=MataKuliah::findOrFail($v['mata_kuliah_id']); if((int)$c->prodi_id!==(int)$u->prodi_id)return back()->with('error','Mata kuliah bukan bagian dari program studi Anda.'); $k=KRS::firstOrCreate(['mahasiswa_id'=>$u->id,'taka_id'=>$s->id,'semester'=>(int)($u->semester??1)],['code'=>'KRS-'.$u->id.'-'.now()->format('YmdHis'),'status'=>'Draft','total_sks'=>0,'max_sks'=>24,'ipk_sebelumnya'=>0]); if(!$k->is_editable)return back()->with('error','KRS sudah diajukan/disetujui dan tidak dapat diubah.'); if($k->details()->where('matkul_id',$c->id)->whereIn('status',['Aktif','Mengulang'])->exists())return back()->with('error','Mata kuliah tersebut sudah ada di KRS.'); if(!$k->canAddMatakuliah((int)$c->sks))return back()->with('error','Batas maksimal SKS tidak mencukupi.'); // Jika mahasiswa tidak mengirim kelas_id dari form, gunakan kelas yang
         // sudah ditetapkan pada data mahasiswa.
-        $kelas = !empty($v['kelas_id'])
-            ? Kelas::find($v['kelas_id'])
-            : (!empty($u->kelas_id) ? Kelas::find($u->kelas_id) : null);
+        $kelas = !empty($u->kelas_id) ? Kelas::find($u->kelas_id) : null;
 
         if (!$kelas) {
             return back()->with('error','Kelas mahasiswa belum ditentukan. Silakan pilih/atur kelas mahasiswa terlebih dahulu.');
         }
 
         if ((int) $kelas->prodi_id !== (int) $u->prodi_id || (int) $kelas->taka_id !== (int) $s->id) {
-            return back()->with('error','Kelas tidak sesuai dengan program studi atau semester aktif.');
-        } $existingDetail=$k->details()->withTrashed()->where('matkul_id',$c->id)->first(); if($existingDetail){ if($existingDetail->trashed()){$existingDetail->restore();} $existingDetail->update(['kelas_id'=>$kelas->id,'dosen_id'=>$c->dosen1_id,'sks'=>(int)$c->sks,'status'=>'Aktif','prasyarat_terpenuhi'=>true,'notes'=>null]); return back()->with('success','Mata kuliah yang sebelumnya dibatalkan berhasil diaktifkan kembali.'); } $k->details()->create(['code'=>'KRSDET-'.$u->id.'-'.$c->id.'-'.now()->format('YmdHisv'),'matkul_id'=>$c->id,'kelas_id'=>$kelas->id,'dosen_id'=>$c->dosen1_id,'sks'=>(int)$c->sks,'status'=>'Aktif','prasyarat_terpenuhi'=>true]); return back()->with('success','Mata kuliah berhasil ditambahkan ke KRS.'); }
+            return back()->with('error','Kelas mahasiswa tidak sesuai dengan program studi atau semester aktif.');
+        }
+
+        $dosenPembimbing=Dosen::where('id',$v['dosen_pembimbing_id'])
+            ->where('type',1)
+            ->first();
+        if (!$dosenPembimbing) {
+            return back()->with('error','Dosen Pembimbing Akademik tidak valid.');
+        }
+
+        $k->update(['dosen_pa_id'=>$dosenPembimbing->id]); $existingDetail=$k->details()->withTrashed()->where('matkul_id',$c->id)->first(); if($existingDetail){ if($existingDetail->trashed()){$existingDetail->restore();} $existingDetail->update(['kelas_id'=>$kelas->id,'dosen_id'=>$c->dosen1_id,'sks'=>(int)$c->sks,'status'=>'Aktif','prasyarat_terpenuhi'=>true,'notes'=>null]); return back()->with('success','Mata kuliah yang sebelumnya dibatalkan berhasil diaktifkan kembali.'); } $k->details()->create(['code'=>'KRSDET-'.$u->id.'-'.$c->id.'-'.now()->format('YmdHisv'),'matkul_id'=>$c->id,'kelas_id'=>$kelas->id,'dosen_id'=>$c->dosen1_id,'sks'=>(int)$c->sks,'status'=>'Aktif','prasyarat_terpenuhi'=>true]); return back()->with('success','Mata kuliah berhasil ditambahkan ke KRS.'); }
 
     public function submitKrs(Request $request)
     {
