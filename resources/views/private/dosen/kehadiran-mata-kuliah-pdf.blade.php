@@ -172,7 +172,7 @@
             <th style="width: 12%;">NIM</th>
             <th style="width: 25%;">Nama Mahasiswa</th>
             @for($i=1;$i<=16;$i++)
-                <th style="width: 3.4%;">P{{ $i }}</th>
+                <th style="width: 4%;">P{{ $i }}</th>
             @endfor
             <th style="width: 5.6%;">% Hadir</th>
         </tr>
