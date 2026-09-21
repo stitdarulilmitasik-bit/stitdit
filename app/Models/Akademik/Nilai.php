@@ -130,6 +130,31 @@ class Nilai extends Model
         $this->nilai_mutu = 0.00;
     }
 
+    public function getGradePointAttribute(): float
+    {
+        return $this->getNilaiMutuEfektifAttribute();
+    }
+
+    /**
+     * Nilai mutu efektif untuk data lama maupun data baru.
+     * Nilai huruf yang valid menjadi sumber utama agar nilai B/A- tidak
+     * terbaca gagal hanya karena kolom nilai_mutu lama belum tersinkron.
+     */
+    public function getNilaiMutuEfektifAttribute(): float
+    {
+        $huruf = strtoupper(trim((string) ($this->attributes['nilai_huruf'] ?? '')));
+        if ($huruf !== '' && isset(self::NILAI_HURUF_MAP[$huruf])) {
+            return (float) self::NILAI_HURUF_MAP[$huruf]['mutu'];
+        }
+
+        return (float) ($this->attributes['nilai_mutu'] ?? 0);
+    }
+
+    public function getMutuXSksEfektifAttribute(): float
+    {
+        return round($this->nilai_mutu_efektif * (float) ($this->attributes['sks'] ?? 0), 2);
+    }
+
     public function getIsLulusAttribute()
     {
         // Nilai lama dapat menyimpan nilai_huruf yang sudah benar tetapi
@@ -185,7 +210,17 @@ class Nilai extends Model
     public function scopeBySemester($query, $semester) { return $query->where('semester', $semester); }
     public function scopeByTahunAkademik($query, $takaId) { return $query->where('taka_id', $takaId); }
     public function scopePublished($query) { return $query->where('status', 'Published'); }
-    public function scopeLulus($query) { return $query->where('nilai_mutu', '>=', 2.00); }
+    public function scopeLulus($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereIn('nilai_huruf', ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C'])
+                ->orWhere(function ($fallback) {
+                    $fallback->where(function ($letters) {
+                        $letters->whereNull('nilai_huruf')->orWhere('nilai_huruf', '');
+                    })->where('nilai_mutu', '>=', 2.00);
+                });
+        });
+    }
 
     /**
      * Hitung nilai akhir dengan komposisi akademik 85% + kehadiran 15%.
