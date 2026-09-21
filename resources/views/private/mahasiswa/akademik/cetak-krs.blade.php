@@ -19,7 +19,14 @@ body { font-family: Arial, sans-serif; color:#111; font-size:12px; margin:0; }
 .kop-text .line3 { font-size:10px; font-weight:bold; }
 .kop-text .address { font-size:9px; }
 table { width:100%; border-collapse:collapse; }
-th,td { border:1px solid #222; padding:6px; }\n.krs-table { table-layout:fixed; }\n.krs-table .col-no { width:4%; }\n.krs-table .col-kode { width:12%; }\n.krs-table .col-mk { width:36%; }\n.krs-table .col-sks { width:6%; }\n.krs-table .col-kelas { width:4%; min-width:28px; max-width:38px; padding-left:2px; padding-right:2px; text-align:center; white-space:nowrap; overflow:hidden; }\n.krs-table .col-dosen { width:38%; }\n.krs-table td:nth-child(5) { width:4%; min-width:28px; max-width:38px; padding-left:2px; padding-right:2px; text-align:center; vertical-align:middle; white-space:nowrap; overflow:hidden; }
+th,td { border:1px solid #222; padding:6px; }
+.krs-table { width:100%; table-layout:fixed; }
+.krs-table th:nth-child(1), .krs-table td:nth-child(1) { width:4%; }
+.krs-table th:nth-child(2), .krs-table td:nth-child(2) { width:12%; }
+.krs-table th:nth-child(3), .krs-table td:nth-child(3) { width:36%; }
+.krs-table th:nth-child(4), .krs-table td:nth-child(4) { width:6%; }
+.krs-table th:nth-child(5), .krs-table td:nth-child(5) { width:4%; padding-left:2px; padding-right:2px; text-align:center; vertical-align:middle; white-space:nowrap; overflow:hidden; }
+.krs-table th:nth-child(6), .krs-table td:nth-child(6) { width:38%; }
 th { background:#eee; }
 .meta td { border:0; padding:3px 0; }
 .text-center{text-align:center}.text-right{text-align:right}
@@ -66,7 +73,7 @@ th { background:#eee; }
 </table>
 <br>
 <table>
-<thead><tr><th width="5%">No</th><th width="15%">Kode</th><th>Mata Kuliah</th><th width="8%">SKS</th><th>Kelas</th><th>Dosen</th></tr></thead>
+<thead><tr><th width="5%">No</th><th>Kode</th><th>Mata Kuliah</th><th>SKS</th><th>Kelas</th><th>Dosen</th></tr></thead>
 <tbody>
 @forelse($krs as $i => $item)
 <tr>
