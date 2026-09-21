@@ -167,7 +167,7 @@ class KHS extends Model
         $nilaiSemester = Nilai::byMahasiswa($this->mahasiswa_id)
             ->byTahunAkademik($this->taka_id)
             ->bySemester($this->semester)
-            ->published()
+            ->whereIn('status', ['Published', 'Locked'])
             ->get();
 
         // Hitung statistik semester
@@ -199,7 +199,7 @@ class KHS extends Model
         // Ambil semua nilai dari semester 1 hingga semester saat ini
         $semuaNilai = Nilai::byMahasiswa($this->mahasiswa_id)
             ->where('semester', '<=', $this->semester)
-            ->published()
+            ->whereIn('status', ['Published', 'Locked'])
             ->get();
 
         $this->total_sks_kumulatif = $semuaNilai->where('nilai_mutu', '>=', 2.00)->sum('sks');
