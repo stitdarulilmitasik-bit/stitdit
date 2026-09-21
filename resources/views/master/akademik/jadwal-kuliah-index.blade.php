@@ -224,7 +224,10 @@
                                         <select class="form-select " name="matkul_id" id="matkul_id">
                                             <option value="">Pilih Mata Kuliah</option>
                                             @foreach ($mata_kuliah as $mk)
-                                                <option value="{{ $mk->id }}">{{ $mk->name }}</option>
+                                                <option value="{{ $mk->id }}"
+                                                    data-dosen-ids="{{ collect([$mk->dosen1_id, $mk->dosen2_id, $mk->dosen3_id])->filter()->implode(',') }}">
+                                                    {{ $mk->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         @error('matkul_id')
@@ -473,7 +476,11 @@
                                     <select class="form-select select2" name="matkul_id" id="edit_matkul_id{{ $item->code }}">
                                         <option value="">Pilih Mata Kuliah</option>
                                         @foreach ($mata_kuliah as $mk)
-                                            <option value="{{ $mk->id }}" {{ $item->matkul_id == $mk->id ? 'selected' : '' }}>{{ $mk->name }}</option>
+                                            <option value="{{ $mk->id }}"
+                                                data-dosen-ids="{{ collect([$mk->dosen1_id, $mk->dosen2_id, $mk->dosen3_id])->filter()->implode(',') }}"
+                                                {{ $item->matkul_id == $mk->id ? 'selected' : '' }}>
+                                                {{ $mk->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                     @error('matkul_id')
@@ -634,6 +641,58 @@
             });
 
         });
+
+        // Mata kuliah mengikuti dosen yang dipilih.
+        function filterMataKuliahByDosen(dosenSelect, matkulSelect) {
+            const dosenId = $(dosenSelect).val();
+            const currentValue = $(matkulSelect).val();
+
+            $(matkulSelect).find('option').each(function() {
+                const option = $(this);
+                if (!option.val()) {
+                    option.prop('disabled', false).show();
+                    return;
+                }
+
+                const dosenIds = String(option.attr('data-dosen-ids') || '')
+                    .split(',')
+                    .map(id => id.trim())
+                    .filter(Boolean);
+
+                const cocok = !dosenId || dosenIds.includes(String(dosenId));
+                option.prop('disabled', !cocok).toggle(cocok);
+            });
+
+            if (currentValue && $(matkulSelect).find('option[value="' + currentValue + '"]:not(:disabled)').length) {
+                $(matkulSelect).val(currentValue).trigger('change.select2');
+            } else {
+                $(matkulSelect).val('').trigger('change.select2');
+            }
+        }
+
+        $('#dosen_id').on('change', function() {
+            filterMataKuliahByDosen('#dosen_id', '#matkul_id');
+        });
+
+        if ($('#dosen_id').val()) {
+            filterMataKuliahByDosen('#dosen_id', '#matkul_id');
+        }
+
+        @foreach ($jadwal_kuliah as $item)
+            $('#edit_dosen_id{{ $item->code }}').on('change', function() {
+                filterMataKuliahByDosen(
+                    '#edit_dosen_id{{ $item->code }}',
+                    '#edit_matkul_id{{ $item->code }}'
+                );
+            });
+
+            if ($('#edit_dosen_id{{ $item->code }}').val()) {
+                filterMataKuliahByDosen(
+                    '#edit_dosen_id{{ $item->code }}',
+                    '#edit_matkul_id{{ $item->code }}'
+                );
+            }
+        @endforeach
 
         // Konfirmasi delete dengan SweetAlert
         function confirmDelete(code) {
