@@ -79,16 +79,67 @@
 <div class="modal-header"><h5 class="modal-title">Tambah Mata Kuliah</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 <div class="modal-body">
 <label class="form-label">Mata Kuliah</label>
-<select name="mata_kuliah_id" class="form-select" required>
+<select name="mata_kuliah_id" id="krsMataKuliah" class="form-select" required>
 <option value="">-- Pilih Mata Kuliah --</option>
 @foreach($availableCourses as $course)
 <option value="{{ $course->id }}">{{ $course->code }} - {{ $course->name }} ({{ $course->sks }} SKS)</option>
 @endforeach
 </select>
+
+<label class="form-label mt-3">Kelas</label>
+<select name="kelas_id" id="krsKelas" class="form-select" required disabled>
+    <option value="">-- Pilih Mata Kuliah terlebih dahulu --</option>
+</select>
+<div id="krsKelasHint" class="form-text">Setelah mata kuliah dipilih, pilihan kelas akan muncul.</div>
+
 <div class="form-hint mt-2">Mode edit aktif selama KRS masih Draft atau ditolak. Setelah Submit KRS, perubahan dikunci sampai KRS diproses oleh akademik.</div>
 </div>
 <div class="modal-footer"><button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Tambah ke KRS</button></div>
 </form>
 </div></div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mataKuliah = document.getElementById('krsMataKuliah');
+    const kelas = document.getElementById('krsKelas');
+    const hint = document.getElementById('krsKelasHint');
+    const courseClasses = @json($courseClasses ?? []);
+
+    function loadKelas() {
+        const courseId = mataKuliah.value;
+        const classes = courseId && courseClasses[courseId] ? courseClasses[courseId] : [];
+
+        kelas.innerHTML = '';
+
+        if (!courseId) {
+            kelas.disabled = true;
+            kelas.required = true;
+            kelas.innerHTML = '<option value="">-- Pilih Mata Kuliah terlebih dahulu --</option>';
+            hint.textContent = 'Setelah mata kuliah dipilih, pilihan kelas akan muncul.';
+            return;
+        }
+
+        if (!classes.length) {
+            kelas.disabled = true;
+            kelas.innerHTML = '<option value="">-- Kelas belum tersedia --</option>';
+            hint.textContent = 'Belum ada kelas untuk program studi dan semester aktif ini.';
+            return;
+        }
+
+        kelas.disabled = false;
+        kelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+        classes.forEach(function (item) {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            kelas.appendChild(option);
+        });
+        hint.textContent = classes.length + ' pilihan kelas tersedia.';
+    }
+
+    mataKuliah.addEventListener('change', loadKelas);
+    loadKelas();
+});
+</script>
+
 @endsection
