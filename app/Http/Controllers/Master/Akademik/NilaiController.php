@@ -154,6 +154,15 @@ class NilaiController extends Controller
                 'bobot_uas' => 'required|numeric|min:0|max:100',
                 'bobot_praktikum' => 'required|numeric|min:0|max:100',
                 'bobot_kehadiran' => 'required|numeric|min:0|max:100',
+                'tugas_1' => 'nullable|numeric|min:0|max:100',
+                'tugas_2' => 'nullable|numeric|min:0|max:100',
+                'tugas_3' => 'nullable|numeric|min:0|max:100',
+                'quiz_1' => 'nullable|numeric|min:0|max:100',
+                'quiz_2' => 'nullable|numeric|min:0|max:100',
+                'uts' => 'nullable|numeric|min:0|max:100',
+                'uas' => 'nullable|numeric|min:0|max:100',
+                'praktikum' => 'nullable|numeric|min:0|max:100',
+                'kehadiran' => 'nullable|numeric|min:0|max:100',
             ]);
 
             $totalBobot = (float) $request->bobot_tugas
@@ -231,6 +240,15 @@ class NilaiController extends Controller
                     'bobot_kehadiran' => $request->bobot_kehadiran,
                     'krs_detail_id' => $request->krs_detail_id ?: $nilai->krs_detail_id,
                     'sks' => $nilai->sks ?: $mataKuliah->sks,
+                    'tugas_1' => $request->input('tugas_1'),
+                    'tugas_2' => $request->input('tugas_2'),
+                    'tugas_3' => $request->input('tugas_3'),
+                    'quiz_1' => $request->input('quiz_1'),
+                    'quiz_2' => $request->input('quiz_2'),
+                    'uts' => $request->input('uts'),
+                    'uas' => $request->input('uas'),
+                    'praktikum' => $request->input('praktikum'),
+                    'kehadiran' => $request->input('kehadiran', 0),
                 ]);
 
                 DB::commit();
@@ -261,6 +279,15 @@ class NilaiController extends Controller
                     'bobot_praktikum' => $request->bobot_praktikum,
                     'bobot_kehadiran' => $request->bobot_kehadiran,
                     'created_by' => $actor,
+                    'tugas_1' => $request->input('tugas_1'),
+                    'tugas_2' => $request->input('tugas_2'),
+                    'tugas_3' => $request->input('tugas_3'),
+                    'quiz_1' => $request->input('quiz_1'),
+                    'quiz_2' => $request->input('quiz_2'),
+                    'uts' => $request->input('uts'),
+                    'uas' => $request->input('uas'),
+                    'praktikum' => $request->input('praktikum'),
+                    'kehadiran' => $request->input('kehadiran', 0),
                     'dosen_id' => $request->input('dosen_id'),
                 ]));
                 $created = true;
