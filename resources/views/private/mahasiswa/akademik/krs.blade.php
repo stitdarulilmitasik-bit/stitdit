@@ -50,7 +50,7 @@
                         <td>{{ $i+1 }}</td>
                         <td>{{ $item->mataKuliah->code ?? '-' }}</td>
                         <td>{{ $item->mataKuliah->name ?? '-' }}</td>
-                        <td>{{ $item->kelas->name ?? '-' }}</td>
+                        <td>{{ $user->kelas->name ?? $item->kelas->name ?? '-' }}</td>
                         <td>{{ $item->sks }}</td>
                         <td>{{ $item->dosen->name ?? '-' }}</td>
                         <td><span class="badge {{ $status === 'Aktif' ? 'bg-success' : ($status === 'Mengulang' ? 'bg-warning' : 'bg-secondary') }}">{{ $status }}</span></td>
@@ -90,7 +90,18 @@
 <select name="kelas_id" id="krsKelas" class="form-select" required disabled>
     <option value="">-- Pilih Mata Kuliah terlebih dahulu --</option>
 </select>
-<div id="krsKelasHint" class="form-text">Setelah mata kuliah dipilih, pilihan kelas akan muncul.</div>
+<div id="krsKelasHint" class="form-text">Kelas mengikuti data kelas mahasiswa.</div>
+
+<label class="form-label mt-3">Dosen Pembimbing Akademik</label>
+<select name="dosen_pembimbing_id" id="krsDosenPembimbing" class="form-select" required>
+    <option value="">-- Pilih Dosen Pembimbing --</option>
+    @foreach($availableDosenPembimbing ?? [] as $dosen)
+        <option value="{{ $dosen->id }}" @selected(($krsHeader->dosen_pa_id ?? null) == $dosen->id)>
+            {{ $dosen->name }}{{ $dosen->nidn ? ' - NIDN '.$dosen->nidn : '' }}
+        </option>
+    @endforeach
+</select>
+<div class="form-text">Dosen pembimbing akan disimpan pada KRS dan digunakan pada laporan KRS.</div>
 
 <div class="form-hint mt-2">Mode edit aktif selama KRS masih Draft atau ditolak. Setelah Submit KRS, perubahan dikunci sampai KRS diproses oleh akademik.</div>
 </div>
@@ -134,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
             option.textContent = item.name;
             kelas.appendChild(option);
         });
-        hint.textContent = classes.length + ' pilihan kelas tersedia.';
+        hint.textContent = 'Kelas diambil dari data kelas mahasiswa.';
     }
 
     mataKuliah.addEventListener('change', loadKelas);
