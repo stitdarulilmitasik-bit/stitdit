@@ -99,6 +99,13 @@ class GradebookController extends Controller
                     $nilai->kehadiran = $totalPertemuan > 0
                         ? round(($hadir / $totalPertemuan) * 100, 2)
                         : null;
+
+                    // Sinkronkan nilai kehadiran ke record Nilai saat gradebook
+                    // dibuka, sehingga nilai yang sudah tercatat dari perkuliahan
+                    // langsung muncul tanpa harus menginput ulang secara manual.
+                    if ($nilai->isDirty('kehadiran')) {
+                        $nilai->saveQuietly();
+                    }
                 }
             }
         }
