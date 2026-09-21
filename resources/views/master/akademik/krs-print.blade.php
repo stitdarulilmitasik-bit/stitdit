@@ -34,8 +34,8 @@
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
         .signature-section { margin-top: 18px; width: 100%; }
         .signature-table { width: 100%; border-collapse: collapse; }
-        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 6px; }
-        .signature-title { font-weight: bold; margin-bottom: 38px; }
+        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 10px 18px; }
+        .signature-title { font-weight: bold; margin: 0 auto 52px; min-height: 32px; line-height: 1.25; }
         .signature-name { font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; }
         .signature-nip { font-size: 8pt; margin-top: 4px; }
         .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100pt; color: rgba(0,0,0,0.05); z-index: -1; font-weight: bold; }
@@ -131,33 +131,46 @@
         <tr>
             <th rowspan="2" style="width:5%;">No</th>
             <th rowspan="2" style="width:11%;">Kode MK</th>
-            <th rowspan="2" style="width:28%;">Mata Kuliah</th>
+            <th rowspan="2" style="width:27%;">Mata Kuliah</th>
             <th rowspan="2" style="width:6%;">SKS</th>
             <th rowspan="2" style="width:12%;">Kelas</th>
-            <th rowspan="2" style="width:20%;">Dosen</th>
-        </tr>
-        <tr>
+            <th rowspan="2" style="width:11%;">Ruang</th>
+            <th rowspan="2" style="width:28%;">Dosen</th>
         </tr>
     </thead>
     <tbody>
         @php $no = 1; @endphp
         @forelse ($krs->details as $detail)
+            @php
+                $jadwal = $detail->kelas?->jadwalKuliah
+                    ?->first(function ($item) use ($detail) {
+                        return (int) ($item->matkul_id ?? 0) === (int) ($detail->matkul_id ?? 0);
+                    });
+                $jadwal = $jadwal ?: $detail->kelas?->jadwalKuliah?->first();
+                $dosenDetail = $detail->dosen ?? null;
+            @endphp
             <tr>
                 <td>{{ $no++ }}</td>
                 <td>{{ $detail->mataKuliah->code ?? '-' }}</td>
                 <td class="subject-name">{{ $detail->mataKuliah->name ?? '-' }}</td>
                 <td>{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
-NaN
-                    @if ($detail->mataKuliah->dosen1)
+                <td>{{ $detail->kelas->name ?? '-' }}</td>
+                <td>{{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}</td>
+                <td class="schedule">
+                    @if ($dosenDetail)
+                        {{ $dosenDetail->name }}
+                    @elseif ($detail->mataKuliah->dosen1)
                         {{ $detail->mataKuliah->dosen1->name }}
-                    @endif
-                    @if ($detail->mataKuliah->dosen2)
-                        <br>{{ $detail->mataKuliah->dosen2->name }}
+                        @if ($detail->mataKuliah->dosen2)
+                            <br>{{ $detail->mataKuliah->dosen2->name }}
+                        @endif
+                    @else
+                        -
                     @endif
                 </td>
             </tr>
         @empty
-            <tr><td colspan="6" style="text-align:center;font-style:italic;">Tidak ada mata kuliah yang dipilih</td></tr>
+            <tr><td colspan="7" style="text-align:center;font-style:italic;">Tidak ada mata kuliah yang dipilih</td></tr>
         @endforelse
     </tbody>
     @if ($krs->details->count() > 0)
