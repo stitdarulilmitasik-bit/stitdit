@@ -9,7 +9,7 @@
 .table{margin-bottom:0}.table thead th{border-top:none;border-bottom:2px solid rgba(0,0,0,.05);font-weight:600;color:#6c757d;padding-top:1rem;padding-bottom:.75rem;text-align:left}.table td{vertical-align:middle;padding-top:.75rem;padding-bottom:.75rem;text-align:left}.table th.text-center,.table td.text-center{text-align:center!important}
 .btn{padding:.5rem 1rem;border-radius:5px}.btn-sm{padding:.25rem .5rem}.form-control,.form-select{border-radius:5px;border:1px solid rgba(0,0,0,.1);padding:.5rem 1rem}.form-control:focus,.form-select:focus{border-color:#435ebe;box-shadow:0 0 0 .2rem rgba(67,94,190,.25)}
 .badge{padding:.5em .75em;font-weight:500}.collapse{transition:all .3s ease}.collapse.show{margin-top:1rem}
-.copy-target-list{max-height:360px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px}.copy-target-item{padding:.65rem .85rem;border-bottom:1px solid #f0f0f0}.copy-target-item:last-child{border-bottom:0}.copy-target-item:hover{background:#f8fafc}
+.copy-target-list{max-height:240px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px}.bulk-copy-modal .modal-content{max-height:82vh}.bulk-copy-modal .modal-header{padding:.65rem 1rem}.bulk-copy-modal .modal-body{padding:.75rem 1rem}.bulk-copy-modal .modal-footer{padding:.5rem 1rem;gap:.5rem;position:sticky;bottom:0;background:#fff;border-top:1px solid #e9ecef;z-index:2}.bulk-copy-modal .modal-footer .btn{padding:.4rem .75rem}.bulk-copy-modal .alert{padding:.6rem .75rem;margin-bottom:.75rem}.bulk-copy-modal .copy-target-item{padding:.45rem .65rem}.copy-target-item{padding:.65rem .85rem;border-bottom:1px solid #f0f0f0}.copy-target-item:last-child{border-bottom:0}.copy-target-item:hover{background:#f8fafc}
 @media(max-width:768px){.table-responsive table,.table-responsive thead,.table-responsive tbody,.table-responsive th,.table-responsive td,.table-responsive tr{display:block;width:100%}.table-responsive thead{display:none}.table-responsive tr{margin-bottom:1rem;border-bottom:2px solid #eee}.table-responsive td{position:relative;padding-left:50%;text-align:left!important;border:none;border-bottom:1px solid #eee}.table-responsive td:before{position:absolute;top:0;left:0;width:48%;padding-left:1rem;white-space:nowrap;font-weight:bold;color:#888;content:attr(data-label)}}
 </style>
 @endsection
@@ -108,8 +108,8 @@
 </div>
 </div>
 
-<div class="modal fade" id="bulkCopyModal" tabindex="-1" aria-labelledby="bulkCopyModalLabel" aria-hidden="true">
-<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+<div class="modal fade bulk-copy-modal" id="bulkCopyModal" tabindex="-1" aria-labelledby="bulkCopyModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
 <form method="POST" action="{{ route($spref . 'akademik.krs-copy-bulk') }}" id="bulkCopyForm">@csrf
 <div class="modal-header"><h5 class="modal-title" id="bulkCopyModalLabel"><i class="fas fa-copy me-2"></i>Copy Bulk KRS sebagai Template</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
 <div class="modal-body">
