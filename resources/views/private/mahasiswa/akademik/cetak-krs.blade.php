@@ -19,7 +19,7 @@ body { font-family: Arial, sans-serif; color:#111; font-size:12px; margin:0; }
 .kop-text .line3 { font-size:10px; font-weight:bold; }
 .kop-text .address { font-size:9px; }
 table { width:100%; border-collapse:collapse; }
-th,td { border:1px solid #222; padding:6px; }\n.krs-table { table-layout:fixed; }\n.krs-table .col-no { width:5%; }\n.krs-table .col-kode { width:13%; }\n.krs-table .col-mk { width:35%; }\n.krs-table .col-sks { width:7%; }\n.krs-table .col-kelas { width:7%; text-align:center; }\n.krs-table .col-dosen { width:33%; }\n.krs-table td:nth-child(5) { text-align:center; vertical-align:middle; }
+th,td { border:1px solid #222; padding:6px; }\n.krs-table { table-layout:fixed; }\n.krs-table .col-no { width:5%; }\n.krs-table .col-kode { width:13%; }\n.krs-table .col-mk { width:35%; }\n.krs-table .col-sks { width:7%; }\n.krs-table .col-kelas { width:5%; text-align:center; white-space:nowrap; }\n.krs-table .col-dosen { width:35%; }\n.krs-table td:nth-child(5) { text-align:center; vertical-align:middle; }
 th { background:#eee; }
 .meta td { border:0; padding:3px 0; }
 .text-center{text-align:center}.text-right{text-align:right}
