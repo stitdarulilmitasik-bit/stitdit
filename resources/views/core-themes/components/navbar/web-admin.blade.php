@@ -141,6 +141,9 @@
         <a class="dropdown-item {{ Route::is($spref . 'pengaturan.front-page-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'pengaturan.front-page-render') }}">
             Front Page
         </a>
+        <a class="dropdown-item {{ Route::is($spref . 'pengaturan.jabatan-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'pengaturan.jabatan-render') }}">
+            Jabatan
+        </a>
         <a class="dropdown-item {{ Route::is($spref . 'pengaturan.log-aktivitas-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'pengaturan.log-aktivitas-render') }}">
             Log Aktivitas
         </a>
