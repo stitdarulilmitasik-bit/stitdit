@@ -81,10 +81,12 @@ use Illuminate\Support\Facades\Route;
     Route::post('/akademik/krs/bulk-copy',[App\Http\Controllers\Master\Akademik\KRSController::class, 'copyBulkKrs'])->name('akademik.krs-copy-bulk');
 
     // MASTER AKADEMIK => NILAI
-    Route::get('/akademik/nilai',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'renderNilai'])->name('akademik.nilai-render');
+    // GradebookController di routes/gradebook.php menjadi satu-satunya
+    // handler untuk GET /akademik/nilai dan POST penyimpanan nilai.
+    // Route legacy GET /akademik/nilai sengaja dihapus agar tidak ada
+    // dua halaman nilai yang saling bertabrakan.
     Route::get('/akademik/nilai/import',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'renderImportNilai'])->name('akademik.nilai-import');
     Route::get('/akademik/nilai/export',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'exportNilai'])->name('akademik.nilai-export');
-    Route::post('/akademik/nilai',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'handleNilai'])->name('akademik.nilai-handle');
     Route::get('/akademik/nilai/{code}',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'viewNilai'])->name('akademik.nilai-view');
     Route::patch('/akademik/nilai/{code}',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'updateNilai'])->name('akademik.nilai-update');
     Route::delete('/akademik/nilai/{code}',[App\Http\Controllers\Master\Akademik\NilaiController::class, 'deleteNilai'])->name('akademik.nilai-delete');
