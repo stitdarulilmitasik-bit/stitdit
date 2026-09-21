@@ -166,7 +166,7 @@
                                 <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score" name="nilai[{{ $index }}][uts]" value="{{ old("nilai.{$index}.uts", $n->uts) }}" @disabled(!$n->is_editable)></td>
                                 <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score" name="nilai[{{ $index }}][uas]" value="{{ old("nilai.{$index}.uas", $n->uas) }}" @disabled(!$n->is_editable)></td>
                                 <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score" name="nilai[{{ $index }}][praktikum]" value="{{ old("nilai.{$index}.praktikum", $n->praktikum) }}" @disabled(!$n->is_editable)></td>
-                                <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score" name="nilai[{{ $index }}][kehadiran]" value="{{ old("nilai.{$index}.kehadiran", $n->kehadiran) }}" @disabled(!$n->is_editable)></td>
+                                <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score bg-light" name="nilai[{{ $index }}][kehadiran]" value="{{ $n->kehadiran !== null ? number_format($n->kehadiran, 2, '.', '') : '' }}" readonly title="Otomatis dari tabel kehadiran_mahasiswas"></td>
 
                                 <td class="auto-cell auto-final">{{ $n->nilai_angka !== null ? number_format($n->nilai_angka,2) : '-' }}</td>
                                 <td class="auto-cell auto-letter">{{ $n->nilai_huruf ?? '-' }}</td>
@@ -183,7 +183,7 @@
             </div>
 
             <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
-                <div class="small text-muted">Nilai Akhir, Nilai Huruf, Mutu, dan Hasil bukan input manual. Sistem menghitungnya otomatis dari komponen nilai.</div>
+                <div class="small text-muted">Kehadiran dihitung otomatis dari tabel <code>kehadiran_mahasiswas</code>. Nilai Akhir, Nilai Huruf, Mutu, dan Hasil dihitung otomatis dari komponen nilai.</div>
                 <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i> Simpan Draft</button>
             </div>
         </form>
