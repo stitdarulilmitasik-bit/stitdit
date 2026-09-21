@@ -168,7 +168,7 @@
                         <button class="btn btn-warning btn-sm" onclick="bulkUpdate()">
                             <i class="fas fa-edit me-2"></i>Update Terpilih
                         </button>
-                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseForm" aria-expanded="false" aria-controls="collapseForm">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseForm" aria-expanded="true" aria-controls="collapseForm">
                             <i class="fas fa-plus-circle me-2"></i>Tambah Nilai
                         </button>
                     </div>
@@ -203,7 +203,7 @@
                     </div>
 
                     <!-- Collapsible Form -->
-                    <div class="collapse" id="collapseForm">
+                    <div class="collapse show" id="collapseForm">
                         <div class="card card-body border">
                             <h5 class="card-title mb-3">Tambah Nilai Baru</h5>
                             <form action="{{ route($spref . 'akademik.nilai-handle') }}" method="post">
@@ -325,7 +325,7 @@
                                     <div class="col-12 mb-3">
                                         <div class="card border bg-light">
                                             <div class="card-body">
-                                                <h6 class="mb-2"><i class="fas fa-sliders-h me-2"></i>Bobot Komponen Nilai</h6>
+                                                <h6 class="mb-2 fw-bold text-primary"><i class="fas fa-sliders-h me-2"></i>Bobot Komponen Nilai (WAJIB 100%)</h6>
                                                 <p class="text-muted small mb-3">
                                                     Masukkan bobot untuk setiap komponen penilaian. <strong>Total seluruh bobot wajib tepat 100%.</strong>
                                                     Bobot ini akan disimpan bersama data nilai mahasiswa dan digunakan dalam perhitungan nilai akhir.
@@ -345,15 +345,15 @@
                                                     </div>
                                                     <div class="col-md-2 col-6">
                                                         <label class="form-label small">UAS (%)</label>
-                                                        <input type="number" class="form-control bobot-tambah" name="bobot_uas" value="20" min="0" max="100" step="0.01" required>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_uas" value="30" min="0" max="100" step="0.01" required>
                                                     </div>
                                                     <div class="col-md-2 col-6">
                                                         <label class="form-label small">Praktikum (%)</label>
-                                                        <input type="number" class="form-control bobot-tambah" name="bobot_praktikum" value="10" min="0" max="100" step="0.01" required>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_praktikum" value="0" min="0" max="100" step="0.01" required>
                                                     </div>
                                                     <div class="col-md-2 col-6">
                                                         <label class="form-label small">Kehadiran (%)</label>
-                                                        <input type="number" class="form-control bobot-tambah" name="bobot_kehadiran" value="20" min="0" max="100" step="0.01" required>
+                                                        <input type="number" class="form-control bobot-tambah" name="bobot_kehadiran" value="15" min="0" max="100" step="0.01" required>
                                                     </div>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
