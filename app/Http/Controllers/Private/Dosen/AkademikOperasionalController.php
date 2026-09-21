@@ -228,6 +228,40 @@ class AkademikOperasionalController extends Controller
         ])->with('success', 'Kehadiran ' . ($nilai->mahasiswa->name ?? 'mahasiswa') . ' berhasil disimpan.');
     }
 
+    /** Export rekap kehadiran mahasiswa dari dashboard Dosen. */
+    public function dosenKehadiranPdf(Request $request, $mahasiswaId)
+    {
+        $dosen = $this->dosen();
+        $semester = max(1, min(8, (int) $request->input('semester', 1)));
+
+        $nilai = Nilai::with([
+            'mahasiswa.programStudi.fakultas',
+            'mataKuliah',
+            'kehadiranMahasiswa',
+            'tahunAkademik',
+        ])
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->where('semester', $semester)
+            ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
+            ->orderBy('id')
+            ->get();
+
+        abort_if($nilai->isEmpty(), 404, 'Data kehadiran mahasiswa tidak ditemukan untuk mata kuliah yang Anda ampu pada semester ini.');
+
+        $mahasiswa = $nilai->first()->mahasiswa;
+        $webs = WebSetting::first();
+
+        $pdf = PDF::loadView('private.dosen.kehadiran-mahasiswa-pdf', [
+            'mahasiswa' => $mahasiswa,
+            'nilai' => $nilai,
+            'semester' => $semester,
+            'webs' => $webs,
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'kehadiran-' . Str::slug($mahasiswa->name ?? 'mahasiswa') . '-semester-' . $semester . '.pdf';
+        return $pdf->download($filename);
+    }
+
     /**
      * Halaman kehadiran untuk Administrator Web.
      * Administrator dapat memantau dan menginput kehadiran seluruh mahasiswa.
