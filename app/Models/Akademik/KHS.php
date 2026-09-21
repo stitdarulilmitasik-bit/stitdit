@@ -100,7 +100,7 @@ class KHS extends Model
         return $this->hasMany(Nilai::class, 'mahasiswa_id', 'mahasiswa_id')
             ->where('taka_id', $this->taka_id)
             ->where('semester', $this->semester)
-            ->published();
+            ->whereIn('status', ['Published', 'Locked']);
     }
 
     // SCOPE METHODS
@@ -124,6 +124,35 @@ class KHS extends Model
         return $query->where('status_generate', 'Published');
     }
 
+    private function validateCompleteGrades(): void
+    {
+        $krs = KRS::with('detailsAktif')
+            ->where('mahasiswa_id', $this->mahasiswa_id)
+            ->where('taka_id', $this->taka_id)
+            ->where('semester', $this->semester)
+            ->whereIn('status', ['approved', 'published', 'locked'])
+            ->first();
+
+        if (!$krs) {
+            throw new \RuntimeException('KHS tidak dapat digenerate karena KRS semester ini belum disetujui.');
+        }
+
+        $details = $krs->detailsAktif;
+        if ($details->isEmpty()) {
+            throw new \RuntimeException('KHS tidak dapat digenerate karena belum ada mata kuliah aktif pada KRS.');
+        }
+
+        $publishedCount = Nilai::whereIn('krs_detail_id', $details->pluck('id'))
+            ->whereIn('status', ['Published', 'Locked'])
+            ->count();
+
+        if ($publishedCount !== $details->count()) {
+            throw new \RuntimeException(
+                'KHS belum dapat digenerate. Semua mata kuliah aktif pada KRS harus memiliki nilai Published/Locked.'
+            );
+        }
+    }
+
     public function scopeByStatusAkademik($query, $status)
     {
         return $query->where('status_akademik', $status);
@@ -132,11 +161,13 @@ class KHS extends Model
     // BUSINESS LOGIC METHODS
     public function generateKHS()
     {
+        $this->validateCompleteGrades();
+
         // Ambil semua nilai semester ini
         $nilaiSemester = Nilai::byMahasiswa($this->mahasiswa_id)
             ->byTahunAkademik($this->taka_id)
             ->bySemester($this->semester)
-            ->published()
+            ->whereIn('status', ['Published', 'Locked'])
             ->get();
 
         // Hitung statistik semester
@@ -168,13 +199,14 @@ class KHS extends Model
         // Ambil semua nilai dari semester 1 hingga semester saat ini
         $semuaNilai = Nilai::byMahasiswa($this->mahasiswa_id)
             ->where('semester', '<=', $this->semester)
-            ->published()
+            ->whereIn('status', ['Published', 'Locked'])
             ->get();
 
         $this->total_sks_kumulatif = $semuaNilai->where('nilai_mutu', '>=', 2.00)->sum('sks');
         $this->total_mutu_kumulatif = $semuaNilai->sum('mutu_x_sks');
-        $this->ipk = $this->total_sks_kumulatif > 0 ?
-            round($this->total_mutu_kumulatif / $semuaNilai->sum('sks'), 2) : 0.00;
+        $this->ipk = $this->total_sks_kumulatif > 0
+            ? round($this->total_mutu_kumulatif / $this->total_sks_kumulatif, 2)
+            : 0.00;
     }
 
     private function tentukanStatusAkademik()
@@ -252,6 +284,14 @@ class KHS extends Model
 
     public function publish()
     {
+        if ($this->is_locked) {
+            throw new \RuntimeException('KHS sudah terkunci.');
+        }
+
+        // Recalculate immediately before publication so the published KHS
+        // is always derived from the current finalized grades.
+        $this->generateKHS();
+
         $this->update([
             'status_generate' => 'Published',
             'published_at' => now()

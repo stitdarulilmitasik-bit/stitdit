@@ -9,6 +9,9 @@ Route::group(['prefix' => 'dosen', 'middleware' => ['checkUser:Dosen Aktif', 'do
     Route::patch('/profile',[App\Http\Controllers\Private\Dosen\RootController::class, 'handleProfile'])->name('profile-handle');
     Route::get('/akademik/jadwal/export-pdf',[App\Http\Controllers\Private\Dosen\RootController::class, 'exportJadwalPdf'])->name('akademik.jadwal.export-pdf');
 
+    // GRADEBOOK: controlled grade entry and workflow (loaded before legacy nilai routes)
+    require __DIR__.'/../gradebook.php';
+
     require __DIR__.'/master-akademik.php';
 
     Route::get('/akademik/jadwal',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'jadwal'])->name('akademik.jadwal');
