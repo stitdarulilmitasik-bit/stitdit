@@ -235,31 +235,63 @@ class NilaiController extends Controller
                 return redirect()->back()->withInput();
             }
 
-            $nilai->update([
-                'tugas_1' => $request->tugas_1,
-                'tugas_2' => $request->tugas_2,
-                'tugas_3' => $request->tugas_3,
-                'quiz_1' => $request->quiz_1,
-                'quiz_2' => $request->quiz_2,
-                'uts' => $request->uts,
-                'uas' => $request->uas,
-                'praktikum' => $request->praktikum,
-                'kehadiran' => $request->kehadiran,
-                'bobot_tugas' => $request->bobot_tugas ?? $nilai->bobot_tugas,
-                'bobot_quiz' => $request->bobot_quiz ?? $nilai->bobot_quiz,
-                'bobot_uts' => $request->bobot_uts ?? $nilai->bobot_uts,
-                'bobot_uas' => $request->bobot_uas ?? $nilai->bobot_uas,
-                'bobot_praktikum' => $request->bobot_praktikum ?? $nilai->bobot_praktikum,
-                'bobot_kehadiran' => $request->bobot_kehadiran ?? $nilai->bobot_kehadiran,
-                'notes' => $request->notes,
-                'is_remidi' => $request->boolean('is_remidi'),
-                'nilai_remidi' => $request->nilai_remidi,
-                'is_susulan' => $request->boolean('is_susulan'),
-                'updated_by' => Auth::id(),
-            ]);
+            // Update hanya field yang benar-benar dikirim. Sebelumnya, form
+            // inline yang hanya mengirim nilai_angka menyebabkan seluruh komponen
+            // tugas/quiz/UTS/UAS/kehadiran ditimpa NULL.
+            $updateData = [];
 
-            // Hitung ulang nilai akhir
-            $nilai->hitungNilaiAkhir();
+            foreach ([
+                'tugas_1', 'tugas_2', 'tugas_3',
+                'quiz_1', 'quiz_2',
+                'uts', 'uas', 'praktikum', 'kehadiran',
+                'bobot_tugas', 'bobot_quiz', 'bobot_uts',
+                'bobot_uas', 'bobot_praktikum', 'bobot_kehadiran',
+                'notes', 'nilai_remidi'
+            ] as $field) {
+                if ($request->has($field)) {
+                    $updateData[$field] = $request->input($field);
+                }
+            }
+
+            if ($request->has('is_remidi')) {
+                $updateData['is_remidi'] = $request->boolean('is_remidi');
+            }
+            if ($request->has('is_susulan')) {
+                $updateData['is_susulan'] = $request->boolean('is_susulan');
+            }
+
+            // Nilai akhir dari input langsung tetap didukung. Jika hanya
+            // nilai_angka yang dikirim, jangan dihitung ulang dari komponen NULL.
+            $directScore = $request->has('nilai_angka');
+            $componentUpdate = collect([
+                'tugas_1','tugas_2','tugas_3','quiz_1','quiz_2',
+                'uts','uas','praktikum','kehadiran'
+            ])->contains(fn ($field) => $request->has($field));
+
+            if ($directScore && !$componentUpdate) {
+                $score = $request->input('nilai_angka');
+                $updateData['nilai_angka'] = $score;
+
+                $huruf = 'E';
+                foreach (Nilai::NILAI_HURUF_MAP as $grade => $range) {
+                    if ((float) $score >= $range['min'] && (float) $score <= $range['max']) {
+                        $huruf = $grade;
+                        break;
+                    }
+                }
+                $updateData['nilai_huruf'] = $huruf;
+                $updateData['nilai_mutu'] = Nilai::NILAI_HURUF_MAP[$huruf]['mutu'];
+                $updateData['mutu_x_sks'] = $updateData['nilai_mutu'] * (float) $nilai->sks;
+            }
+
+            $updateData['updated_by'] = Auth::id();
+            $nilai->update($updateData);
+
+            // Hitung ulang hanya jika komponen nilai memang diubah.
+            if ($componentUpdate) {
+                $nilai->refresh();
+                $nilai->hitungNilaiAkhir();
+            }
 
             DB::commit();
             Alert::success('Success', 'Nilai berhasil diperbarui');
