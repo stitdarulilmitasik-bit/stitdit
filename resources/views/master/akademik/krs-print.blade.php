@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kartu Rencana Studi - {{ $krs->mahasiswa->name }}</title>
     <style>
-        @page { size: A4 portrait; margin: 1.0cm 0.9cm; }
+        @page { size: A4 portrait; margin: 0.8cm 0.75cm; }
         body { font-family: 'Times New Roman', serif; font-size: 9.5pt; line-height: 1.15; color: #000; margin: 0; padding: 0; }
+        .page-width { width: 100%; }
+
         .kop { width: 100%; border-bottom: 2px solid #111; padding-bottom: 6px; margin-bottom: 10px; }
         .kop-table { width: 100%; border-collapse: collapse; }
         .kop-logo { width: 85px; text-align: center; vertical-align: middle; }
@@ -22,9 +24,11 @@
         .semester-line { font-size: 9pt; margin-top: 4px; }
         .student-info { margin: 8px 0; }
         .student-info table { width: 100%; border-collapse: collapse; }
-        .student-info td { padding: 2px 2px; vertical-align: top; }
-        .student-info .label { width: 92px; font-weight: bold; }
+        .student-info td { padding: 3px 3px; vertical-align: middle; }
+        .student-info .label { width: 92px; font-weight: bold; white-space: nowrap; }
         .student-info .colon { width: 8px; text-align: center; }
+        .student-info .value { white-space: nowrap; }
+
         .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 8px 0; border: 1px solid #000; }
         .courses-table th, .courses-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; font-size: 7.5pt; line-height: 1.05; vertical-align: middle; }
         .courses-table th { background-color: #f0f0f0; font-weight: bold; }
@@ -33,10 +37,11 @@
         .courses-table .lecturer { text-align: left; padding-left: 4px; font-size: 7pt; overflow-wrap: anywhere; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
-        .signature-section { margin-top: 14px; width: 100%; page-break-inside: avoid; }
-        .signature-table { width: 100%; border-collapse: collapse; }
-        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 8px 10px; }
-        .signature-title { font-weight: bold; margin: 0 auto 42px; min-height: 28px; line-height: 1.25; }
+        .signature-section { margin-top: 16px; width: 100%; page-break-inside: avoid; }
+        .signature-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 8px 18px; }
+        .signature-title { font-weight: bold; margin: 0 auto 48px; min-height: 30px; line-height: 1.25; }
+        .signature-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .signature-name { font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; }
         .signature-nip { font-size: 8pt; margin-top: 4px; }
         .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100pt; color: rgba(0,0,0,0.05); z-index: -1; font-weight: bold; }
@@ -77,6 +82,10 @@
     <div class="watermark">APPROVED</div>
 @elseif ($krs->status === 'locked')
     <div class="watermark">LOCKED</div>
+@elseif ($krs->status === 'published')
+    <div class="watermark">PUBLISHED</div>
+@elseif ($krs->status === 'submitted')
+    <div class="watermark">SUBMITTED</div>
 @else
     <div class="watermark">DRAFT</div>
 @endif
@@ -109,20 +118,20 @@
 <div class="student-info">
     <table>
         <tr>
-            <td class="label">Nama Mahasiswa</td><td class="colon">:</td><td style="width:27%;">{{ $krs->mahasiswa->name }}</td>
-            <td class="label" style="padding-left:15px;">Program Studi</td><td class="colon">:</td><td>{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
+            <td class="label">Nama Mahasiswa</td><td class="colon">:</td><td class="value" style="width:27%;">{{ $krs->mahasiswa->name }}</td>
+            <td class="label" style="padding-left:15px;">Program Studi</td><td class="colon">:</td><td class="value">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">NIM</td><td class="colon">:</td><td style="width:27%;">{{ $nim }}</td>
-            <td class="label" style="padding-left:15px;">Tahun Masuk</td><td class="colon">:</td><td>{{ $tahunMasuk }}</td>
+            <td class="label">NIM</td><td class="colon">:</td><td class="value" style="width:27%;">{{ $nim }}</td>
+            <td class="label" style="padding-left:15px;">Tahun Masuk</td><td class="colon">:</td><td class="value">{{ $tahunMasuk }}</td>
         </tr>
         <tr>
-            <td class="label">Semester</td><td class="colon">:</td><td style="width:27%;">{{ $krs->semester }}</td>
-            <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td>{{ $dosenWali->name ?? '-' }}</td>
+            <td class="label">Semester</td><td class="colon">:</td><td class="value" style="width:27%;">{{ $krs->semester }}</td>
+            <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td class="value">{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status KRS</td><td class="colon">:</td><td style="width:27%;"><span class="status-badge">{{ strtoupper($krs->status) }}</span></td>
-            <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td><strong>{{ $krs->total_sks }} SKS</strong></td>
+            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">{{ strtoupper($krs->status) }}</span></td>
+            <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td class="value"><strong>{{ $krs->total_sks }} SKS</strong></td>
         </tr>
     </table>
 </div>
