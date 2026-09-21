@@ -135,7 +135,23 @@ class AkademikController extends Controller
         return back()->with('success', 'KRS berhasil disubmit dan menunggu persetujuan akademik.');
     }
 
-    public function destroyKrs($id){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $d=\App\Models\Akademik\KrsDetail::where('id',$id)->whereHas('krs',fn($q)=>$q->where('mahasiswa_id',$u->id))->firstOrFail(); $d->batalkan('Dibatalkan oleh mahasiswa'); return back()->with('success','Mata kuliah berhasil dibatalkan dari KRS.'); }
+    public function destroyKrs($id)
+    {
+        $u = Auth::guard('mahasiswa')->user();
+        abort_unless($u, 403);
+
+        $d = \App\Models\Akademik\KrsDetail::where('id', $id)
+            ->whereHas('krs', fn($q) => $q->where('mahasiswa_id', $u->id))
+            ->firstOrFail();
+
+        $krs = $d->krs;
+        if (!$krs->is_editable) {
+            return back()->with('error', 'KRS sudah diajukan dan tidak dapat diubah sampai diproses oleh akademik.');
+        }
+
+        $d->batalkan('Dibatalkan oleh mahasiswa');
+        return back()->with('success', 'Mata kuliah berhasil dibatalkan dari KRS.');
+    }
 
     public function jadwalKuliah(){ try{$u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $s=$this->getCurrentSemester(); if(!$s)return back()->with('error','Tahun akademik aktif belum tersedia.'); $a=$this->getAvailableSemesters($u); return view('private.mahasiswa.akademik.jadwal-kuliah',['menus'=>'Akademik','pages'=>'Jadwal Kuliah','user'=>$u,'spref'=>$u->prefix,'currentSemester'=>$s,'availableSemesters'=>$a,'semesters'=>$a,'jadwal'=>$this->getJadwalKuliah($u->id,$s->id),'isCurrentSemester'=>true,'webs'=>WebSetting::first(),'academy'=>'SIAKAD']);}catch(\Exception $e){return redirect()->route('mahasiswa.dashboard-render')->with('error','Terjadi kesalahan saat memuat jadwal kuliah: '.$e->getMessage());} }
 
