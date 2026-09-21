@@ -132,7 +132,15 @@ class Nilai extends Model
 
     public function getIsLulusAttribute()
     {
-        return $this->nilai_mutu >= 2.00;
+        // Nilai lama dapat menyimpan nilai_huruf yang sudah benar tetapi
+        // nilai_mutu belum tersinkron. Gunakan nilai_huruf sebagai sumber
+        // yang konsisten, lalu fallback ke nilai_mutu untuk data legacy.
+        $huruf = strtoupper(trim((string) ($this->attributes['nilai_huruf'] ?? '')));
+        if ($huruf !== '' && isset(self::NILAI_HURUF_MAP[$huruf])) {
+            return (float) self::NILAI_HURUF_MAP[$huruf]['mutu'] >= 2.00;
+        }
+
+        return (float) ($this->attributes['nilai_mutu'] ?? 0) >= 2.00;
     }
 
     public function getRataTugasAttribute()
