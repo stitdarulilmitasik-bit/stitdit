@@ -186,9 +186,15 @@ class NilaiController extends Controller
             // Kombinasi ini sudah memiliki data Nilai.
             // Jangan INSERT ulang karena tabel nilais memiliki UNIQUE index.
             // Jika data sudah ada, cukup perbarui bobot yang dikirim dari form.
-            $nilai = Nilai::where($key)->first();
+            $nilai = Nilai::withTrashed()->where($key)->first();
 
             if ($nilai) {
+                // Record yang pernah dihapus (soft delete) tetap menempati UNIQUE index.
+                // Pulihkan kembali agar tidak terjadi duplicate key saat membuat nilai baru.
+                if ($nilai->trashed()) {
+                    $nilai->restore();
+                }
+
                 $nilai->update([
                     'bobot_tugas' => $request->bobot_tugas,
                     'bobot_quiz' => $request->bobot_quiz,
@@ -239,7 +245,7 @@ class NilaiController extends Controller
                 // Jika record belum terlihat karena transaksi bersamaan, ulangi beberapa kali.
                 $nilai = null;
                 for ($attempt = 0; $attempt < 3 && !$nilai; $attempt++) {
-                    $nilai = Nilai::where($key)->first();
+                    $nilai = Nilai::withTrashed()->where($key)->first();
                     if (!$nilai) {
                         usleep(100000);
                     }
@@ -247,6 +253,10 @@ class NilaiController extends Controller
 
                 if (!$nilai) {
                     throw new \RuntimeException('Data nilai sudah dibuat oleh proses lain, tetapi belum dapat ditemukan. Silakan buka ulang halaman Nilai dan coba lagi.');
+                }
+
+                if ($nilai->trashed()) {
+                    $nilai->restore();
                 }
 
                 $nilai->update([
