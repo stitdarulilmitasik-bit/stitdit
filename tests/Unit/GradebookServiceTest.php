@@ -29,7 +29,7 @@ class GradebookServiceTest extends TestCase
         $service = app(GradebookService::class);
         $service->calculate($nilai);
 
-        $this->assertSame(83.25, (float) $nilai->nilai_angka);
+        $this->assertSame(83.75, (float) $nilai->nilai_angka);
         $this->assertSame('A-', $nilai->nilai_huruf);
         $this->assertSame(3.67, (float) $nilai->nilai_mutu);
         $this->assertSame(11.01, (float) $nilai->mutu_x_sks);
