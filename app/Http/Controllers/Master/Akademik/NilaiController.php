@@ -137,7 +137,26 @@ class NilaiController extends Controller
                 'tahun_akademik_id' => 'required|exists:tahun_akademiks,id',
                 'semester' => 'required|integer|min:1|max:14',
                 'krs_detail_id' => 'nullable|exists:krs_details,id',
+                'bobot_tugas' => 'required|numeric|min:0|max:100',
+                'bobot_quiz' => 'required|numeric|min:0|max:100',
+                'bobot_uts' => 'required|numeric|min:0|max:100',
+                'bobot_uas' => 'required|numeric|min:0|max:100',
+                'bobot_praktikum' => 'required|numeric|min:0|max:100',
+                'bobot_kehadiran' => 'required|numeric|min:0|max:100',
             ]);
+
+            $totalBobot = (float) $request->bobot_tugas
+                + (float) $request->bobot_quiz
+                + (float) $request->bobot_uts
+                + (float) $request->bobot_uas
+                + (float) $request->bobot_praktikum
+                + (float) $request->bobot_kehadiran;
+
+            if (abs($totalBobot - 100) > 0.01) {
+                throw new \InvalidArgumentException(
+                    'Total bobot harus 100%. Saat ini: ' . rtrim(rtrim(number_format($totalBobot, 2, '.', ''), '0'), '.') . '%.'
+                );
+            }
 
             $mataKuliah = MataKuliah::findOrFail($request->matkul_id);
 
@@ -176,6 +195,12 @@ class NilaiController extends Controller
                         'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
                         'krs_detail_id' => $request->krs_detail_id,
                         'sks' => $mataKuliah->sks,
+                        'bobot_tugas' => $request->bobot_tugas,
+                        'bobot_quiz' => $request->bobot_quiz,
+                        'bobot_uts' => $request->bobot_uts,
+                        'bobot_uas' => $request->bobot_uas,
+                        'bobot_praktikum' => $request->bobot_praktikum,
+                        'bobot_kehadiran' => $request->bobot_kehadiran,
                         'created_by' => $actor,
                     ]));
                     $created = true;
