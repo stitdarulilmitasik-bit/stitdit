@@ -23,6 +23,9 @@
     .info td { padding: 2px 3px; vertical-align: top; }
     .info .label { width: 88px; font-weight: bold; }
     table.data { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .data th, .data td { overflow: hidden; }
+    .data .meeting { width: 2.5%; }
+    .data .summary { width: 5.6%; }
     .data th, .data td { border: 1px solid #333; padding: 3px 2px; vertical-align: middle; }
     .data th { background: #eeeeee; text-align: center; font-weight: bold; font-size: 7pt; }
     .data td { font-size: 7pt; }
@@ -84,24 +87,24 @@
 <table class="data">
     <colgroup>
         <col style="width:3%">
-        <col style="width:24%">
-        @for($i = 1; $i <= 16; $i++)<col style="width:3.25%">@endfor
-        <col style="width:5%">
-        <col style="width:5%">
-        <col style="width:5%">
-        <col style="width:5%">
-        <col style="width:6%">
+        <col style="width:23%">
+        @for($i = 1; $i <= 16; $i++)<col class="meeting" style="width:2.5%">@endfor
+        <col class="summary" style="width:5.6%">
+        <col class="summary" style="width:5.6%">
+        <col class="summary" style="width:5.6%">
+        <col class="summary" style="width:5.6%">
+        <col class="summary" style="width:5.6%">
     </colgroup>
     <thead>
         <tr>
-            <th>No.</th>
-            <th>Mata Kuliah</th>
-            @for($i = 1; $i <= 16; $i++)<th>P{{ $i }}</th>@endfor
-            <th>Hadir</th>
-            <th>Izin</th>
-            <th>Sakit</th>
-            <th>Alpa</th>
-            <th>% Hadir</th>
+            <th style="width:3%">No.</th>
+            <th style="width:23%">Mata Kuliah</th>
+            @for($i = 1; $i <= 16; $i++)<th class="meeting">P{{ $i }}</th>@endfor
+            <th class="summary">Hadir</th>
+            <th class="summary">Izin</th>
+            <th class="summary">Sakit</th>
+            <th class="summary">Alpa</th>
+            <th class="summary">% Hadir</th>
         </tr>
     </thead>
     <tbody>
