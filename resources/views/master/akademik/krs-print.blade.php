@@ -29,12 +29,12 @@
         .student-info .colon { width: 8px; text-align: center; }
         .student-info .value { white-space: nowrap; overflow: hidden; }
 
-        .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 9px 0; border: 1px solid #000; }
-        .courses-table th, .courses-table td { border: 1px solid #000; padding: 4px 3px; text-align: center; font-size: 8.5pt; line-height: 1.15; vertical-align: middle; overflow-wrap: anywhere; word-break: normal; }
-        .courses-table th { background-color: #f0f0f0; font-weight: bold; font-size: 9pt; }
-        .courses-table .subject-name { text-align: left; padding-left: 5px; font-size: 8.5pt; }
-        .courses-table .room { text-align: center; font-size: 8.2pt; white-space: normal; }
-        .courses-table .lecturer { text-align: left; padding-left: 5px; font-size: 8.2pt; }
+        .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 8px 0; border: 1px solid #000; }
+        .courses-table th, .courses-table td { border: 1px solid #000; padding: 5px 4px; text-align: center; font-size: 9.5pt; line-height: 1.15; vertical-align: middle; overflow-wrap: anywhere; word-break: normal; }
+        .courses-table th { background-color: #f0f0f0; font-weight: bold; font-size: 10pt; }
+        .courses-table .subject-name { text-align: left; padding-left: 6px; font-size: 9.5pt; }
+        .courses-table .room { text-align: center; font-size: 9pt; white-space: normal; }
+        .courses-table .lecturer { text-align: left; padding-left: 6px; font-size: 9pt; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
         .signature-section { margin-top: 14px; width: 100%; page-break-inside: avoid; }
@@ -138,10 +138,10 @@
         <tr>
             <th style="width:5%;">No</th>
             <th style="width:12%;">Kode MK</th>
-            <th style="width:31%;">Mata Kuliah</th>
+            <th style="width:33%;">Mata Kuliah</th>
             <th style="width:7%;">SKS</th>
-            <th style="width:10%;">Kelas</th>
-            <th style="width:9%;">Ruang</th>
+            <th style="width:9%;">Kelas</th>
+            <th style="width:8%;">Ruang</th>
             <th style="width:26%;">Dosen</th>
         </tr>
     </thead>
