@@ -62,8 +62,14 @@ class AkademikOperasionalController extends Controller
      */
     private function syncNilaiDosen($dosenId)
     {
+        // Sinkronisasi berdasarkan MATA KULIAH yang benar-benar diampu dosen.
+        // Tidak bergantung pada dosen_id di krs_details, karena data KRS lama
+        // dapat saja belum memiliki dosen_id yang sesuai dengan master mata kuliah.
         KRS::whereIn('status', ['approved', 'Disetujui'])
-            ->whereHas('details', fn($q) => $q->where('dosen_id', $dosenId)->whereIn('status', ['Aktif', 'Mengulang']))
+            ->whereHas('details', function ($q) use ($dosenId) {
+                $q->whereIn('status', ['Aktif', 'Mengulang'])
+                    ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosenId));
+            })
             ->with('details')
             ->get()
             ->each(fn($krs) => $krs->syncNilai());
@@ -128,12 +134,25 @@ class AkademikOperasionalController extends Controller
     {
         $data = $this->base('Nilai Mahasiswa');
         $id = $data['user']->id;
+
+        // Pastikan nilai mahasiswa untuk mata kuliah yang diampu tersedia
+        // otomatis ketika halaman Nilai dibuka.
         $this->syncNilaiDosen($id);
+
+        // Daftar mata kuliah diambil langsung dari master MataKuliah.
+        // Jadi setiap Dosen hanya melihat mata kuliah yang tercatat pada
+        // dosen1_id, dosen2_id, atau dosen3_id miliknya.
+        $data['mata_kuliah'] = MataKuliah::where($this->mataKuliahDiampu($id))
+            ->orderBy('code')
+            ->get();
+
+        // Nilai ditampilkan berdasarkan mata kuliah yang diampu.
+        // Tidak lagi bergantung pada dosen_id di krs_details.
         $data['nilai'] = Nilai::with(['mahasiswa','mataKuliah','tahunAkademik','krsDetail'])
-            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $id))
             ->whereHas('mataKuliah', $this->mataKuliahDiampu($id))
             ->latest()
             ->paginate(30);
+
         return view('private.dosen.akademik-nilai', $data);
     }
 
@@ -212,7 +231,6 @@ class AkademikOperasionalController extends Controller
     {
         $dosen = $this->dosen();
         $nilai = Nilai::where('code', $code)
-            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $dosen->id))
             ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
             ->firstOrFail();
         abort_unless($nilai->status === 'Draft', 403, 'Nilai sudah dipublish atau dikunci.');
