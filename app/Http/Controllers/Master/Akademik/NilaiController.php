@@ -49,9 +49,12 @@ class NilaiController extends Controller
 
     public function renderNilai()
     {
-        $user = Auth::user();
+        // Route ini dipakai Admin dan Dosen. Gunakan guard Dosen bila
+        // halaman dibuka dari dashboard Dosen agar seluruh data/aksi
+        // mengikuti identitas Dosen yang sedang login.
+        $user = $this->isDosen() ? Auth::guard('dosen')->user() : Auth::user();
         $data['webs'] = WebSetting::first();
-        $data['spref'] = $user ? $user->prefix : '';
+        $data['spref'] = $this->isDosen() ? 'dosen.' : ($user ? $user->prefix : '');
         $data['menus'] = "Master";
         $data['pages'] = "Nilai Mahasiswa";
         $data['academy'] = $data['webs']->school_apps . ' by ' . $data['webs']->school_name;
@@ -120,6 +123,7 @@ class NilaiController extends Controller
     public function handleNilai(Request $request)
     {
         try {
+            $actor = $this->isDosen() ? Auth::guard('dosen')->id() : Auth::id();
             DB::beginTransaction();
 
             $request->merge([
@@ -166,7 +170,7 @@ class NilaiController extends Controller
                 'semester' => $request->semester,
                 'krs_detail_id' => $request->krs_detail_id,
                 'sks' => $mataKuliah->sks,
-                'created_by' => Auth::id(),
+                'created_by' => $actor,
             ]);
 
             DB::commit();
