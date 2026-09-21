@@ -76,25 +76,30 @@ class KRS extends Model
 
     public function getBatasSksAttribute()
     {
-        // Logika penentuan batas SKS berdasarkan IPK
-        $ipk = $this->ipk_sebelumnya;
-
-        if ($ipk >= 3.50) {
-            return 24; // Maksimal 24 SKS
-        } elseif ($ipk >= 3.00) {
-            return 22; // Maksimal 22 SKS
-        } elseif ($ipk >= 2.50) {
-            return 20; // Maksimal 20 SKS
-        } elseif ($ipk >= 2.00) {
-            return 18; // Maksimal 18 SKS
-        } else {
-            return 15; // Maksimal 15 SKS untuk IPK < 2.00
+        // Gunakan batas yang tersimpan pada KRS. KRS mahasiswa baru
+        // dibuat dengan max_sks 24, sedangkan KRS lama tetap punya
+        // fallback berdasarkan IPK.
+        if ((int) $this->max_sks > 0) {
+            return (int) $this->max_sks;
         }
+
+        $ipk = (float) $this->ipk_sebelumnya;
+
+        if ($ipk >= 3.50) return 24;
+        if ($ipk >= 3.00) return 22;
+        if ($ipk >= 2.50) return 20;
+        if ($ipk >= 2.00) return 18;
+
+        return 15;
     }
 
     public function getSisaSksAttribute()
     {
-        return $this->batas_sks - $this->total_sks;
+        $terpakai = (int) $this->details()
+            ->whereIn('status', ['Aktif', 'Mengulang'])
+            ->sum('sks');
+
+        return max(0, $this->batas_sks - $terpakai);
     }
 
     // RELATIONSHIP METHODS
@@ -154,7 +159,12 @@ class KRS extends Model
 
     public function canAddMatakuliah($sks)
     {
-        return ($this->total_sks + $sks) <= $this->batas_sks;
+        // total_sks bisa belum tersinkron dengan detail KRS.
+        $terpakai = (int) $this->details()
+            ->whereIn('status', ['Aktif', 'Mengulang'])
+            ->sum('sks');
+
+        return ($terpakai + (int) $sks) <= $this->batas_sks;
     }
 
     public function approve($dosenPaId = null, $notes = null)
