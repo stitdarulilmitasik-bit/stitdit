@@ -35,7 +35,7 @@
             <div>
                 <h3 class="card-title mb-1">Mata Kuliah yang Diambil</h3>
                 @if($krsHeader)
-                    <small class="text-muted">Status KRS: <strong>{{ $krsHeader->status }}</strong></small>
+                    <small class="text-muted">Status KRS: <strong>{{ ['draft'=>'Dibuat','submitted'=>'Diajukan','approved'=>'Disetujui','rejected'=>'Ditolak','published'=>'Dipublish','locked'=>'Dikunci'][strtolower(trim((string)$krsHeader->status))] ?? $krsHeader->status }}</strong></small>
                 @endif
             </div>
             <div class="ms-auto text-muted">Total SKS: <strong>{{ $krs->sum('sks') }}</strong> / {{ $krsHeader->batas_sks ?? 24 }}</div>
@@ -45,7 +45,7 @@
                 <thead><tr><th>No.</th><th>Kode</th><th>Mata Kuliah</th><th>Kelas</th><th>SKS</th><th>Dosen</th><th>Status</th><th>Aksi</th></tr></thead>
                 <tbody>
                 @forelse($krs as $i => $item)
-                    @php $status = $item->attributes['status'] ?? 'Aktif'; @endphp
+                    @php $status = $item->attributes['status'] ?? 'Aktif'; $krsStatus = strtolower(trim((string)($krsHeader->status ?? 'draft'))); @endphp
                     <tr>
                         <td>{{ $i+1 }}</td>
                         <td>{{ $item->mataKuliah->code ?? '-' }}</td>
@@ -55,10 +55,12 @@
                         <td>{{ $item->dosen->name ?? '-' }}</td>
                         <td><span class="badge {{ $status === 'Aktif' ? 'bg-success' : ($status === 'Mengulang' ? 'bg-warning' : 'bg-secondary') }}">{{ $status }}</span></td>
                         <td>
-                            @if(in_array($krsHeader->status ?? '', ['draft','submitted','rejected']))
+                            @if($krsHeader && $krsHeader->is_editable)
                             <form method="POST" action="{{ route('mahasiswa.akademik.krs.destroy', $item->id) }}" onsubmit="return confirm('Batalkan mata kuliah ini dari KRS?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Batalkan</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="ti ti-x"></i> Batalkan
+                                </button>
                             </form>
                             @endif
                         </td>
