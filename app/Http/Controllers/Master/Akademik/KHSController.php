@@ -230,8 +230,9 @@ class KHSController extends Controller
 
             $khs = KHS::where('code', $code)->firstOrFail();
 
-            if ($khs->status_generate !== 'Final') {
-                Alert::error('Error', 'KHS harus difinalisasi terlebih dahulu');
+            $status = strtolower(trim((string) ($khs->getRawOriginal('status_generate') ?? '')));
+            if (!in_array($status, ['draft', 'final'], true)) {
+                Alert::error('Error', 'KHS tidak dapat dipublish dari status saat ini: ' . ($khs->getRawOriginal('status_generate') ?? 'kosong'));
                 return redirect()->back();
             }
 
@@ -467,7 +468,7 @@ class KHSController extends Controller
     public function bulkPublish(Request $request)
     {
         $codes=(array)$request->input('codes',$request->input('khs_codes',[]));
-        foreach($codes as $code){$k=KHS::where('code',$code)->first(); if($k && $k->status_generate==='Final') $k->publish();}
+        foreach($codes as $code){$k=KHS::where('code',$code)->first(); if($k && in_array(strtolower(trim((string)($k->getRawOriginal('status_generate') ?? ''))), ['draft','final'], true)) $k->publish();}
         return redirect()->back()->with('success','KHS terpilih dipublish.');
     }
 
