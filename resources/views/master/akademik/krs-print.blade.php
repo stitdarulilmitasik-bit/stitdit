@@ -145,22 +145,33 @@
     <tbody>
         @php $no = 1; @endphp
         @forelse ($krs->details as $detail)
+            @php
+                // Jadwal tersimpan pada relasi kelas -> jadwalKuliah.
+                // Pilih jadwal yang sesuai dengan mata kuliah pada KRS detail.
+                $jadwal = $detail->kelas?->jadwalKuliah
+                    ?->first(function ($item) use ($detail) {
+                        return (int) ($item->matkul_id ?? 0) === (int) ($detail->matkul_id ?? 0);
+                    });
+
+                // Fallback jika jadwal belum menyimpan matkul_id.
+                $jadwal = $jadwal ?: $detail->kelas?->jadwalKuliah?->first();
+            @endphp
             <tr>
                 <td>{{ $no++ }}</td>
                 <td>{{ $detail->mataKuliah->code ?? '-' }}</td>
                 <td class="subject-name">{{ $detail->mataKuliah->name ?? '-' }}</td>
                 <td>{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
                 <td>{{ $detail->kelas->name ?? '-' }}</td>
-                <td>{{ $detail->jadwalKuliah->hari ?? '-' }}</td>
+                <td>{{ $jadwal->hari ?? $jadwal->day ?? '-' }}</td>
                 <td>
-                    @if ($detail->jadwalKuliah)
-                        {{ $detail->jadwalKuliah->jam_mulai ?? $detail->jadwalKuliah->waktuKuliah->time_start ?? '-' }}<br>
-                        {{ $detail->jadwalKuliah->jam_selesai ?? $detail->jadwalKuliah->waktuKuliah->time_ended ?? '-' }}
+                    @if ($jadwal)
+                        {{ $jadwal->jam_mulai ?? $jadwal->waktuKuliah?->time_start ?? '-' }}<br>
+                        {{ $jadwal->jam_selesai ?? $jadwal->waktuKuliah?->time_ended ?? '-' }}
                     @else
                         -
                     @endif
                 </td>
-                <td>{{ $detail->jadwalKuliah->ruang->name ?? $detail->jadwalKuliah->ruang ?? '-' }}</td>
+                <td>{{ $jadwal?->ruang?->name ?? $jadwal->ruang ?? '-' }}</td>
                 <td class="schedule">
                     @if ($detail->mataKuliah->dosen1)
                         {{ $detail->mataKuliah->dosen1->name }}
