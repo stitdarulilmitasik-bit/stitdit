@@ -227,6 +227,89 @@ class AkademikOperasionalController extends Controller
         ])->with('success', 'Kehadiran ' . ($nilai->mahasiswa->name ?? 'mahasiswa') . ' berhasil disimpan.');
     }
 
+    /**
+     * Halaman kehadiran untuk Administrator Web.
+     * Administrator dapat memantau dan menginput kehadiran seluruh mahasiswa.
+     */
+    public function webAdminKehadiran(Request $request)
+    {
+        $webs = WebSetting::first();
+        $semester = max(1, min(8, (int)$request->input('semester', 1)));
+        $pertemuan = max(1, min(16, (int)$request->input('pertemuan', 1)));
+
+        // Pastikan KRS yang sudah disetujui memiliki record nilai.
+        KRS::whereIn('status', ['approved', 'Disetujui'])
+            ->with('details')
+            ->get()
+            ->each(fn($krs) => $krs->syncNilai());
+
+        $data = [
+            'user' => Auth::guard('web')->user(),
+            'webs' => $webs,
+            'spref' => 'web-admin.',
+            'menus' => 'Akademik',
+            'pages' => 'Input Kehadiran Mahasiswa',
+            'academy' => $webs ? $webs->school_apps . ' by ' . $webs->school_name : 'SIAKAD',
+            'semester' => $semester,
+            'pertemuan' => $pertemuan,
+            'nilai' => Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
+                ->where('semester', $semester)
+                ->latest()
+                ->paginate(50)
+                ->withQueryString(),
+        ];
+
+        return view('private.dosen.akademik-kehadiran', $data);
+    }
+
+    /** Simpan kehadiran dari menu Web Admin. */
+    public function webAdminSimpanKehadiran(Request $request)
+    {
+        abort_unless(Auth::guard('web')->check(), 403);
+
+        $request->validate([
+            'nilai_id' => 'required|integer|exists:nilais,id',
+            'semester' => 'required|integer|min:1|max:8',
+            'pertemuan' => 'required|integer|min:1|max:16',
+            'status' => 'required|in:Hadir,Izin,Sakit,Alpa',
+            'catatan' => 'nullable|string|max:1000',
+        ]);
+
+        $nilai = Nilai::whereKey($request->nilai_id)
+            ->where('semester', $request->semester)
+            ->firstOrFail();
+
+        $attendance = KehadiranMahasiswa::updateOrCreate(
+            ['nilai_id' => $nilai->id, 'pertemuan' => $request->pertemuan],
+            [
+                'code' => 'ABS-' . date('YmdHis') . '-' . Str::random(6),
+                'semester' => $nilai->semester,
+                'status' => $request->status,
+                'catatan' => $request->catatan,
+                'updated_by' => Auth::guard('web')->id(),
+            ]
+        );
+
+        if (!$attendance->created_by) {
+            $attendance->update(['created_by' => Auth::guard('web')->id()]);
+        }
+
+        $totalPertemuan = $nilai->kehadiranMahasiswa()->count();
+        $jumlahHadir = $nilai->kehadiranMahasiswa()->where('status', 'Hadir')->count();
+        $persentaseKehadiran = $totalPertemuan > 0
+            ? round(($jumlahHadir / $totalPertemuan) * 100, 2)
+            : 0;
+
+        $nilai->kehadiran = $persentaseKehadiran;
+        $nilai->bobot_kehadiran = 15;
+        $nilai->save();
+
+        return redirect()->route('web-admin.akademik.kehadiran', [
+            'semester' => $request->input('redirect_semester', $nilai->semester),
+            'pertemuan' => $request->input('redirect_pertemuan', $request->pertemuan),
+        ])->with('success', 'Kehadiran ' . ($nilai->mahasiswa->name ?? 'mahasiswa') . ' berhasil disimpan.');
+    }
+
     public function updateNilai(Request $request, $code)
     {
         $dosen = $this->dosen();
