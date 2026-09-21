@@ -12,6 +12,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => ['checkUser:Mahasiswa Akt
         Route::get('/krs', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'krsRender'])->name('krs-render');
         Route::get('/krs/cetak', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'cetakKrs'])->name('krs-cetak');
         Route::post('/krs', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'storeKrs'])->name('krs.store');
+        Route::post('/krs/submit', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'submitKrs'])->name('krs.submit');
         Route::delete('/krs/{detailId}', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'destroyKrs'])->name('krs.destroy');
         Route::get('/jadwal', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'jadwalKuliah'])->name('jadwal');
         Route::get('/jadwal-kuliah', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'jadwalKuliah'])->name('jadwal-kuliah');
