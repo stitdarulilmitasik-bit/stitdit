@@ -168,10 +168,10 @@
                                 <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score" name="nilai[{{ $index }}][praktikum]" value="{{ old("nilai.{$index}.praktikum", $n->praktikum) }}" @disabled(!$n->is_editable)></td>
                                 <td><input type="number" min="0" max="100" step="0.01" class="form-control form-control-sm score" name="nilai[{{ $index }}][kehadiran]" value="{{ old("nilai.{$index}.kehadiran", $n->kehadiran) }}" @disabled(!$n->is_editable)></td>
 
-                                <td class="auto-cell">{{ $n->nilai_angka !== null ? number_format($n->nilai_angka,2) : '-' }}</td>
-                                <td class="auto-cell">{{ $n->nilai_huruf ?? '-' }}</td>
-                                <td class="auto-cell">{{ $n->nilai_mutu !== null ? number_format($n->nilai_mutu,2) : '-' }}</td>
-                                <td class="text-center"><span class="badge {{ $n->is_lulus ? 'bg-success':'bg-danger' }}">{{ $n->is_lulus ? 'Lulus':'Tidak Lulus' }}</span></td>
+                                <td class="auto-cell auto-final">{{ $n->nilai_angka !== null ? number_format($n->nilai_angka,2) : '-' }}</td>
+                                <td class="auto-cell auto-letter">{{ $n->nilai_huruf ?? '-' }}</td>
+                                <td class="auto-cell auto-mutu">{{ $n->nilai_mutu !== null ? number_format($n->nilai_mutu,2) : '-' }}</td>
+                                <td class="text-center auto-result"><span class="badge {{ $n->is_lulus ? 'bg-success':'bg-danger' }}">{{ $n->is_lulus ? 'Lulus':'Tidak Lulus' }}</span></td>
                                 <td class="text-center"><span class="badge bg-{{ $statusColors[$n->status] ?? 'secondary' }} status-badge">{{ $n->status }}</span></td>
                             </tr>
                         @endforeach
@@ -184,7 +184,7 @@
 
             <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
                 <div class="small text-muted">Nilai Akhir, Nilai Huruf, Mutu, dan Hasil bukan input manual. Sistem menghitungnya otomatis dari komponen nilai.</div>
-                <button class="btn btn-primary" type="submit" @disabled(!$isDosen)><i class="bi bi-save me-1"></i> Simpan Draft</button>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i> Simpan Draft</button>
             </div>
         </form>
 
@@ -224,4 +224,90 @@
         </div>
     @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.querySelector('.gradebook');
+    if (!table) return;
+
+    const weights = {
+        tugas: {{ (float) $weights['bobot_tugas'] }},
+        quiz: {{ (float) $weights['bobot_quiz'] }},
+        uts: {{ (float) $weights['bobot_uts'] }},
+        uas: {{ (float) $weights['bobot_uas'] }},
+        praktikum: {{ (float) $weights['bobot_praktikum'] }},
+        kehadiran: {{ (float) $weights['bobot_kehadiran'] }}
+    };
+
+    function grade(score) {
+        if (score >= 85) return ['A', 4.00];
+        if (score >= 80) return ['A-', 3.67];
+        if (score >= 75) return ['B+', 3.33];
+        if (score >= 70) return ['B', 3.00];
+        if (score >= 65) return ['B-', 2.67];
+        if (score >= 60) return ['C+', 2.33];
+        if (score >= 55) return ['C', 2.00];
+        if (score >= 50) return ['C-', 1.67];
+        if (score >= 45) return ['D+', 1.33];
+        if (score >= 40) return ['D', 1.00];
+        return ['E', 0.00];
+    }
+
+    function valueOf(row, field) {
+        const input = row.querySelector('input[name*="[' + field + ']"]');
+        if (!input || input.value === '') return null;
+        const value = Number(input.value);
+        return Number.isFinite(value) ? value : null;
+    }
+
+    function calculateRow(row) {
+        const fields = ['tugas','quiz','uts','uas','praktikum','kehadiran'];
+        let total = 0;
+        let hasAny = false;
+
+        fields.forEach(function (field) {
+            const value = valueOf(row, field);
+            if (value !== null) {
+                hasAny = true;
+                total += value * weights[field] / 100;
+            }
+        });
+
+        const finalCell = row.querySelector('.auto-final');
+        const letterCell = row.querySelector('.auto-letter');
+        const mutuCell = row.querySelector('.auto-mutu');
+        const resultCell = row.querySelector('.auto-result');
+
+        if (!finalCell || !letterCell || !mutuCell || !resultCell) return;
+
+        if (!hasAny) {
+            finalCell.textContent = '-';
+            letterCell.textContent = '-';
+            mutuCell.textContent = '-';
+            resultCell.textContent = 'Belum dinilai';
+            resultCell.className = 'text-center auto-result text-muted';
+            return;
+        }
+
+        const rounded = Math.round(total * 100) / 100;
+        const result = grade(rounded);
+
+        finalCell.textContent = rounded.toFixed(2);
+        letterCell.textContent = result[0];
+        mutuCell.textContent = result[1].toFixed(2);
+        resultCell.textContent = result[1] >= 2 ? 'Lulus' : 'Tidak Lulus';
+        resultCell.className = 'text-center auto-result ' + (result[1] >= 2 ? 'text-success fw-bold' : 'text-danger fw-bold');
+    }
+
+    table.querySelectorAll('tbody tr').forEach(function (row) {
+        if (!row.querySelector('input[name*="[tugas]"]')) return;
+        row.querySelectorAll('input[type="number"]').forEach(function (input) {
+            input.addEventListener('input', function () {
+                calculateRow(row);
+            });
+        });
+        calculateRow(row);
+    });
+});
+</script>
 @endsection
