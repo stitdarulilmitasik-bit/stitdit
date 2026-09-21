@@ -122,15 +122,49 @@ class Nilai extends Model
     public function scopePublished($query) { return $query->where('status', 'Published'); }
     public function scopeLulus($query) { return $query->where('nilai_mutu', '>=', 2.00); }
 
+    /**
+     * Hitung nilai akhir dengan komposisi akademik 80% + kehadiran 20%.
+     * Bobot akademik yang tersimpan tetap digunakan secara proporsional agar
+     * penambahan komponen kehadiran tidak membuat total bobot > 100%.
+     */
     public function hitungNilaiAkhir()
     {
-        $nilaiAkhir = 0;
-        $nilaiAkhir += ($this->rata_tugas * $this->bobot_tugas / 100);
-        $nilaiAkhir += ($this->rata_quiz * $this->bobot_quiz / 100);
-        if ($this->uts !== null) $nilaiAkhir += ($this->uts * $this->bobot_uts / 100);
-        if ($this->uas !== null) $nilaiAkhir += ($this->uas * $this->bobot_uas / 100);
-        if ($this->praktikum !== null) $nilaiAkhir += ($this->praktikum * $this->bobot_praktikum / 100);
-        if ($this->kehadiran !== null) $nilaiAkhir += ($this->kehadiran * $this->bobot_kehadiran / 100);
+        $bobotAkademik = collect([
+            (float) $this->bobot_tugas,
+            (float) $this->bobot_quiz,
+            (float) $this->bobot_uts,
+            (float) $this->bobot_uas,
+            (float) $this->bobot_praktikum,
+        ])->sum();
+
+        $nilaiAkademik = 0;
+        if ($bobotAkademik > 0) {
+        }
+        $komponen = [
+            'tugas' => $this->rata_tugas,
+            'quiz' => $this->rata_quiz,
+            'uts' => $this->uts,
+            'uas' => $this->uas,
+            'praktikum' => $this->praktikum,
+        ];
+        $bobotKomponen = [
+            'tugas' => (float) $this->bobot_tugas,
+            'quiz' => (float) $this->bobot_quiz,
+            'uts' => (float) $this->bobot_uts,
+            'uas' => (float) $this->bobot_uas,
+            'praktikum' => (float) $this->bobot_praktikum,
+        ];
+        if ($bobotAkademik > 0) {
+            foreach ($komponen as $key => $nilai) {
+                if ($nilai !== null) {
+                    $nilaiAkademik += ((float) $nilai * $bobotKomponen[$key] / $bobotAkademik) * 0.80;
+                }
+            }
+        }
+
+        $nilaiKehadiran = $this->kehadiran !== null ? (float) $this->kehadiran : 0;
+        $nilaiAkhir = $nilaiAkademik + ($nilaiKehadiran * 0.20);
+        $this->bobot_kehadiran = 20;
         $this->nilai_angka = round($nilaiAkhir, 2);
         $this->updateNilaiHurufDanMutu();
         $this->mutu_x_sks = $this->nilai_mutu * $this->sks;
