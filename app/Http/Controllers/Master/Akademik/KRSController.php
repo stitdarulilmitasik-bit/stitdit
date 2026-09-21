@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 // Use Models
 use App\Models\Akademik\KRS;
+use App\Models\Jabatan;
 use App\Models\Akademik\KrsDetail;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\Kelas;
@@ -349,9 +350,32 @@ class KRSController extends Controller
         $krs = KRS::with(['mahasiswa.programStudi.fakultas', 'mahasiswa.tahunAkademikRegistrasi', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas', 'details.dosen'])
             ->where('code', $code)->firstOrFail();
 
+        $kaprodi = Jabatan::with('dosen')
+            ->where('name', 'Ketua Program Studi')
+            ->where('prodi_id', $krs->mahasiswa->prodi_id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->first();
+
+        if (!$kaprodi) {
+            $kaprodi = Jabatan::with('dosen')
+                ->where('name', 'Ketua Prodi')
+                ->where('prodi_id', $krs->mahasiswa->prodi_id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->first();
+        }
+
         $data = [
             'krs' => $krs,
             'webs' => WebSetting::first(),
+            'kaprodi' => $kaprodi?->dosen,
+            'ketuaSTIT' => Jabatan::with('dosen')
+                ->whereIn('name', ['Ketua STIT', 'Ketua'])
+                ->whereNull('prodi_id')
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->first()?->dosen,
         ];
 
         return PDF::loadView('master.akademik.krs-print', $data)
