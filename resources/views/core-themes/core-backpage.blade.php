@@ -7,12 +7,14 @@
     @PwaHead
 
     @php
+        $layoutMenus = $menus ?? 'Akademik';
+        $layoutPages = $pages ?? 'Halaman';
         // Sebagian halaman backend tidak mengirim $academy. Gunakan nama aplikasi
         // sebagai fallback agar layout tetap aman tanpa mengubah data halaman.
         $layoutAcademy = $academy ?? config('app.name', 'STIT Darul Ilmi Tasikmalaya');
     @endphp
 
-    <title>{{ (isset($menus) ? $menus . ' - ' : '') . ($pages ?? 'Halaman') . ' - ' . $layoutAcademy }}</title>
+    <title>{{ ($layoutMenus ? $layoutMenus . ' - ' : '') . $layoutPages . ' - ' . $layoutAcademy }}</title>
 
     <link href="{{ asset('dashboard') }}/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet" />
     <link href="{{ asset('dashboard') }}/dist/css/tabler.css" rel="stylesheet" />
@@ -191,8 +193,8 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col">
-                        <div class="page-pretitle">{{ $menus }}</div>
-                        <h2 class="page-title">{{ $pages }}</h2>
+                        <div class="page-pretitle">{{ $layoutMenus }}</div>
+                        <h2 class="page-title">{{ $layoutPages }}</h2>
                     </div>
                 </div>
             </div>
