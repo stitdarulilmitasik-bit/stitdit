@@ -122,7 +122,9 @@
 
                             @if($loop->first)
                                 <td rowspan="{{ $rows->count() }}" class="text-center align-middle">
-                                    <a href="{{ route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
+                                    <a href="{{ $spref === 'dosen.'
+                                            ? route('dosen.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester])
+                                            : route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
                                        class="btn btn-sm btn-outline-danger" target="_blank" title="Export PDF kehadiran {{ $namaMahasiswa }}">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
