@@ -20,6 +20,11 @@ class ProgramStudi extends Model
     {
         return $this->belongsTo(Fakultas::class);
     }
+    public function jabatans()
+    {
+        return $this->hasMany(\\App\\Models\\Jabatan::class, 'prodi_id');
+    }
+
     public function kaprodi()
     {
         return $this->belongsTo(Dosen::class);
