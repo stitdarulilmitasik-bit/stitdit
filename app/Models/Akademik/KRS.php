@@ -66,7 +66,7 @@ class KRS extends Model
 
     public function getIsEditableAttribute()
     {
-        return in_array($this->status, ['draft', 'rejected']);
+        return in_array($this->status, ['draft', 'submitted', 'rejected']);
     }
 
     public function getIsApprovableAttribute()
