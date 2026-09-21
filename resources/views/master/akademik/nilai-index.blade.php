@@ -716,14 +716,17 @@
                 }
 
                 dosenSelect.disabled = false;
-                dosenSelect.innerHTML = '<option value="">Pilih Dosen Pengampu</option>';
+                dosenSelect.innerHTML = '';
 
-                [...new Set(ids)].forEach(id => {
+                [...new Set(ids)].forEach((id, index) => {
                     const d = dosens[id];
                     if (!d) return;
                     const option = document.createElement('option');
                     option.value = d.id;
                     option.textContent = (d.nidn ? d.nidn + ' - ' : '') + d.name;
+                    if (index === 0) {
+                        option.selected = true;
+                    }
                     dosenSelect.appendChild(option);
                 });
             }
