@@ -130,7 +130,7 @@
                                     <th>Tugas 1</th><th>Tugas 2</th><th>Tugas 3</th>
                                     <th>Quiz 1</th><th>Quiz 2</th>
                                     <th>UTS</th><th>UAS</th><th>Praktikum</th><th>Kehadiran</th>
-                                    <th>Nilai Akhir</th><th>Huruf</th><th>Mutu</th><th>Status</th>
+                                    <th>Nilai Akhir</th><th>Huruf</th><th>Mutu</th><th>Hasil</th><th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,6 +156,11 @@
                                     <td class="text-center fw-bold">{{ $n->nilai_angka !== null ? number_format($n->nilai_angka,2) : '-' }}</td>
                                     <td class="text-center fw-bold">{{ $n->nilai_huruf ?? '-' }}</td>
                                     <td class="text-center">{{ $n->nilai_mutu !== null ? number_format($n->nilai_mutu,2) : '-' }}</td>
+                                    <td class="text-center">
+                                        <span class="badge {{ $n->is_lulus ? 'bg-success' : 'bg-danger' }}">
+                                            {{ $n->is_lulus ? 'Lulus' : 'Tidak Lulus' }}
+                                        </span>
+                                    </td>
                                     <td class="text-center">
                                         <span class="badge bg-{{ match($n->status){'Draft'=>'secondary','Submitted'=>'warning','Approved'=>'info','Published'=>'success','Locked'=>'dark',default=>'secondary'} }} status-badge">
                                             {{ $n->status }}
