@@ -22,14 +22,14 @@
     .info { width:100%; border-collapse:collapse; margin-bottom:8px; }
     .info td { padding:2px 3px; vertical-align:top; }
     .info .label { width:90px; font-weight:bold; }
-    table.data { width:100%; border-collapse:collapse; table-layout:fixed; }
-    .data th,.data td { border:1px solid #333; padding:3px 1px; vertical-align:middle; overflow:hidden; white-space:nowrap; }
+    table.data { width:100%; border-collapse:collapse; table-layout:fixed; word-wrap:break-word; }
+    .data th,.data td { border:1px solid #333; padding:3px 1px; vertical-align:middle; overflow:hidden; white-space:nowrap; line-height:1.1; }
     .data th { background:#eee; text-align:center; font-weight:bold; font-size:6.8pt; }
     .data td { font-size:6.8pt; }
     .center { text-align:center; }
     .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; padding-left:4px !important; padding-right:4px !important; }
     .student strong { font-size:7.2pt; line-height:1.15; display:block; white-space:normal; }
-    .nim { padding-left:4px !important; padding-right:4px !important; }
+    .nim { padding-left:4px !important; padding-right:4px !important; font-size:6.5pt !important; }
     .pct { font-size:6.6pt !important; padding-left:3px !important; padding-right:3px !important; }
     .footer { position:fixed; left:0; right:0; bottom:-9mm; border-top:1px solid #777; padding-top:3px; text-align:center; font-size:6.5pt; color:#555; }
 </style>
@@ -85,11 +85,11 @@
 <table class="data">
     <colgroup>
         <col style="width:3%">
-        <col style="width:16%">
+        <col style="width:15%">
         <col style="width:25%">
-        @for($i=1;$i<=16;$i++)<col style="width:2.45%">@endfor
-        <col style="width:4.4%"><col style="width:4.4%"><col style="width:4.4%"><col style="width:4.4%">
-        <col style="width:5.4%">
+        @for($i=1;$i<=16;$i++)<col style="width:2.25%">@endfor
+        <col style="width:4%"><col style="width:4%"><col style="width:4%"><col style="width:4%">
+        <col style="width:5%">
     </colgroup>
     <thead>
         <tr>
