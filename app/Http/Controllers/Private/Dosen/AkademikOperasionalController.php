@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PDF;
 
 class AkademikOperasionalController extends Controller
 {
@@ -260,6 +261,44 @@ class AkademikOperasionalController extends Controller
         ];
 
         return view('private.dosen.akademik-kehadiran', $data);
+    }
+
+    /**
+     * Export rekap kehadiran satu mahasiswa ke PDF.
+     * Menampilkan seluruh mata kuliah mahasiswa pada semester terpilih
+     * beserta status pertemuan 1-16.
+     */
+    public function webAdminKehadiranPdf(Request $request, $mahasiswaId)
+    {
+        abort_unless(Auth::guard('web')->check(), 403);
+
+        $semester = max(1, min(8, (int) $request->input('semester', 1)));
+
+        $nilai = Nilai::with([
+            'mahasiswa.programStudi.fakultas',
+            'mataKuliah',
+            'kehadiranMahasiswa',
+            'tahunAkademik',
+        ])
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->where('semester', $semester)
+            ->orderBy('id')
+            ->get();
+
+        abort_if($nilai->isEmpty(), 404, 'Data kehadiran mahasiswa tidak ditemukan untuk semester ini.');
+
+        $mahasiswa = $nilai->first()->mahasiswa;
+        $webs = WebSetting::first();
+
+        $pdf = PDF::loadView('private.dosen.kehadiran-mahasiswa-pdf', [
+            'mahasiswa' => $mahasiswa,
+            'nilai' => $nilai,
+            'semester' => $semester,
+            'webs' => $webs,
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'kehadiran-' . Str::slug($mahasiswa->name ?? 'mahasiswa') . '-semester-' . $semester . '.pdf';
+        return $pdf->download($filename);
     }
 
     /** Simpan kehadiran dari menu Web Admin. */
