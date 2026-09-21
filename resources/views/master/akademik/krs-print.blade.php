@@ -51,17 +51,6 @@
 </head>
 <body>
 @php
-    // Status KRS selalu ditampilkan dalam bahasa Indonesia pada report PDF.
-    $statusLabels = [
-        'draft' => 'Draf',
-        'submitted' => 'Diajukan',
-        'published' => 'Diterbitkan',
-        'approved' => 'Disetujui',
-        'locked' => 'Dikunci',
-    ];
-    $statusKey = strtolower(trim((string) $krs->status));
-    $statusLabel = $statusLabels[$statusKey] ?? ucfirst($statusKey);
-
     // Data identitas mahasiswa untuk report KRS.
     $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
     $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
@@ -141,7 +130,7 @@
             <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td class="value">{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">{{ $statusLabel }}</span></td>
+            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">@if($krs->status === 'submitted')Diajukan@elseif($krs->status === 'draft')Draf@elseif($krs->status === 'published')Diterbitkan@elseif($krs->status === 'approved')Disetujui@elseif($krs->status === 'locked')Dikunci@else{{ $krs->status }}@endif</span></td>
             <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td class="value"><strong>{{ $krs->total_sks }} SKS</strong></td>
         </tr>
     </table>
@@ -240,7 +229,7 @@
 
 <div class="print-info">
     Dicetak pada: {{ now()->locale('id')->translatedFormat('d F Y H:i:s') }} |
-    Status KRS: {{ $statusLabel }} |
+    Status KRS: @if($krs->status === 'submitted')Diajukan@elseif($krs->status === 'draft')Draf@elseif($krs->status === 'published')Diterbitkan@elseif($krs->status === 'approved')Disetujui@elseif($krs->status === 'locked')Dikunci@else{{ $krs->status }}@endif |
     @if ($krs->approved_at)
         Disetujui: {{ $krs->approved_at->format('d F Y H:i:s') }}
     @else
