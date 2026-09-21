@@ -7,6 +7,7 @@ use App\Models\Akademik\JadwalKuliah;
 use App\Models\Akademik\KRS;
 use App\Models\Akademik\KrsDetail;
 use App\Models\Akademik\Nilai;
+use App\Models\Akademik\KehadiranMahasiswa;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\Kelas;
 use App\Models\Akademik\JenisKelas;
@@ -44,8 +45,7 @@ class AkademikOperasionalController extends Controller
     {
         $data = $this->base('Jadwal Kuliah');
         $dosenId = $data['user']->id;
-        $data['jadwal'] = JadwalKuliah::with(['mataKuliah','kelas','ruang','jenisKelas','waktuKuliah'])
-            ->where('dosen_id', $dosenId)->latest()->get();
+        $data['jadwal'] = JadwalKuliah::with(['mataKuliah','kelas','ruang','jenisKelas','waktuKuliah'])->where('dosen_id', $dosenId)->latest()->get();
         $data['mata_kuliah'] = MataKuliah::where(function($q) use ($dosenId) {
             $q->where('dosen1_id', $dosenId)->orWhere('dosen2_id', $dosenId)->orWhere('dosen3_id', $dosenId);
         })->get();
@@ -103,6 +103,63 @@ class AkademikOperasionalController extends Controller
         $data['nilai'] = Nilai::with(['mahasiswa','mataKuliah','tahunAkademik','krsDetail'])
             ->whereHas('krsDetail', fn($q) => $q->where('dosen_id',$id))->latest()->paginate(30);
         return view('private.dosen.akademik-nilai', $data);
+    }
+
+    public function kehadiran(Request $request)
+    {
+        $data = $this->base('Input Kehadiran Mahasiswa');
+        $dosenId = $data['user']->id;
+        $semester = max(1, min(8, (int)$request->input('semester', 1)));
+        $pertemuan = max(1, min(16, (int)$request->input('pertemuan', 1)));
+
+        $data['semester'] = $semester;
+        $data['pertemuan'] = $pertemuan;
+        $data['nilai'] = Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
+            ->where('semester', $semester)
+            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $dosenId))
+            ->latest()
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('private.dosen.akademik-kehadiran', $data);
+    }
+
+    public function simpanKehadiran(Request $request)
+    {
+        $dosen = $this->dosen();
+
+        $request->validate([
+            'nilai_id' => 'required|integer|exists:nilais,id',
+            'semester' => 'required|integer|min:1|max:8',
+            'pertemuan' => 'required|integer|min:1|max:16',
+            'status' => 'required|in:Hadir,Izin,Sakit,Alpa',
+            'catatan' => 'nullable|string|max:1000',
+        ]);
+
+        $nilai = Nilai::whereKey($request->nilai_id)
+            ->where('semester', $request->semester)
+            ->whereHas('krsDetail', fn($q) => $q->where('dosen_id', $dosen->id))
+            ->firstOrFail();
+
+        $attendance = KehadiranMahasiswa::updateOrCreate(
+            ['nilai_id' => $nilai->id, 'pertemuan' => $request->pertemuan],
+            [
+                'code' => 'ABS-' . date('YmdHis') . '-' . Str::random(6),
+                'semester' => $nilai->semester,
+                'status' => $request->status,
+                'catatan' => $request->catatan,
+                'updated_by' => Auth::guard('dosen')->id(),
+            ]
+        );
+
+        if (!$attendance->created_by) {
+            $attendance->update(['created_by' => Auth::guard('dosen')->id()]);
+        }
+
+        return redirect()->route('dosen.akademik.kehadiran', [
+            'semester' => $request->input('redirect_semester', $nilai->semester),
+            'pertemuan' => $request->input('redirect_pertemuan', $request->pertemuan),
+        ])->with('success', 'Kehadiran ' . ($nilai->mahasiswa->name ?? 'mahasiswa') . ' berhasil disimpan.');
     }
 
     public function updateNilai(Request $request, $code)
