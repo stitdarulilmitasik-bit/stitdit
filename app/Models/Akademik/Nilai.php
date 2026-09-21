@@ -9,6 +9,7 @@ use App\Models\Mahasiswa;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\KrsDetail;
 use App\Models\Akademik\TahunAkademik;
+use App\Models\Akademik\NilaiAudit;
 
 class Nilai extends Model
 {
@@ -38,6 +39,10 @@ class Nilai extends Model
         'mutu_x_sks' => 'decimal:2',
         'nilai_remidi' => 'decimal:2',
         'published_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'locked_at' => 'datetime',
+        'grade_version' => 'integer',
     ];
 
     const NILAI_HURUF_MAP = [
@@ -56,7 +61,24 @@ class Nilai extends Model
 
     public function getStatusAttribute($value)
     {
-        return ['Draft' => 'Draft', 'Published' => 'Published', 'Locked' => 'Locked'][$value] ?? 'Unknown';
+        return [
+            'Draft' => 'Draft',
+            'Submitted' => 'Submitted',
+            'Approved' => 'Approved',
+            'Published' => 'Published',
+            'Locked' => 'Locked',
+        ][$value] ?? 'Unknown';
+    }
+
+    public function getWorkflowLabelAttribute()
+    {
+        return [
+            'Draft' => 'Draft — masih diedit dosen',
+            'Submitted' => 'Diajukan — menunggu verifikasi akademik',
+            'Approved' => 'Disetujui — siap dipublikasikan',
+            'Published' => 'Published — dapat dilihat pada KHS',
+            'Locked' => 'Locked — terkunci untuk menjaga integritas',
+        ][$this->attributes['status'] ?? 'Draft'] ?? 'Unknown';
     }
 
     public function getStatusBadgeAttribute()
@@ -70,7 +92,42 @@ class Nilai extends Model
 
     public function getIsEditableAttribute()
     {
-        return $this->attributes['status'] === 'Draft';
+        return in_array($this->attributes['status'] ?? null, ['Draft'], true);
+    }
+
+    public function getIsSubmittedAttribute()
+    {
+        return ($this->attributes['status'] ?? null) === 'Submitted';
+    }
+
+    public function getIsApprovedAttribute()
+    {
+        return ($this->attributes['status'] ?? null) === 'Approved';
+    }
+
+    public function getIsPublishedAttribute()
+    {
+        return in_array(($this->attributes['status'] ?? null), ['Published', 'Locked'], true);
+    }
+
+    public function audits()
+    {
+        return $this->hasMany(NilaiAudit::class, 'nilai_id')->latest();
+    }
+
+    public function assignGradeFromScore(): void
+    {
+        $score = (float) ($this->nilai_angka ?? 0);
+        foreach (self::NILAI_HURUF_MAP as $huruf => $range) {
+            if ($score >= $range['min'] && $score <= $range['max']) {
+                $this->nilai_huruf = $huruf;
+                $this->nilai_mutu = $range['mutu'];
+                return;
+            }
+        }
+
+        $this->nilai_huruf = 'E';
+        $this->nilai_mutu = 0.00;
     }
 
     public function getIsLulusAttribute()
@@ -129,61 +186,43 @@ class Nilai extends Model
      */
     public function hitungNilaiAkhir()
     {
-        $bobotAkademik = collect([
-            (float) $this->bobot_tugas,
-            (float) $this->bobot_quiz,
-            (float) $this->bobot_uts,
-            (float) $this->bobot_uas,
-            (float) $this->bobot_praktikum,
-        ])->sum();
-
-        $nilaiAkademik = 0;
-        $komponen = [
-            'tugas' => $this->rata_tugas,
-            'quiz' => $this->rata_quiz,
-            'uts' => $this->uts,
-            'uas' => $this->uas,
-            'praktikum' => $this->praktikum,
-        ];
-        $bobotKomponen = [
+        $weights = [
             'tugas' => (float) $this->bobot_tugas,
             'quiz' => (float) $this->bobot_quiz,
             'uts' => (float) $this->bobot_uts,
             'uas' => (float) $this->bobot_uas,
             'praktikum' => (float) $this->bobot_praktikum,
+            'kehadiran' => (float) $this->bobot_kehadiran,
         ];
-        if ($bobotAkademik > 0) {
-            foreach ($komponen as $key => $nilai) {
-                if ($nilai !== null) {
-                    $nilaiAkademik += ((float) $nilai * $bobotKomponen[$key] / $bobotAkademik) * 0.85;
-                }
-            }
-        }
 
-        $nilaiKehadiran = $this->kehadiran !== null ? (float) $this->kehadiran : 0;
-        $nilaiAkhir = $nilaiAkademik + ($nilaiKehadiran * 0.15);
-        $this->bobot_kehadiran = 15;
-        $this->nilai_angka = round($nilaiAkhir, 2);
-        $this->updateNilaiHurufDanMutu();
-        $this->mutu_x_sks = $this->nilai_mutu * $this->sks;
+        $scores = [
+            'tugas' => $this->rata_tugas,
+            'quiz' => $this->rata_quiz,
+            'uts' => $this->uts,
+            'uas' => $this->uas,
+            'praktikum' => $this->praktikum,
+            'kehadiran' => $this->kehadiran,
+        ];
+
+        $this->nilai_angka = round(collect($scores)->sum(
+            fn ($score, $key) => $score === null ? 0 : ((float) $score * $weights[$key] / 100)
+        ), 2);
+
+        $this->assignGradeFromScore();
+        $this->mutu_x_sks = round((float) $this->nilai_mutu * (float) $this->sks, 2);
         $this->saveQuietly();
+
         return $this->nilai_angka;
     }
 
     private function updateNilaiHurufDanMutu()
     {
-        foreach (self::NILAI_HURUF_MAP as $huruf => $range) {
-            if ($this->nilai_angka >= $range['min'] && $this->nilai_angka <= $range['max']) {
-                $this->nilai_huruf = $huruf;
-                $this->nilai_mutu = $range['mutu'];
-                break;
-            }
-        }
+        $this->assignGradeFromScore();
     }
 
     public function publish() { $this->update(['status' => 'Published', 'published_at' => now()]); }
-    public function lock() { $this->update(['status' => 'Locked']); }
-    public function unlock() { $this->update(['status' => 'Published']); }
+    public function lock() { $this->update(['status' => 'Locked', 'locked_at' => now()]); }
+    public function unlock() { $this->update(['status' => 'Approved']); }
 
     protected static function booted()
     {
