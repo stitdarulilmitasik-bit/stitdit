@@ -226,7 +226,12 @@
                                         <select class="form-select" name="mata_kuliah_id" id="mata_kuliah_id" required>
                                             <option value="">Pilih Mata Kuliah</option>
                                             @foreach ($mata_kuliah as $mk)
-                                                <option value="{{ $mk->id }}">{{ $mk->code }} - {{ $mk->name }}</option>
+                                                <option value="{{ $mk->id }}"
+                                                    data-dosen1="{{ $mk->dosen1_id }}"
+                                                    data-dosen2="{{ $mk->dosen2_id }}"
+                                                    data-dosen3="{{ $mk->dosen3_id }}">
+                                                    {{ $mk->code }} - {{ $mk->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         @error('mata_kuliah_id')
@@ -265,11 +270,9 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="dosen_id" class="form-label">Dosen</label>
                                         <select class="form-select" name="dosen_id" id="dosen_id">
-                                            <option value="">Pilih Dosen</option>
-                                            @foreach ($dosens as $dosen)
-                                                <option value="{{ $dosen->id }}">{{ $dosen->nidn }} - {{ $dosen->name }}</option>
-                                            @endforeach
+                                            <option value="">Pilih Mata Kuliah terlebih dahulu</option>
                                         </select>
+                                        <small class="text-muted">Daftar dosen otomatis mengikuti dosen pengampu pada tabel mata kuliahs (Dosen 1, Dosen 2, Dosen 3).</small>
                                         @error('dosen_id')
                                             <small class="text-danger">{{ $message }}</small>
                                         @enderror
@@ -678,6 +681,50 @@
             }
 
             updateTotalBobot();
+        });
+
+        // Dosen pengampu mengikuti dosen1_id/dosen2_id/dosen3_id pada mata kuliah.
+        document.addEventListener('DOMContentLoaded', function () {
+            const mkSelect = document.getElementById('mata_kuliah_id');
+            const dosenSelect = document.getElementById('dosen_id');
+            if (!mkSelect || !dosenSelect) return;
+
+            const dosens = @json($dosens->keyBy('id')->map(fn ($d) => [
+                'id' => $d->id,
+                'nidn' => $d->nidn,
+                'name' => $d->name,
+            ]));
+
+            function refreshDosenPengampu() {
+                const selected = mkSelect.options[mkSelect.selectedIndex];
+                const ids = selected ? [
+                    selected.dataset.dosen1,
+                    selected.dataset.dosen2,
+                    selected.dataset.dosen3
+                ].filter(id => id && id !== '0') : [];
+
+                dosenSelect.innerHTML = '';
+                if (!ids.length) {
+                    dosenSelect.innerHTML = '<option value="">Belum ada dosen pengampu</option>';
+                    dosenSelect.disabled = true;
+                    return;
+                }
+
+                dosenSelect.disabled = false;
+                dosenSelect.innerHTML = '<option value="">Pilih Dosen Pengampu</option>';
+
+                [...new Set(ids)].forEach(id => {
+                    const d = dosens[id];
+                    if (!d) return;
+                    const option = document.createElement('option');
+                    option.value = d.id;
+                    option.textContent = (d.nidn ? d.nidn + ' - ' : '') + d.name;
+                    dosenSelect.appendChild(option);
+                });
+            }
+
+            mkSelect.addEventListener('change', refreshDosenPengampu);
+            refreshDosenPengampu();
         });
 
         // Grade mapping
