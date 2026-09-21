@@ -5,42 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kartu Rencana Studi - {{ $krs->mahasiswa->name }}</title>
     <style>
-        @page { size: A4 portrait; margin: 1.1cm; }
-        body { font-family: 'Times New Roman', serif; font-size: 10pt; line-height: 1.2; color: #000; margin: 0; padding: 0; }
-        .kop { width: 100%; border-bottom: 3px solid #111; padding-bottom: 8px; margin-bottom: 12px; }
+        @page { size: A4 portrait; margin: 1.0cm 0.9cm; }
+        body { font-family: 'Times New Roman', serif; font-size: 9.5pt; line-height: 1.15; color: #000; margin: 0; padding: 0; }
+        .kop { width: 100%; border-bottom: 2px solid #111; padding-bottom: 6px; margin-bottom: 10px; }
         .kop-table { width: 100%; border-collapse: collapse; }
-        .kop-logo { width: 110px; text-align: center; vertical-align: middle; }
-        .kop-logo img { width: 88px; height: 88px; object-fit: contain; }
+        .kop-logo { width: 85px; text-align: center; vertical-align: middle; }
+        .kop-logo img { width: 68px; height: 68px; object-fit: contain; }
         .kop-text { text-align: center; vertical-align: middle; line-height: 1.25; }
-        .kop-text .line1 { font-size: 14pt; font-weight: bold; }
-        .kop-text .line2 { font-size: 17pt; font-weight: bold; }
-        .kop-text .line3 { font-size: 9pt; font-weight: bold; }
+        .kop-text .line1 { font-size: 12pt; font-weight: bold; }
+        .kop-text .line2 { font-size: 15pt; font-weight: bold; }
+        .kop-text .line3 { font-size: 8pt; font-weight: bold; }
         .kop-text .address { font-size: 8pt; }
-        .header { text-align: center; margin-bottom: 12px; }
-        .faculty-name { font-size: 12pt; font-weight: bold; margin-bottom: 5px; }
-        .document-title { font-size: 14pt; font-weight: bold; text-decoration: underline; margin-top: 5px; }
+        .header { text-align: center; margin-bottom: 8px; }
+        .faculty-name { font-size: 10.5pt; font-weight: bold; margin-bottom: 3px; }
+        .document-title { font-size: 12.5pt; font-weight: bold; text-decoration: underline; margin-top: 5px; }
         .semester-line { font-size: 10pt; margin-top: 5px; }
-        .student-info { margin: 12px 0; }
+        .student-info { margin: 8px 0; }
         .student-info table { width: 100%; border-collapse: collapse; }
-        .student-info td { padding: 3px 2px; vertical-align: top; }
-        .student-info .label { width: 105px; font-weight: bold; }
+        .student-info td { padding: 2px 2px; vertical-align: top; }
+        .student-info .label { width: 92px; font-weight: bold; }
         .student-info .colon { width: 8px; text-align: center; }
-        .courses-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #000; }
-        .courses-table th, .courses-table td { border: 1px solid #000; padding: 5px 4px; text-align: center; font-size: 8.5pt; }
+        .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 8px 0; border: 1px solid #000; }
+        .courses-table th, .courses-table td { border: 1px solid #000; padding: 4px 3px; text-align: center; font-size: 8pt; line-height: 1.1; vertical-align: middle; }
         .courses-table th { background-color: #f0f0f0; font-weight: bold; }
-        .courses-table .subject-name { text-align: left; padding-left: 6px; }
-        .courses-table .room { text-align: center; font-size: 8pt; white-space: nowrap; }\n        .courses-table .lecturer { text-align: left; padding-left: 6px; font-size: 8pt; }
+        .courses-table .subject-name { text-align: left; padding-left: 5px; overflow-wrap: anywhere; }
+        .courses-table .room { text-align: center; font-size: 8pt; white-space: nowrap; }\n        .courses-table .lecturer { text-align: left; padding-left: 5px; font-size: 7.5pt; overflow-wrap: anywhere; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
-        .signature-section { margin-top: 20px; width: 100%; page-break-inside: avoid; }
+        .signature-section { margin-top: 14px; width: 100%; page-break-inside: avoid; }
         .signature-table { width: 100%; border-collapse: collapse; }
-        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 10px 18px; }
-        .signature-title { font-weight: bold; margin: 0 auto 52px; min-height: 32px; line-height: 1.25; }
+        .signature-cell { width: 33.33%; text-align: center; vertical-align: top; padding: 8px 10px; }
+        .signature-title { font-weight: bold; margin: 0 auto 42px; min-height: 28px; line-height: 1.25; }
         .signature-name { font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; }
         .signature-nip { font-size: 8pt; margin-top: 4px; }
         .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100pt; color: rgba(0,0,0,0.05); z-index: -1; font-weight: bold; }
         .status-badge { display: inline-block; padding: 2px 7px; border: 1px solid #000; font-weight: bold; font-size: 8pt; }
-        .print-info { margin-top: 12px; font-size: 7.5pt; color: #666; text-align: center; }
+        .print-info { margin-top: 8px; font-size: 7.5pt; color: #666; text-align: center; }
     </style>
 </head>
 <body>
@@ -72,9 +72,9 @@
     }
 @endphp
 
-@if ($krs->status == 'Disetujui')
+@if ($krs->status === 'approved')
     <div class="watermark">APPROVED</div>
-@elseif ($krs->status == 'Terkunci')
+@elseif ($krs->status === 'locked')
     <div class="watermark">LOCKED</div>
 @else
     <div class="watermark">DRAFT</div>
@@ -130,10 +130,10 @@
     <thead>
         <tr>
             <th rowspan="2" style="width:5%;">No</th>
-            <th rowspan="2" style="width:11%;">Kode MK</th>
-            <th rowspan="2" style="width:26%;">Mata Kuliah</th>
+            <th rowspan="2" style="width:10%;">Kode MK</th>
+            <th rowspan="2" style="width:28%;">Mata Kuliah</th>
             <th rowspan="2" style="width:6%;">SKS</th>
-            <th rowspan="2" style="width:12%;">Kelas</th>
+            <th rowspan="2" style="width:11%;">Kelas</th>
             <th rowspan="2" style="width:11%;">Ruang</th>
             <th rowspan="2" style="width:29%;">Dosen</th>
         </tr>
@@ -184,9 +184,7 @@
     @endif
 </table>
 
-
-
-<div style="margin-top:10px;padding:7px;border:1px dashed #000;font-size:8.5pt;">
+<div style="margin-top:8px;padding:7px;border:1px dashed #000;font-size:8.5pt;">
     <strong>CATATAN PENTING:</strong>
     <ol style="margin:4px 0;padding-left:18px;">
         <li>KRS ini harus mendapat persetujuan dari Dosen Pembimbing Akademik.</li>
