@@ -125,7 +125,7 @@
                     <a href="{{ route($spref . 'akademik.krs-render') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Kembali
                     </a>
-                    @if (in_array($krs->status, ['published']))
+                    @if (in_array($krs->status, ['approved', 'published', 'locked']))
                         <a href="{{ route($spref . 'akademik.krs-print', $krs->code) }}" class="btn btn-primary" target="_blank">
                             <i class="fas fa-print me-2"></i>Cetak KRS
                         </a>
@@ -186,7 +186,7 @@
                                     'locked' => 'dark'
                                 ];
                                 $statusLabels = [
-                                    'draft' => 'Draft',
+                                    'draft' => 'Dibuat',
                                     'submitted' => 'Diajukan',
                                     'approved' => 'Disetujui',
                                     'rejected' => 'Ditolak',
@@ -225,7 +225,7 @@
             </div>
 
             <!-- Action Card -->
-            @if (in_array($krs->status, ['submitted', 'approved', 'published']) && !in_array($krs->status, ['locked']))
+            @if (in_array($krs->status, ['submitted', 'approved']))
                 <div class="card mt-3">
                     <div class="card-header">
                         <h6 class="mb-0">Aksi</h6>
@@ -239,13 +239,7 @@
                                 <button class="btn btn-danger" onclick="rejectKRS()">
                                     <i class="fas fa-times me-2"></i>Tolak KRS
                                 </button>
-                            @endif
-                            @if ($krs->status == 'approved')
-                                <button class="btn btn-primary" onclick="publishKRS()">
-                                    <i class="fas fa-share me-2"></i>Publish KRS
-                                </button>
-                            @endif
-                            @if ($krs->status == 'published')
+                            @elseif ($krs->status == 'approved')
                                 <button class="btn btn-dark" onclick="lockKRS()">
                                     <i class="fas fa-lock me-2"></i>Kunci KRS
                                 </button>
