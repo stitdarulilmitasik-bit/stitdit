@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 // Use Models
 use App\Models\Akademik\Nilai;
 use App\Models\Akademik\KrsDetail;
@@ -156,24 +157,51 @@ class NilaiController extends Controller
              * pengiriman form ganda / request bersamaan tidak mencoba INSERT
              * baris kedua dan memicu SQLSTATE 23000.
              */
-            $nilai = Nilai::firstOrCreate(
-                [
-                    'mahasiswa_id' => $request->mahasiswa_id,
-                    'matkul_id' => $request->matkul_id,
-                    'taka_id' => $request->tahun_akademik_id,
-                    'semester' => $request->semester,
-                ],
-                [
-                    'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
-                    'krs_detail_id' => $request->krs_detail_id,
-                    'sks' => $mataKuliah->sks,
-                    'created_by' => $actor,
-                ]
-            );
+            $key = [
+                'mahasiswa_id' => (int) $request->mahasiswa_id,
+                'matkul_id' => (int) $request->matkul_id,
+                'taka_id' => (int) $request->tahun_akademik_id,
+                'semester' => (int) $request->semester,
+            ];
+
+            // Cek lebih dulu. Jika dua request masuk bersamaan, UNIQUE index
+            // tetap menjadi pengaman terakhir. Jika INSERT kedua terkena
+            // duplicate key, ambil record yang sudah berhasil dibuat.
+            $nilai = Nilai::where($key)->first();
+            $created = false;
+
+            if (!$nilai) {
+                try {
+                    $nilai = Nilai::create(array_merge($key, [
+                        'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
+                        'krs_detail_id' => $request->krs_detail_id,
+                        'sks' => $mataKuliah->sks,
+                        'created_by' => $actor,
+                    ]));
+                    $created = true;
+                } catch (QueryException $e) {
+                    $isDuplicate = (int) ($e->errorInfo[1] ?? $e->getCode()) === 1062;
+
+                    if (!$isDuplicate) {
+                        throw $e;
+                    }
+
+                    // Request lain sudah membuat baris dengan kombinasi yang
+                    // sama. Jangan tampilkan SQL error kepada pengguna.
+                    DB::rollBack();
+                    DB::beginTransaction();
+
+                    $nilai = Nilai::where($key)->first();
+
+                    if (!$nilai) {
+                        throw $e;
+                    }
+                }
+            }
 
             DB::commit();
 
-            if ($nilai->wasRecentlyCreated) {
+            if ($created) {
                 Alert::success('Success', 'Data nilai berhasil dibuat');
             } else {
                 Alert::info('Informasi', 'Data nilai untuk kombinasi tersebut sudah ada. Sistem membuka data yang sudah tersedia.');
