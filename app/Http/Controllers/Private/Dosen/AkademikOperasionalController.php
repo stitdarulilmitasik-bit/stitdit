@@ -306,7 +306,7 @@ class AkademikOperasionalController extends Controller
     public function webAdminKehadiran(Request $request)
     {
         $webs = WebSetting::first();
-        $semester = max(1, min(8, (int)$request->input('semester', 1)));
+        $semester = max(1, min(8, (int)$request->input('semester', 1)));\n        $mahasiswaId = $request->input('mahasiswa_id');\n        $mataKuliahId = $request->input('mata_kuliah_id');
 
         $nilai = Nilai::with([
             'mahasiswa.programStudi',
@@ -321,7 +321,7 @@ class AkademikOperasionalController extends Controller
             ->paginate(100)
             ->withQueryString();
 
-        $data = [
+        $mahasiswaOptions = \App\Models\Mahasiswa::query()\n            ->whereHas('nilai', fn ($q) => $q->where('semester', $semester))\n            ->orderBy('name')\n            ->get(['id', 'name', 'numb_nim']);\n\n        $mataKuliahOptions = \App\Models\MataKuliah::query()\n            ->whereHas('nilai', fn ($q) => $q->where('semester', $semester))\n            ->orderBy('name')\n            ->get(['id', 'name', 'code']);\n\n        $data = [
             'user' => Auth::guard('web')->user(),
             'webs' => $webs,
             'spref' => 'web-admin.',
@@ -329,7 +329,7 @@ class AkademikOperasionalController extends Controller
             'pages' => 'Report Global Kehadiran',
             'academy' => $webs ? $webs->school_apps . ' by ' . $webs->school_name : 'SIAKAD',
             'semester' => $semester,
-            'nilai' => $nilai,
+            'nilai' => $nilai,\n            'mahasiswaOptions' => $mahasiswaOptions,\n            'mataKuliahOptions' => $mataKuliahOptions,\n            'mahasiswaId' => $mahasiswaId,\n            'mataKuliahId' => $mataKuliahId,
         ];
 
         return view('private.dosen.akademik-kehadiran-global', $data);
