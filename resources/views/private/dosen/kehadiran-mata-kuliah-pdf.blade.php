@@ -30,6 +30,7 @@
     .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; padding-left:4px !important; padding-right:4px !important; }
     .student strong { font-size:7.1pt; line-height:1.1; display:block; white-space:nowrap; }
     .nim { padding-left:4px !important; padding-right:4px !important; font-size:6.5pt !important; }
+    .attendance { font-size:6.4pt !important; padding-left:0 !important; padding-right:0 !important; text-align:center; }
     .pct { font-size:6.6pt !important; padding-left:3px !important; padding-right:3px !important; }
     .footer { position:fixed; left:0; right:0; bottom:-9mm; border-top:1px solid #777; padding-top:3px; text-align:center; font-size:6.5pt; color:#555; }
 </style>
@@ -86,9 +87,9 @@
     <colgroup>
         <col style="width:3%">
         <col style="width:14%">
-        <col style="width:29%">
-        @for($i=1;$i<=16;$i++)<col style="width:1.9%">@endfor
-        <col style="width:5.6%">
+        <col style="width:35%">
+        @for($i=1;$i<=16;$i++)<col style="width:1.45%">@endfor
+        <col style="width:4.8%">
     </colgroup>
     <thead>
         <tr>
@@ -114,7 +115,7 @@
             <td class="student"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
             @for($i=1;$i<=16;$i++)
                 @php $a=$att[$i]??null; @endphp
-                <td class="center">
+                <td class="center attendance">
                     @if(($a->status??'')==='Hadir')✓
                     @elseif(($a->status??'')==='Izin')I
                     @elseif(($a->status??'')==='Sakit')S
