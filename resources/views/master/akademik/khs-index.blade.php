@@ -182,13 +182,13 @@
                         <div class="col-lg-2 col-md-4 mb-2">
                             <div class="p-3 bg-light-warning rounded">
                                 <h6 class="mb-2">Draft</h6>
-                                <h3 class="mb-0">{{ $khs_list->where('status', 'draft')->count() }}</h3>
+                                <h3 class="mb-0">{{ $khs_list->where('status_generate', 'Draft')->count() }}</h3>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 mb-2">
                             <div class="p-3 bg-light-success rounded">
                                 <h6 class="mb-2">Published</h6>
-                                <h3 class="mb-0">{{ $khs_list->where('status', 'published')->count() }}</h3>
+                                <h3 class="mb-0">{{ $khs_list->where('status_generate', 'Published')->count() }}</h3>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 mb-2">
@@ -378,19 +378,14 @@
                                         </td>
                                         <td class="text-center" data-label="Status">
                                             @php
-                                                $statusColors = [
-                                                    'draft' => 'secondary',
-                                                    'published' => 'primary',
-                                                    'locked' => 'dark'
-                                                ];
-                                                $statusLabels = [
-                                                    'draft' => 'Draft',
-                                                    'published' => 'Published',
-                                                    'locked' => 'Locked'
-                                                ];
+                                                $statusRaw = strtolower(trim((string) ($khs->getRawOriginal('status_generate') ?? '')));
+                                                $statusColors = ['draft' => 'secondary', 'final' => 'warning', 'published' => 'primary'];
+                                                $statusLabels = ['draft' => 'Draft', 'final' => 'Final', 'published' => 'Published'];
+                                                $statusKey = $statusRaw;
                                             @endphp
-                                            <span class="badge bg-{{ $statusColors[$khs->status] ?? 'secondary' }}">
-                                                {{ $statusLabels[$khs->status] ?? ucfirst($khs->status) }}
+                                            <span class="badge bg-{{ $statusColors[$statusKey] ?? 'secondary' }}">
+                                                {{ $statusLabels[$statusKey] ?? ucfirst($statusRaw ?: 'Unknown') }}
+                                                @if($khs->is_locked) <i class="fas fa-lock ms-1"></i> @endif
                                             </span>
                                         </td>
                                         <td class="text-center" data-label="Aksi">
@@ -398,7 +393,7 @@
                                                 <a href="{{ route($spref . 'akademik.khs-detail', $khs->code) }}" class="btn btn-sm btn-info" title="Detail">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                @if ($khs->status == 'draft')
+                                                @if (strtolower(trim((string) ($khs->getRawOriginal('status_generate') ?? ''))) === 'draft')
                                                     <button class="btn btn-sm btn-warning" onclick="editKHS('{{ $khs->code }}')" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
@@ -406,7 +401,7 @@
                                                         <i class="fas fa-share"></i>
                                                     </button>
                                                 @endif
-                                                @if (in_array($khs->status, ['published']))
+                                                @if (strtolower(trim((string) ($khs->getRawOriginal('status_generate') ?? ''))) === 'published')
                                                     <a href="{{ route($spref . 'akademik.khs-print', $khs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak">
                                                         <i class="fas fa-print"></i>
                                                     </a>
@@ -414,7 +409,7 @@
                                                         <i class="fas fa-lock"></i>
                                                     </button>
                                                 @endif
-                                                @if ($khs->status == 'draft')
+                                                @if (strtolower(trim((string) ($khs->getRawOriginal('status_generate') ?? ''))) === 'draft')
                                                     <button class="btn btn-sm btn-danger" onclick="deleteKHS('{{ $khs->code }}')" title="Hapus">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -465,15 +460,15 @@
                             <h6 class="text-muted">Status KHS</h6>
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span>Draft</span>
-                                <span class="badge bg-secondary">{{ $khs_list->where('status', 'draft')->count() }}</span>
+                                <span class="badge bg-secondary">{{ $khs_list->where('status_generate', 'Draft')->count() }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span>Published</span>
-                                <span class="badge bg-primary">{{ $khs_list->where('status', 'published')->count() }}</span>
+                                <span class="badge bg-primary">{{ $khs_list->where('status_generate', 'Published')->count() }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span>Locked</span>
-                                <span class="badge bg-dark">{{ $khs_list->where('status', 'locked')->count() }}</span>
+                                <span class="badge bg-dark">{{ $khs_list->where('is_locked', true)->count() }}</span>
                             </div>
                         </div>
 
