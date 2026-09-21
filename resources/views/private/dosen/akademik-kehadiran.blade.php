@@ -125,9 +125,14 @@
                                     <a href="{{ $spref === 'dosen.'
                                             ? route('dosen.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester])
                                             : route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
-                                       class="btn btn-sm btn-outline-danger" target="_blank" title="Export PDF kehadiran {{ $namaMahasiswa }}">
-                                        <i class="fas fa-file-pdf"></i>
+                                       class="btn btn-sm btn-outline-danger text-nowrap"
+                                       target="_blank"
+                                       title="Export rekap kehadiran {{ $namaMahasiswa }}">
+                                        <i class="fas fa-file-pdf me-1"></i> Export PDF
                                     </a>
+                                    @if($spref === 'dosen.')
+                                        <small class="d-block text-muted mt-1">Mata kuliah yang diampu</small>
+                                    @endif
                                 </td>
                             @endif
 
