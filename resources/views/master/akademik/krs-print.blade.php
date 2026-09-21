@@ -51,6 +51,16 @@
 </head>
 <body>
 @php
+    // Label status KRS dalam bahasa Indonesia untuk report PDF.
+    $statusLabels = [
+        'draft' => 'Draf',
+        'submitted' => 'Diajukan',
+        'published' => 'Diterbitkan',
+        'approved' => 'Disetujui',
+        'locked' => 'Dikunci',
+    ];
+    $statusLabel = $statusLabels[$krs->status] ?? ucfirst((string) $krs->status);
+
     // Data identitas mahasiswa untuk report KRS.
     $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
     $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
@@ -79,15 +89,15 @@
 @endphp
 
 @if ($krs->status === 'approved')
-    <div class="watermark">APPROVED</div>
+    <div class="watermark">DISETUJUI</div>
 @elseif ($krs->status === 'locked')
-    <div class="watermark">LOCKED</div>
+    <div class="watermark">DIKUNCI</div>
 @elseif ($krs->status === 'published')
-    <div class="watermark">PUBLISHED</div>
+    <div class="watermark">DITERBITKAN</div>
 @elseif ($krs->status === 'submitted')
-    <div class="watermark">SUBMITTED</div>
+    <div class="watermark">DIAJUKAN</div>
 @else
-    <div class="watermark">DRAFT</div>
+    <div class="watermark">DRAF</div>
 @endif
 
 <div class="kop">
@@ -130,7 +140,7 @@
             <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td class="value">{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">{{ strtoupper($krs->status) }}</span></td>
+            <td class="label">Status KRS</td><td class="colon">:</td><td class="value" style="width:27%;"><span class="status-badge">{{ $statusLabel }}</span></td>
             <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td class="value"><strong>{{ $krs->total_sks }} SKS</strong></td>
         </tr>
     </table>
