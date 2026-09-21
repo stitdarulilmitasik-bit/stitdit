@@ -1,6 +1,77 @@
 @extends('core-themes.core-backpage')
 
 @section('content')
+<style>
+    /* Tabel kehadiran dibuat fixed-width agar 16 kolom pertemuan + kontrol
+       tidak saling menimpa pada layar sempit. Wrapper tetap horizontal-scroll. */
+    .attendance-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+    .attendance-table {
+        width: 1480px;
+        min-width: 1480px;
+        table-layout: fixed;
+        margin-bottom: 0;
+    }
+    .attendance-table th,
+    .attendance-table td {
+        box-sizing: border-box;
+        vertical-align: middle;
+        padding: 5px 6px !important;
+        line-height: 1.2;
+    }
+    .attendance-table .col-no { width: 48px; }
+    .attendance-table .col-nim { width: 120px; }
+    .attendance-table .col-name { width: 210px; }
+    .attendance-table .col-meeting { width: 42px; }
+    .attendance-table .col-rekap { width: 105px; }
+    .attendance-table .col-status { width: 185px; }
+    .attendance-table .col-action { width: 95px; }
+
+    .attendance-table .student-name {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .attendance-table .status-cell,
+    .attendance-table .action-cell,
+    .attendance-table .rekap-cell {
+        white-space: normal;
+    }
+    .attendance-table .status-cell .form-select {
+        width: 100%;
+        min-width: 0;
+    }
+    .attendance-table .action-cell form {
+        margin: 0;
+    }
+    .attendance-table .action-cell .btn {
+        white-space: nowrap;
+        width: 100%;
+    }
+    .attendance-table .attendance-cell {
+        width: 42px;
+        min-width: 42px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .attendance-table thead th {
+        white-space: nowrap;
+    }
+    .attendance-table .course-row td {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    @media (max-width: 768px) {
+        .attendance-table {
+            width: 1480px;
+            min-width: 1480px;
+        }
+    }
+</style>
 <div class="container-xl py-3">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
@@ -59,22 +130,22 @@
                 <div class="text-muted small">Setiap kolom menunjukkan pertemuan 1–16. Tanda <strong>✓</strong> berarti Hadir. Untuk mengubah status, pilih Pertemuan Aktif lalu gunakan kolom Status dan Simpan.</div>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="table table-vcenter card-table align-middle text-nowrap">
+        <div class="attendance-table-wrap">
+            <table class="table table-vcenter card-table align-middle attendance-table">
                 <thead>
                     <tr>
-                        <th style="width:55px">No.</th>
-                        <th style="width:125px">NIM</th>
-                        <th style="min-width:210px">Nama Mahasiswa</th>
+                        <th class="col-no">No.</th>
+                        <th class="col-nim">NIM</th>
+                        <th class="col-name">Nama Mahasiswa</th>
                         <th colspan="16" class="text-center bg-light">Pertemuan</th>
-                        <th style="width:100px">Rekap</th>
-                        <th style="min-width:190px">Status Pertemuan {{ $pertemuan }}</th>
-                        <th style="width:95px">Aksi</th>
+                        <th class="col-rekap">Rekap</th>
+                        <th class="col-status">Status Pertemuan {{ $pertemuan }}</th>
+                        <th class="col-action">Aksi</th>
                     </tr>
                     <tr>
                         <th colspan="3"></th>
                         @for($i = 1; $i <= 16; $i++)
-                            <th class="text-center" style="min-width:52px">P{{ $i }}</th>
+                            <th class="text-center col-meeting">P{{ $i }}</th>
                         @endfor
                         <th colspan="3"></th>
                     </tr>
@@ -98,7 +169,7 @@
                     @php
                         $mk = $rows->first()->mataKuliah;
                     @endphp
-                    <tr class="table-light">
+                    <tr class="table-light course-row">
                         <td colspan="22" class="fw-bold">
                             <i class="fas fa-book me-1"></i>
                             {{ $mk->name ?? '-' }}
@@ -124,7 +195,7 @@
                         <tr>
                             <td class="text-center fw-semibold text-muted">{{ $nomor++ }}</td>
                             <td class="fw-semibold">{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</td>
-                            <td class="fw-semibold">{{ $n->mahasiswa->name ?? '-' }}</td>
+                            <td class="fw-semibold student-name">{{ $n->mahasiswa->name ?? '-' }}</td>
 
                             @for($i = 1; $i <= 16; $i++)
                                 @php $attendance = $existing[$i] ?? null; @endphp
@@ -143,12 +214,12 @@
                                 </td>
                             @endfor
 
-                            <td>
+                            <td class="rekap-cell">
                                 <div class="fw-semibold">{{ number_format($persentase, 2) }}%</div>
                                 <small class="text-muted">{{ $jumlahHadir }}/{{ $totalPertemuan }} hadir</small>
                             </td>
 
-                            <td>
+                            <td class="status-cell">
                                 <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" required>
                                     <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
                                     @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
@@ -158,7 +229,7 @@
                                 <input type="hidden" name="pertemuan" value="{{ $pertemuan }}" form="attendance-form-{{ $n->id }}">
                             </td>
 
-                            <td>
+                            <td class="action-cell">
                                 <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route($spref . 'akademik.kehadiran.store') }}">
                                     @csrf
                                     <input type="hidden" name="nilai_id" value="{{ $n->id }}">
