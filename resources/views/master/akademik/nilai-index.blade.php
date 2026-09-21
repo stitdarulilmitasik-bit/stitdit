@@ -493,123 +493,159 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($nilai_list as $nilai)
-                                    <tr>
-                                        <td class="text-center" data-label="Pilih">
-                                            <input type="checkbox" class="nilai-checkbox" value="{{ $nilai->code }}">
-                                        </td>
-                                        <td data-label="Mahasiswa">
-                                            <div class="d-flex flex-column">
-                                                <strong>{{ $nilai->mahasiswa->name }}</strong>
-                                                <small class="text-muted">{{ $nilai->mahasiswa->nim }}</small>
-                                            </div>
-                                        </td>
-                                        <td data-label="Mata Kuliah">
-                                            <div class="d-flex flex-column">
-                                                <strong>{{ $nilai->mataKuliah->name }}</strong>
-                                                <small class="text-muted">{{ $nilai->mataKuliah->code }} ({{ $nilai->mataKuliah->sks }} SKS)</small>
-                                            </div>
-                                        </td>
-                                        <td data-label="Tahun Akademik">
-                                            {{ $nilai->tahunAkademik->name }} - {{ $nilai->tahunAkademik->semester }}
-                                        </td>
-                                        <td class="text-center" data-label="Nilai">
-                                            @if ($nilai->is_locked)
-                                                <span class="badge bg-secondary">{{ $nilai->nilai_angka ?? 'N/A' }}</span>
-                                            @else
-                                                <input type="number" class="form-control grade-input"
-                                                       value="{{ $nilai->nilai_angka }}"
-                                                       onchange="updateNilai('{{ $nilai->code }}', 'nilai_angka', this.value)"
-                                                       min="0" max="100" step="0.1">
+                                @php
+                                    $groupedNilai = $nilai_list
+                                        ->sortBy([
+                                            [fn($item) => mb_strtolower($item->mahasiswa->name ?? ''), 'asc'],
+                                            [fn($item) => mb_strtolower($item->mataKuliah->name ?? ''), 'asc'],
+                                        ])
+                                        ->groupBy(fn($item) => $item->mahasiswa_id);
+                                @endphp
+
+                                @forelse ($groupedNilai as $mahasiswaId => $rows)
+                                    @php
+                                        $firstNilai = $rows->first();
+                                        $namaMahasiswa = $firstNilai->mahasiswa->name ?? '-';
+                                        $nimMahasiswa = $firstNilai->mahasiswa->nim ?? $firstNilai->mahasiswa->numb_nim ?? '-';
+                                    @endphp
+
+                                    @foreach ($rows as $nilai)
+                                        <tr
+                                            data-mahasiswa="{{ strtolower($namaMahasiswa . ' ' . $nimMahasiswa) }}"
+                                            data-mata-kuliah="{{ strtolower($nilai->mataKuliah->name ?? '') }}"
+                                            data-tahun-akademik="{{ strtolower(($nilai->tahunAkademik->name ?? '') . ' ' . ($nilai->tahunAkademik->semester ?? '')) }}"
+                                            data-grade="{{ strtolower($nilai->nilai_huruf ?? '') }}"
+                                        >
+                                            <td class="text-center" data-label="Pilih">
+                                                <input type="checkbox" class="nilai-checkbox" value="{{ $nilai->code }}">
+                                            </td>
+
+                                            @if ($loop->first)
+                                                <td data-label="Mahasiswa" rowspan="{{ $rows->count() }}" class="align-middle">
+                                                    <div class="d-flex flex-column">
+                                                        <strong>{{ $namaMahasiswa }}</strong>
+                                                        <small class="text-muted">{{ $nimMahasiswa }}</small>
+                                                        <small class="text-muted mt-1">{{ $rows->count() }} mata kuliah</small>
+                                                    </div>
+                                                </td>
                                             @endif
-                                        </td>
-                                        <td class="text-center" data-label="Grade">
-                                            @php
-                                                $gradeColors = [
-                                                    'A' => 'success', 'A-' => 'success',
-                                                    'B+' => 'info', 'B' => 'info', 'B-' => 'info',
-                                                    'C+' => 'warning', 'C' => 'warning',
-                                                    'D' => 'danger', 'E' => 'danger'
-                                                ];
-                                            @endphp
-                                            @if ($nilai->is_locked)
-                                                <span class="badge bg-{{ $gradeColors[$nilai->nilai_huruf] ?? 'secondary' }}">
-                                                    {{ $nilai->nilai_huruf }} ({{ $nilai->grade_point }})
+
+                                            <td data-label="Mata Kuliah">
+                                                <div class="d-flex flex-column">
+                                                    <strong>{{ $nilai->mataKuliah->name ?? '-' }}</strong>
+                                                    <small class="text-muted">
+                                                        {{ $nilai->mataKuliah->code ?? '-' }} ({{ $nilai->mataKuliah->sks ?? 0 }} SKS)
+                                                    </small>
+                                                </div>
+                                            </td>
+
+                                            <td data-label="Tahun Akademik">
+                                                {{ $nilai->tahunAkademik->name ?? '-' }} - {{ $nilai->tahunAkademik->semester ?? '-' }}
+                                            </td>
+
+                                            <td class="text-center" data-label="Nilai">
+                                                @if ($nilai->is_locked)
+                                                    <span class="badge bg-secondary">{{ $nilai->nilai_angka ?? 'N/A' }}</span>
+                                                @else
+                                                    <input type="number" class="form-control grade-input"
+                                                           value="{{ $nilai->nilai_angka }}"
+                                                           onchange="updateNilai('{{ $nilai->code }}', 'nilai_angka', this.value)"
+                                                           min="0" max="100" step="0.1">
+                                                @endif
+                                            </td>
+
+                                            <td class="text-center" data-label="Grade">
+                                                @php
+                                                    $gradeColors = [
+                                                        'A' => 'success', 'A-' => 'success',
+                                                        'B+' => 'info', 'B' => 'info', 'B-' => 'info',
+                                                        'C+' => 'warning', 'C' => 'warning',
+                                                        'D' => 'danger', 'E' => 'danger'
+                                                    ];
+                                                @endphp
+                                                @if ($nilai->is_locked)
+                                                    <span class="badge bg-{{ $gradeColors[$nilai->nilai_huruf] ?? 'secondary' }}">
+                                                        {{ $nilai->nilai_huruf }} ({{ $nilai->grade_point }})
+                                                    </span>
+                                                @else
+                                                    <select class="form-select form-select-sm"
+                                                            onchange="updateNilai('{{ $nilai->code }}', 'nilai_huruf', this.value)"
+                                                            style="width: 100px;">
+                                                        <option value="">-</option>
+                                                        <option value="A" {{ $nilai->nilai_huruf == 'A' ? 'selected' : '' }}>A</option>
+                                                        <option value="A-" {{ $nilai->nilai_huruf == 'A-' ? 'selected' : '' }}>A-</option>
+                                                        <option value="B+" {{ $nilai->nilai_huruf == 'B+' ? 'selected' : '' }}>B+</option>
+                                                        <option value="B" {{ $nilai->nilai_huruf == 'B' ? 'selected' : '' }}>B</option>
+                                                        <option value="B-" {{ $nilai->nilai_huruf == 'B-' ? 'selected' : '' }}>B-</option>
+                                                        <option value="C+" {{ $nilai->nilai_huruf == 'C+' ? 'selected' : '' }}>C+</option>
+                                                        <option value="C" {{ $nilai->nilai_huruf == 'C' ? 'selected' : '' }}>C</option>
+                                                        <option value="D" {{ $nilai->nilai_huruf == 'D' ? 'selected' : '' }}>D</option>
+                                                        <option value="E" {{ $nilai->nilai_huruf == 'E' ? 'selected' : '' }}>E</option>
+                                                    </select>
+                                                @endif
+                                            </td>
+
+                                            <td class="text-center" data-label="Status">
+                                                @php
+                                                    $statusColors = [
+                                                        'lulus' => 'success',
+                                                        'tidak_lulus' => 'danger',
+                                                        'mengulang' => 'warning'
+                                                    ];
+                                                @endphp
+                                                <span class="badge bg-{{ $statusColors[$nilai->status_lulus] ?? 'secondary' }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $nilai->status_lulus ?? 'belum ditentukan')) }}
                                                 </span>
-                                            @else
-                                                <select class="form-select form-select-sm"
-                                                        onchange="updateNilai('{{ $nilai->code }}', 'nilai_huruf', this.value)"
-                                                        style="width: 100px;">
-                                                    <option value="">-</option>
-                                                    <option value="A" {{ $nilai->nilai_huruf == 'A' ? 'selected' : '' }}>A</option>
-                                                    <option value="A-" {{ $nilai->nilai_huruf == 'A-' ? 'selected' : '' }}>A-</option>
-                                                    <option value="B+" {{ $nilai->nilai_huruf == 'B+' ? 'selected' : '' }}>B+</option>
-                                                    <option value="B" {{ $nilai->nilai_huruf == 'B' ? 'selected' : '' }}>B</option>
-                                                    <option value="B-" {{ $nilai->nilai_huruf == 'B-' ? 'selected' : '' }}>B-</option>
-                                                    <option value="C+" {{ $nilai->nilai_huruf == 'C+' ? 'selected' : '' }}>C+</option>
-                                                    <option value="C" {{ $nilai->nilai_huruf == 'C' ? 'selected' : '' }}>C</option>
-                                                    <option value="D" {{ $nilai->nilai_huruf == 'D' ? 'selected' : '' }}>D</option>
-                                                    <option value="E" {{ $nilai->nilai_huruf == 'E' ? 'selected' : '' }}>E</option>
-                                                </select>
-                                            @endif
-                                        </td>
-                                        <td class="text-center" data-label="Status">
-                                            @php
-                                                $statusColors = [
-                                                    'lulus' => 'success',
-                                                    'tidak_lulus' => 'danger',
-                                                    'mengulang' => 'warning'
-                                                ];
-                                                $statusLabels = [
-                                                    'lulus' => 'Lulus',
-                                                    'tidak_lulus' => 'Tidak Lulus',
-                                                    'mengulang' => 'Mengulang'
-                                                ];
-                                            @endphp
-                                            <span class="badge bg-{{ $statusColors[$nilai->status_lulus] ?? 'secondary' }}">
-                                                {{ $statusLabels[$nilai->status_lulus] ?? ucfirst($nilai->status_lulus) }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center" data-label="Published">
-                                            @if ($nilai->is_published)
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-check"></i> Published
-                                                </span>
-                                            @else
-                                                <span class="badge bg-warning">
-                                                    <i class="fas fa-clock"></i> Draft
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center" data-label="Aksi">
-                                            <div class="btn-group" role="group">
-                                                @if (!$nilai->is_published)
-                                                    <button class="btn btn-sm btn-warning" onclick="editNilai('{{ $nilai->code }}')" title="Edit">
+                                            </td>
+
+                                            <td class="text-center" data-label="Published">
+                                                @if ($nilai->is_published)
+                                                    <span class="badge bg-success">Published</span>
+                                                @elseif (($nilai->status ?? '') === 'Approved')
+                                                    <span class="badge bg-info">Approved</span>
+                                                @elseif (($nilai->status ?? '') === 'Submitted')
+                                                    <span class="badge bg-warning">Submitted</span>
+                                                @elseif (($nilai->status ?? '') === 'Locked')
+                                                    <span class="badge bg-dark">Locked</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Draft</span>
+                                                @endif
+                                            </td>
+
+                                            <td class="text-center" data-label="Aksi">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="editNilai('{{ $nilai->code }}')" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="btn btn-sm btn-success" onclick="approveNilai('{{ $nilai->code }}')" title="Approve">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                @endif
-                                                @if ($nilai->is_approved && !$nilai->is_published)
-                                                    <button class="btn btn-sm btn-primary" onclick="publishNilai('{{ $nilai->code }}')" title="Publish">
-                                                        <i class="fas fa-share"></i>
-                                                    </button>
-                                                @endif
-                                                @if ($nilai->is_published && !$nilai->is_locked)
-                                                    <button class="btn btn-sm btn-dark" onclick="lockNilai('{{ $nilai->code }}')" title="Kunci">
-                                                        <i class="fas fa-lock"></i>
-                                                    </button>
-                                                @endif
-                                                @if (!$nilai->is_published)
-                                                    <button class="btn btn-sm btn-danger" onclick="deleteNilai('{{ $nilai->code }}')" title="Hapus">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                @endif
-                                            </div>
-                                        </td>
+                                                    @if (!$nilai->is_published)
+                                                        <button class="btn btn-sm btn-success" onclick="approveNilai('{{ $nilai->code }}')" title="Approve">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if ($nilai->status === 'Approved' && !$nilai->is_published)
+                                                        <button class="btn btn-sm btn-primary" onclick="publishNilai('{{ $nilai->code }}')" title="Publish">
+                                                            <i class="fas fa-share"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if ($nilai->is_published && !$nilai->is_locked)
+                                                        <button class="btn btn-sm btn-dark" onclick="lockNilai('{{ $nilai->code }}')" title="Kunci">
+                                                            <i class="fas fa-lock"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if (!$nilai->is_published)
+                                                        <button class="btn btn-sm btn-danger" onclick="deleteNilai('{{ $nilai->code }}')" title="Hapus">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4 text-muted">Belum ada data nilai mahasiswa.</td>
                                     </tr>
-                                @endforeach
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
