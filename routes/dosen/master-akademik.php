@@ -67,6 +67,7 @@ Route::get('/akademik/get-waktu-kuliah/{jenis_kelas_id}',[App\Http\Controllers\M
 // KRS
 Route::get('/akademik/krs',[App\Http\Controllers\Master\Akademik\KRSController::class, 'renderKRS'])->name('akademik.krs-render');
 Route::post('/akademik/krs',[App\Http\Controllers\Master\Akademik\KRSController::class, 'handleKRS'])->name('akademik.krs-handle');
+Route::post('/akademik/krs/bulk-copy',[App\Http\Controllers\Master\Akademik\KRSController::class, 'copyBulkKrs'])->name('akademik.krs-copy-bulk');
 Route::get('/akademik/krs/{code}/detail',[App\Http\Controllers\Master\Akademik\KRSController::class, 'detailKRS'])->name('akademik.krs-detail');
 Route::get('/akademik/krs/{code}/print',[App\Http\Controllers\Master\Akademik\KRSController::class, 'printKRS'])->name('akademik.krs-print');
 Route::get('/akademik/krs/{code}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'viewKRS'])->name('akademik.krs-view');
