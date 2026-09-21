@@ -81,12 +81,16 @@
                 </thead>
                 <tbody>
                 @php
+                    // Kelompokkan berdasarkan ID mata kuliah dari relasi MataKuliah.
+                    // Ini mencegah parameter route menjadi null apabila ada record Nilai
+                    // lama yang mata_kuliah_id-nya tidak terisi tetapi relasinya masih tersedia.
                     $groupedMataKuliah = $nilai->getCollection()
+                        ->filter(fn($item) => $item->mataKuliah && $item->mataKuliah->id)
                         ->sortBy([
                             [fn($item) => mb_strtolower($item->mataKuliah->name ?? ''), 'asc'],
                             [fn($item) => mb_strtolower($item->mahasiswa->name ?? ''), 'asc'],
                         ])
-                        ->groupBy(fn($item) => $item->mata_kuliah_id);
+                        ->groupBy(fn($item) => $item->mataKuliah->id);
                     $nomor = $nilai->firstItem();
                 @endphp
 
