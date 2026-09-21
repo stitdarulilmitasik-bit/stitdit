@@ -7,7 +7,7 @@
             <h2 class="mb-1">Input Kehadiran Mahasiswa</h2>
             <p class="text-muted mb-0">Catat kehadiran per mata kuliah dan pertemuan. Persentase hadir dihitung otomatis dan menjadi komponen 15% nilai akhir.</p>
         </div>
-        <a href="{{ route('dosen.akademik.nilai-render') }}" class="btn btn-outline-primary">
+        <a href="{{ route($spref . 'akademik.nilai-render') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i> Kembali ke Nilai Mahasiswa
         </a>
     </div>
@@ -115,7 +115,7 @@
                             <small class="text-muted">{{ $jumlahHadir }}/{{ $totalPertemuan }} hadir</small>
                         </td>
                         <td class="text-nowrap">
-                            <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route('dosen.akademik.kehadiran.store') }}">
+                            <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route($spref . 'akademik.kehadiran.store') }}">
                                 @csrf
                                 <input type="hidden" name="nilai_id" value="{{ $n->id }}">
                                 <input type="hidden" name="semester" value="{{ $n->semester }}">
