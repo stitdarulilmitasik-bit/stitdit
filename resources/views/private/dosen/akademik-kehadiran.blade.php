@@ -67,6 +67,7 @@
                         <th rowspan="2" style="width:125px">NIM</th>
                         <th rowspan="2" style="min-width:210px">Nama Mahasiswa</th>
                         <th rowspan="2" style="min-width:210px">Mata Kuliah</th>
+                        <th rowspan="2" style="width:80px">PDF</th>
                         <th colspan="16" class="text-center bg-light">Pertemuan</th>
                         <th rowspan="2" style="width:100px">Rekap</th>
                         <th rowspan="2" style="min-width:190px">Status Pertemuan {{ $pertemuan }}</th>
@@ -118,6 +119,15 @@
                                     <small class="text-muted">{{ $n->mataKuliah->code }}</small>
                                 @endif
                             </td>
+
+                            @if($loop->first)
+                                <td rowspan="{{ $rows->count() }}" class="text-center align-middle">
+                                    <a href="{{ route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
+                                       class="btn btn-sm btn-outline-danger" target="_blank" title="Export PDF kehadiran {{ $namaMahasiswa }}">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                </td>
+                            @endif
 
                             @for($i = 1; $i <= 16; $i++)
                                 @php $attendance = $existing[$i] ?? null; @endphp
