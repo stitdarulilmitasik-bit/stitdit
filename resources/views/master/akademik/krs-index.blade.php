@@ -82,7 +82,7 @@ $statusLabels=['Draft'=>'Draft','Diajukan'=>'Diajukan','Disetujui'=>'Disetujui',
 @if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-warning" onclick="editKRS('{{ $krs->code }}')" title="Edit"><i class="fas fa-edit"></i></button>@endif
 @if($krs->status=='Diajukan')<button class="btn btn-sm btn-success" onclick="approveKRS('{{ $krs->code }}')" title="Setujui"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectKRS('{{ $krs->code }}')" title="Tolak"><i class="fas fa-times"></i></button>@endif
 @if($krs->status=='Disetujui')<button class="btn btn-sm btn-dark" onclick="lockKRS('{{ $krs->code }}')" title="Kunci"><i class="fas fa-lock"></i></button>@endif
-@if(in_array($krs->status,['Dikunci','Dicetak']))<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak"><i class="fas fa-print"></i></a>@endif
+@if(in_array($krs->status,['Disetujui','Dikunci','Dicetak']))<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak KRS"><i class="fas fa-print"></i></a>@endif
 @if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
 </div></td>
 </tr>
