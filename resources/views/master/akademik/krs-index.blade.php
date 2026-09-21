@@ -81,9 +81,9 @@ $statusLabels=['draft'=>'Dibuat','submitted'=>'Diajukan','approved'=>'Disetujui'
 <a href="{{ route($spref . 'akademik.krs-detail',$krs->code) }}" class="btn btn-sm btn-info" title="Detail"><i class="fas fa-eye"></i></a>
 @if(in_array($krs->status,['Draft','Diajukan']))<button class="btn btn-sm btn-warning" onclick="editKRS('{{ $krs->code }}')" title="Edit"><i class="fas fa-edit"></i></button>@endif
 @if($krs->status=='submitted')<button class="btn btn-sm btn-success" onclick="approveKRS('{{ $krs->code }}')" title="Setujui"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectKRS('{{ $krs->code }}')" title="Tolak"><i class="fas fa-times"></i></button>@endif
-@if($krs->status=='approved')<button class="btn btn-sm btn-primary" onclick="publishKRS('{{ $krs->code }}')" title="Publish"><i class="fas fa-share"></i></button>@endif
-@if($krs->status=='Dipublish')<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak"><i class="fas fa-print"></i></a><button class="btn btn-sm btn-dark" onclick="lockKRS('{{ $krs->code }}')" title="Kunci"><i class="fas fa-lock"></i></button>@endif
-@if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
+@if($krs->status=='approved')<button class="btn btn-sm btn-dark" onclick="lockKRS('{{ $krs->code }}')" title="Kunci"><i class="fas fa-lock"></i></button>@endif
+@if(in_array($krs->status,['approved','locked','published']))<a href="{{ route($spref . 'akademik.krs-print',$krs->code) }}" class="btn btn-sm btn-secondary" target="_blank" title="Cetak"><i class="fas fa-print"></i></a>@endif
+@if(in_array($krs->status,['draft','rejected']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
 </div></td>
 </tr>
 @endforeach
