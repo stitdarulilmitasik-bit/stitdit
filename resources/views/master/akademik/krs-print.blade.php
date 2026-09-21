@@ -26,10 +26,10 @@
         .student-info .label { width: 92px; font-weight: bold; }
         .student-info .colon { width: 8px; text-align: center; }
         .courses-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 8px 0; border: 1px solid #000; }
-        .courses-table th, .courses-table td { border: 1px solid #000; padding: 4px 3px; text-align: center; font-size: 8pt; line-height: 1.1; vertical-align: middle; }
+        .courses-table th, .courses-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; font-size: 7.5pt; line-height: 1.05; vertical-align: middle; }
         .courses-table th { background-color: #f0f0f0; font-weight: bold; }
-        .courses-table .subject-name { text-align: left; padding-left: 5px; overflow-wrap: anywhere; }
-        .courses-table .room { text-align: center; font-size: 8pt; white-space: nowrap; }\n        .courses-table .lecturer { text-align: left; padding-left: 5px; font-size: 7.5pt; overflow-wrap: anywhere; }
+        .courses-table .subject-name { text-align: left; padding-left: 4px; overflow-wrap: anywhere; font-size: 7.5pt; }
+        .courses-table .room { text-align: center; font-size: 7pt; white-space: nowrap; }\n        .courses-table .lecturer { text-align: left; padding-left: 4px; font-size: 7pt; overflow-wrap: anywhere; }
         .summary-section { margin: 10px 0; border: 1px solid #000; padding: 7px; }
         .summary-title { font-weight: bold; text-align: center; margin-bottom: 7px; text-decoration: underline; }
         .signature-section { margin-top: 14px; width: 100%; page-break-inside: avoid; }
@@ -108,20 +108,20 @@
 <div class="student-info">
     <table>
         <tr>
-            <td class="label">Nama Mahasiswa</td><td class="colon">:</td><td>{{ $krs->mahasiswa->name }}</td>
-            <td class="label" style="padding-left:25px;">Program Studi</td><td class="colon">:</td><td>{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
+            <td class="label">Nama Mahasiswa</td><td class="colon">:</td><td style="width:27%;">{{ $krs->mahasiswa->name }}</td>
+            <td class="label" style="padding-left:15px;">Program Studi</td><td class="colon">:</td><td>{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">NIM</td><td class="colon">:</td><td>{{ $nim }}</td>
-            <td class="label" style="padding-left:25px;">Tahun Masuk</td><td class="colon">:</td><td>{{ $tahunMasuk }}</td>
+            <td class="label">NIM</td><td class="colon">:</td><td style="width:27%;">{{ $nim }}</td>
+            <td class="label" style="padding-left:15px;">Tahun Masuk</td><td class="colon">:</td><td>{{ $tahunMasuk }}</td>
         </tr>
         <tr>
-            <td class="label">Semester</td><td class="colon">:</td><td>{{ $krs->semester }}</td>
-            <td class="label" style="padding-left:25px;">Dosen Wali</td><td class="colon">:</td><td>{{ $dosenWali->name ?? '-' }}</td>
+            <td class="label">Semester</td><td class="colon">:</td><td style="width:27%;">{{ $krs->semester }}</td>
+            <td class="label" style="padding-left:15px;">Dosen Wali</td><td class="colon">:</td><td>{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status KRS</td><td class="colon">:</td><td><span class="status-badge">{{ strtoupper($krs->status) }}</span></td>
-            <td class="label" style="padding-left:25px;">Total SKS</td><td class="colon">:</td><td><strong>{{ $krs->total_sks }} SKS</strong></td>
+            <td class="label">Status KRS</td><td class="colon">:</td><td style="width:27%;"><span class="status-badge">{{ strtoupper($krs->status) }}</span></td>
+            <td class="label" style="padding-left:15px;">Total SKS</td><td class="colon">:</td><td><strong>{{ $krs->total_sks }} SKS</strong></td>
         </tr>
     </table>
 </div>
@@ -129,13 +129,13 @@
 <table class="courses-table">
     <thead>
         <tr>
-            <th rowspan="2" style="width:5%;">No</th>
-            <th rowspan="2" style="width:10%;">Kode MK</th>
-            <th rowspan="2" style="width:28%;">Mata Kuliah</th>
+            <th rowspan="2" style="width:4%;">No</th>
+            <th rowspan="2" style="width:8%;">Kode MK</th>
+            <th rowspan="2" style="width:23%;">Mata Kuliah</th>
             <th rowspan="2" style="width:6%;">SKS</th>
             <th rowspan="2" style="width:11%;">Kelas</th>
-            <th rowspan="2" style="width:11%;">Ruang</th>
-            <th rowspan="2" style="width:29%;">Dosen</th>
+            <th rowspan="2" style="width:10%;">Ruang</th>
+            <th rowspan="2" style="width:38%;">Dosen</th>
         </tr>
     </thead>
     <tbody>
