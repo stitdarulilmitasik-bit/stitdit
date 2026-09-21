@@ -23,8 +23,8 @@
                     </form>
                 @endif
             @else
-                @if(in_array($krsHeader->status ?? '', ['submitted','approved','published','locked']))
-                    <span class="badge bg-success align-self-center">KRS {{ ucfirst($krsHeader->status) }}</span>
+                @if(in_array($krsHeader->status ?? '', ['Diajukan','Disetujui','Dipublish','Dikunci']))
+                    <span class="badge bg-success align-self-center">KRS {{ $krsHeader->status }}</span>
                 @endif
             @endif
         </div>
@@ -35,7 +35,7 @@
             <div>
                 <h3 class="card-title mb-1">Mata Kuliah yang Diambil</h3>
                 @if($krsHeader)
-                    <small class="text-muted">Status KRS: <strong>{{ ucfirst($krsHeader->status) }}</strong></small>
+                    <small class="text-muted">Status KRS: <strong>{{ $krsHeader->status }}</strong></small>
                 @endif
             </div>
             <div class="ms-auto text-muted">Total SKS: <strong>{{ $krs->sum('sks') }}</strong> / {{ $krsHeader->batas_sks ?? 24 }}</div>
@@ -55,8 +55,8 @@
                         <td>{{ $item->dosen->name ?? '-' }}</td>
                         <td><span class="badge {{ $status === 'Aktif' ? 'bg-success' : ($status === 'Mengulang' ? 'bg-warning' : 'bg-secondary') }}">{{ $status }}</span></td>
                         <td>
-                            @if(($krsHeader->is_editable ?? false))
-                            <form method="POST" action="{{ route('mahasiswa.akademik.krs.destroy', $item->id) }}" onsubmit="return confirm('Batalkan mata kuliah ini?')">
+                            @if(in_array($krsHeader->status ?? '', ['Draft','Diajukan','Ditolak']))
+                            <form method="POST" action="{{ route('mahasiswa.akademik.krs.destroy', $item->id) }}" onsubmit="return confirm('Batalkan mata kuliah ini dari KRS?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">Batalkan</button>
                             </form>
