@@ -14,6 +14,7 @@ use PDF;
 // Use Models
 use App\Models\Mahasiswa;
 use App\Models\Akademik\ProgramStudi;
+use App\Models\Akademik\Kelas;
 use App\Models\Pengaturan\WebSetting;
 use App\Exports\MahasiswaExport;
 use App\Exports\MahasiswaFullExport;
@@ -32,8 +33,11 @@ class MahasiswaController extends Controller
         $data['menus'] = "Master";
         $data['pages'] = "Mahasiswa";
         $data['academy'] = $data['webs']->school_apps . ' by ' . $data['webs']->school_name;
-        $data['mahasiswa'] = Mahasiswa::with('programStudi')->get();
+        $data['mahasiswa'] = Mahasiswa::with(['programStudi', 'kelas'])->get();
         $data['prodi'] = ProgramStudi::all();
+        $data['kelas'] = Kelas::with(['programStudi', 'tahunAkademik'])
+            ->orderBy('name')
+            ->get();
         
         return view('master.pengguna.mahasiswa-index', $data, compact('user'));
     }
@@ -283,6 +287,7 @@ class MahasiswaController extends Controller
                 'password' => 'required|string|min:6',
                 'numb_nim' => 'required|string|unique:mahasiswas,numb_nim',
                 'prodi_id' => 'required|exists:program_studis,id',
+                'kelas_id' => 'nullable|exists:kelas,id',
                 'type' => 'required|integer|in:0,1,2,3',
                 'semester' => 'required|integer|min:0|max:14'
             ]);
@@ -299,6 +304,7 @@ class MahasiswaController extends Controller
                 'prodi_id' => $request->prodi_id,
                 'type' => $request->type,
                 'semester' => $request->semester,
+                'kelas_id' => $request->kelas_id ?: null,
                 'created_by' => Auth::guard('web')->id()
             ]);
 
@@ -325,6 +331,7 @@ class MahasiswaController extends Controller
                 'password' => 'nullable|string|min:6',
                 'numb_nim' => 'required|string|unique:mahasiswas,numb_nim,' . $mahasiswa->id,
                 'prodi_id' => 'required|exists:program_studis,id',
+                'kelas_id' => 'nullable|exists:kelas,id',
                 'type' => 'required|integer|in:0,1,2,3',
                 'semester' => 'required|integer|min:0|max:14'
             ]);
@@ -337,6 +344,7 @@ class MahasiswaController extends Controller
                 'prodi_id' => $request->prodi_id,
                 'type' => $request->type,
                 'semester' => $request->semester,
+                'kelas_id' => $request->kelas_id ?: null,
                 'updated_by' => Auth::guard('web')->id()
             ];
             
