@@ -325,9 +325,10 @@
                                     <div class="col-12 mb-3">
                                         <div class="card border bg-light">
                                             <div class="card-body">
-                                                <h6 class="mb-2">Bobot Komponen Nilai</h6>
+                                                <h6 class="mb-2"><i class="fas fa-sliders-h me-2"></i>Bobot Komponen Nilai</h6>
                                                 <p class="text-muted small mb-3">
-                                                    Atur bobot penilaian. Total bobot harus tepat <strong>100%</strong>.
+                                                    Masukkan bobot untuk setiap komponen penilaian. <strong>Total seluruh bobot wajib tepat 100%.</strong>
+                                                    Bobot ini akan disimpan bersama data nilai mahasiswa dan digunakan dalam perhitungan nilai akhir.
                                                 </p>
                                                 <div class="row g-2">
                                                     <div class="col-md-2 col-6">
