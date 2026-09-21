@@ -4,35 +4,117 @@
 <meta charset="UTF-8">
 <title>Rekap Kehadiran {{ $mataKuliah->name ?? 'Mata Kuliah' }}</title>
 <style>
-    @page { size: A4 landscape; margin: 12mm 10mm 16mm; }
-    * { box-sizing:border-box; }
-    body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:7.5pt; color:#111; margin:0; }
-    .kop { border-bottom:3px solid #111; padding-bottom:6px; margin-bottom:10px; }
-    .kop-table { width:100%; border-collapse:collapse; }
-    .kop-logo { width:82px; text-align:center; vertical-align:middle; }
-    .kop-logo img { width:88px; height:88px; object-fit:contain; }
-    .kop-text { text-align:center; vertical-align:middle; line-height:1.2; }
-    .kop-text .a { font-size:11pt; font-weight:bold; }
-    .kop-text .b { font-size:14pt; font-weight:bold; }
-    .kop-text .c { font-size:7.5pt; font-weight:bold; }
-    .kop-text .d { font-size:7pt; }
-    .title { text-align:center; margin:4px 0 8px; }
-    .title-main { font-size:11pt; font-weight:bold; text-decoration:underline; }
-    .title-sub { font-size:7.5pt; margin-top:2px; }
-    .info { width:100%; border-collapse:collapse; margin-bottom:8px; }
-    .info td { padding:2px 3px; vertical-align:top; }
-    .info .label { width:90px; font-weight:bold; }
-    table.data { width:100%; border-collapse:collapse; table-layout:fixed; word-wrap:break-word; }
-    .data th,.data td { border:1px solid #333; padding:3px 1px; vertical-align:middle; overflow:hidden; white-space:nowrap; line-height:1.1; }
-    .data th { background:#eee; text-align:center; font-weight:bold; font-size:6.8pt; }
-    .data td { font-size:6.8pt; }
-    .center { text-align:center; }
-    .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; padding-left:4px !important; padding-right:4px !important; }
-    .student strong { font-size:7.1pt; line-height:1.1; display:block; white-space:nowrap; }
-    .nim { padding-left:4px !important; padding-right:4px !important; font-size:6.5pt !important; }
-    .attendance { font-size:6.4pt !important; padding-left:0 !important; padding-right:0 !important; text-align:center; }
-    .pct { font-size:6.6pt !important; padding-left:3px !important; padding-right:3px !important; }
-    .footer { position:fixed; left:0; right:0; bottom:-9mm; border-top:1px solid #777; padding-top:3px; text-align:center; font-size:6.5pt; color:#555; }
+    @page { 
+        size: A4 landscape; 
+        margin: 10mm; 
+    }
+    * { 
+        box-sizing: border-box; 
+    }
+    body { 
+        font-family: "DejaVu Sans", Arial, sans-serif; 
+        font-size: 7pt; 
+        color: #111; 
+        margin: 0; 
+    }
+
+    /* KOP SURAT */
+    .kop { 
+        border-bottom: 2px solid #111; 
+        padding-bottom: 5px; 
+        margin-bottom: 8px; 
+    }
+    .kop-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+    .kop-logo { 
+        width: 70px; 
+        text-align: center; 
+        vertical-align: middle; 
+    }
+    .kop-logo img { 
+        width: 65px; 
+        height: 65px; 
+        object-fit: contain; 
+    }
+    .kop-text { 
+        text-align: center; 
+        vertical-align: middle; 
+        line-height: 1.2; 
+    }
+    .kop-text .a { font-size: 10pt; font-weight: bold; }
+    .kop-text .b { font-size: 12pt; font-weight: bold; }
+    .kop-text .c { font-size: 7.5pt; font-weight: bold; }
+    .kop-text .d { font-size: 7pt; }
+
+    /* JUDUL & INFO */
+    .title { text-align: center; margin: 4px 0 8px; }
+    .title-main { font-size: 10pt; font-weight: bold; text-decoration: underline; }
+    .title-sub { font-size: 7.5pt; margin-top: 2px; }
+    
+    .info { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .info td { padding: 1.5px 3px; vertical-align: top; }
+    .info .label { width: 100px; font-weight: bold; }
+
+    /* TABEL DATA */
+    table.data { 
+        width: 100%; 
+        border-collapse: collapse; 
+        table-layout: fixed; /* Mengunci lebar kolom berdasarkan <th> */
+    }
+    .data th, .data td { 
+        border: 1px solid #333; 
+        padding: 3px 1px; 
+        vertical-align: middle; 
+        line-height: 1.1;
+        font-size: 6pt;
+    }
+    .data th { 
+        background: #eee; 
+        text-align: center; 
+        font-weight: bold; 
+    }
+    
+    .center { text-align: center; }
+    
+    /* GAYA SEL SPESIFIK */
+    .student { 
+        text-align: left; 
+        padding-left: 3px !important; 
+        padding-right: 3px !important;
+        white-space: normal !important; 
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    .student strong {
+        font-weight: bold;
+    }
+    .nim { 
+        text-align: center;
+        font-size: 6pt !important; 
+        white-space: nowrap;
+    }
+    .attendance { 
+        font-size: 6pt !important; 
+        text-align: center; 
+    }
+    .pct { 
+        font-size: 6pt !important; 
+        text-align: center;
+    }
+
+    .footer { 
+        position: fixed; 
+        left: 0; 
+        right: 0; 
+        bottom: -6mm; 
+        border-top: 1px solid #777; 
+        padding-top: 3px; 
+        text-align: center; 
+        font-size: 6pt; 
+        color: #555; 
+    }
 </style>
 </head>
 <body>
@@ -62,7 +144,7 @@
                 <div class="c">SK Menteri Agama RI No. 536 Tahun 2026</div>
                 <div class="d">Alamat : Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div>
             </td>
-            <td style="width:82px"></td>
+            <td style="width:70px"></td>
         </tr>
     </table>
 </div>
@@ -84,38 +166,32 @@
 </table>
 
 <table class="data">
-    <colgroup>
-        <col style="width:3%">
-        <col style="width:14%">
-        <col style="width:35%">
-        @for($i=1;$i<=16;$i++)<col style="width:1.45%">@endfor
-        <col style="width:4.8%">
-    </colgroup>
     <thead>
         <tr>
-            <th>No.</th><th>NIM</th><th>Nama Mahasiswa</th>
-            @for($i=1;$i<=16;$i++)<th>P{{ $i }}</th>@endfor
-            <th>% Hadir</th>
+            <th style="width: 3%;">No.</th>
+            <th style="width: 12%;">NIM</th>
+            <th style="width: 25%;">Nama Mahasiswa</th>
+            @for($i=1;$i<=16;$i++)
+                <th style="width: 3.4%;">P{{ $i }}</th>
+            @endfor
+            <th style="width: 5.6%;">% Hadir</th>
         </tr>
     </thead>
     <tbody>
     @foreach($nilai as $index => $n)
         @php
-            $att=$n->kehadiranMahasiswa->keyBy('pertemuan');
-            $hadir=$att->where('status','Hadir')->count();
-            $izin=$att->where('status','Izin')->count();
-            $sakit=$att->where('status','Sakit')->count();
-            $alpa=$att->where('status','Alpa')->count();
-            $total=$att->count();
-            $persentase=$total>0 ? round(($hadir/$total)*100,2) : 0;
+            $att = $n->kehadiranMahasiswa->keyBy('pertemuan');
+            $hadir = $att->where('status','Hadir')->count();
+            $total = $att->count();
+            $persentase = $total > 0 ? round(($hadir/$total)*100, 2) : 0;
         @endphp
         <tr>
             <td class="center">{{ $index+1 }}</td>
-            <td class="center nim"><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
+            <td class="nim"><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
             <td class="student"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
             @for($i=1;$i<=16;$i++)
-                @php $a=$att[$i]??null; @endphp
-                <td class="center attendance">
+                @php $a = $att[$i] ?? null; @endphp
+                <td class="attendance">
                     @if(($a->status??'')==='Hadir')✓
                     @elseif(($a->status??'')==='Izin')I
                     @elseif(($a->status??'')==='Sakit')S
@@ -123,11 +199,12 @@
                     @else—@endif
                 </td>
             @endfor
-            <td class="center pct"><strong>{{ number_format($persentase,2) }}%</strong></td>
+            <td class="pct"><strong>{{ number_format($persentase, 2) }}%</strong></td>
         </tr>
     @endforeach
     </tbody>
 </table>
+
 <div class="footer">Printed via SIAKAD STIT-Darul Ilmi Tasikmalaya</div>
 </body>
 </html>
