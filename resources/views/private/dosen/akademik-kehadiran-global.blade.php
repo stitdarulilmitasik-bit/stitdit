@@ -23,6 +23,12 @@
                     <i class="ti ti-file-type-pdf me-1"></i> Export PDF Mahasiswa
                 </a>
             @endif
+            @if($mataKuliahId)
+                <a href="{{ route('web-admin.akademik.kehadiran.mata-kuliah.pdf', ['mataKuliahId' => $mataKuliahId, 'semester' => $semester]) }}"
+                   class="btn btn-danger" target="_blank">
+                    <i class="ti ti-file-type-pdf me-1"></i> Export PDF Mata Kuliah
+                </a>
+            @endif
         </div>
     </div>
 
@@ -70,7 +76,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title mb-0">Seluruh Mata Kuliah</h3>
+            <h3 class="card-title mb-0">{{ $mataKuliahId ? 'Report Kehadiran Mata Kuliah' : 'Report Global Kehadiran' }}</h3>
         </div>
         <div class="global-attendance-wrap">
             <table class="table table-bordered table-vcenter global-attendance mb-0">
