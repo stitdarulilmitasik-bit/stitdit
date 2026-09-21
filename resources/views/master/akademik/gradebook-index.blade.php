@@ -125,8 +125,8 @@
                             <thead>
                                 <tr>
                                     <th class="sticky-no">No.</th>
-                                    <th class="sticky-student">Mahasiswa</th>
-                                    <th>NIM</th>
+                                    <th class="sticky-student">Nama Mahasiswa</th>
+                                    <th>Mata Kuliah / Kelas</th>
                                     <th>Tugas 1</th><th>Tugas 2</th><th>Tugas 3</th>
                                     <th>Quiz 1</th><th>Quiz 2</th>
                                     <th>UTS</th><th>UAS</th><th>Praktikum</th><th>Kehadiran</th>
@@ -134,40 +134,68 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach($details as $i => $detail)
-                                @php $n = $detail->nilai; @endphp
-                                <tr>
-                                    <td class="sticky-no text-center">{{ $i+1 }}</td>
-                                    <td class="sticky-student">
-                                        <div class="fw-semibold">{{ $detail->krs->mahasiswa->name }}</div>
-                                        <div class="small text-muted">{{ $detail->mataKuliah->code }} · {{ $detail->kelas?->name ?? '-' }}</div>
-                                        <input type="hidden" name="nilai[{{ $i }}][id]" value="{{ $n->id }}">
-                                    </td>
-                                    <td>{{ $detail->krs->mahasiswa->nim ?? $detail->krs->mahasiswa->numb_nim ?? '-' }}</td>
-                                    @foreach(['tugas_1','tugas_2','tugas_3','quiz_1','quiz_2','uts','uas','praktikum','kehadiran'] as $field)
+                            @php
+                                // Kelompokkan baris berdasarkan mahasiswa agar nama tidak
+                                // berulang ketika satu mahasiswa memiliki lebih dari satu
+                                // detail KRS/nilai pada workset yang sama.
+                                $studentGroups = $details
+                                    ->sortBy(fn ($detail) => mb_strtolower((string) ($detail->krs->mahasiswa->name ?? '')))
+                                    ->groupBy(fn ($detail) => $detail->krs->mahasiswa_id);
+
+                                $rowIndex = 0;
+                            @endphp
+                            @forelse($studentGroups as $studentId => $studentDetails)
+                                @foreach($studentDetails as $groupRow => $detail)
+                                    @php
+                                        $n = $detail->nilai;
+                                        $isFirstStudentRow = $loop->first;
+                                        $rowspan = $studentDetails->count();
+                                        $currentIndex = $rowIndex++;
+                                    @endphp
+                                    <tr class="{{ $isFirstStudentRow ? 'border-top border-2' : '' }}">
+                                        <td class="sticky-no text-center">{{ $currentIndex + 1 }}</td>
+                                        @if($isFirstStudentRow)
+                                            <td class="sticky-student" rowspan="{{ $rowspan }}">
+                                                <div class="fw-semibold">{{ $detail->krs->mahasiswa->name }}</div>
+                                                <div class="small text-muted">
+                                                    {{ $detail->krs->mahasiswa->nim ?? $detail->krs->mahasiswa->numb_nim ?? '-' }}
+                                                </div>
+                                            </td>
+                                        @endif
                                         <td>
-                                            <input class="form-control form-control-sm score"
-                                                type="number" min="0" max="100" step="0.01"
-                                                name="nilai[{{ $i }}][{{ $field }}]"
-                                                value="{{ old('nilai.'.$i.'.'.$field, $n->{$field}) }}"
-                                                @disabled(!$n->is_editable)>
+                                            <div class="fw-semibold">{{ $detail->mataKuliah->code }}</div>
+                                            <div class="small text-muted">{{ $detail->mataKuliah->name }} · {{ $detail->kelas?->name ?? '-' }}</div>
+                                            <input type="hidden" name="nilai[{{ $currentIndex }}][id]" value="{{ $n->id }}">
                                         </td>
-                                    @endforeach
-                                    <td class="text-center fw-bold">{{ $n->nilai_angka !== null ? number_format($n->nilai_angka,2) : '-' }}</td>
-                                    <td class="text-center fw-bold">{{ $n->nilai_huruf ?? '-' }}</td>
-                                    <td class="text-center">{{ $n->nilai_mutu !== null ? number_format($n->nilai_mutu,2) : '-' }}</td>
-                                    <td class="text-center">
-                                        <span class="badge {{ $n->is_lulus ? 'bg-success' : 'bg-danger' }}">
-                                            {{ $n->is_lulus ? 'Lulus' : 'Tidak Lulus' }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-{{ match($n->status){'Draft'=>'secondary','Submitted'=>'warning','Approved'=>'info','Published'=>'success','Locked'=>'dark',default=>'secondary'} }} status-badge">
-                                            {{ $n->status }}
-                                        </span>
-                                    </td>
+                                        @foreach(['tugas_1','tugas_2','tugas_3','quiz_1','quiz_2','uts','uas','praktikum','kehadiran'] as $field)
+                                            <td>
+                                                <input class="form-control form-control-sm score"
+                                                    type="number" min="0" max="100" step="0.01"
+                                                    name="nilai[{{ $currentIndex }}][{{ $field }}]"
+                                                    value="{{ old('nilai.'.$currentIndex.'.'.$field, $n->{$field}) }}"
+                                                    @disabled(!$n->is_editable)>
+                                            </td>
+                                        @endforeach
+                                        <td class="text-center fw-bold">{{ $n->nilai_angka !== null ? number_format($n->nilai_angka,2) : '-' }}</td>
+                                        <td class="text-center fw-bold">{{ $n->nilai_huruf ?? '-' }}</td>
+                                        <td class="text-center">{{ $n->nilai_mutu !== null ? number_format($n->nilai_mutu,2) : '-' }}</td>
+                                        <td class="text-center">
+                                            <span class="badge {{ $n->is_lulus ? 'bg-success' : 'bg-danger' }}">
+                                                {{ $n->is_lulus ? 'Lulus' : 'Tidak Lulus' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-{{ match($n->status){'Draft'=>'secondary','Submitted'=>'warning','Approved'=>'info','Published'=>'success','Locked'=>'dark',default=>'secondary'} }} status-badge">
+                                                {{ $n->status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="17" class="text-center text-muted py-4">Belum ada data mahasiswa.</td>
                                 </tr>
-                            @endforeach
+                            @endforelse
                             </tbody>
                         </table>
                     </div>
