@@ -267,6 +267,13 @@
                                         @enderror
                                     </div>
                                     <div class="col-md-6 mb-3">
+                                        <label for="code" class="form-label">Kode Mata Kuliah</label>
+                                        <input type="text" class="form-control" name="code" id="code" value="{{ old('code') }}" placeholder="Contoh: MPI101" maxlength="50" required>
+                                        @error('code')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6 mb-3">
                                         <label for="prodi_id" class="form-label">Program Studi</label>
                                         <select class="form-select" name="prodi_id" id="prodi_id">
                                             <option value="">Pilih Program Studi</option>
@@ -499,6 +506,13 @@
                                         @endforeach
                                     </select>
                                     @error('kurikulum_id')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="edit_code{{ $item->id }}" class="form-label">Kode Mata Kuliah</label>
+                                    <input type="text" class="form-control" name="code" id="edit_code{{ $item->id }}" value="{{ $item->code }}" maxlength="50" required>
+                                    @error('code')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
                                 </div>
