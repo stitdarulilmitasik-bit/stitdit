@@ -23,12 +23,12 @@
     .info td { padding:2px 3px; vertical-align:top; }
     .info .label { width:90px; font-weight:bold; }
     table.data { width:100%; border-collapse:collapse; table-layout:fixed; }
-    .data th,.data td { border:1px solid #333; padding:3px 2px; vertical-align:middle; overflow:hidden; }
+    .data th,.data td { border:1px solid #333; padding:3px 2px; vertical-align:middle; overflow:hidden; white-space:nowrap; }
     .data th { background:#eee; text-align:center; font-weight:bold; font-size:7pt; }
     .data td { font-size:7pt; }
     .center { text-align:center; }
-    .student { text-align:left; }
-    .student strong { font-size:7.2pt; }
+    .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; }
+    .student strong { font-size:7.2pt; line-height:1.15; display:block; white-space:normal; }
     .student small { color:#555; font-size:6.2pt; }
     .footer { position:fixed; left:0; right:0; bottom:-9mm; border-top:1px solid #777; padding-top:3px; text-align:center; font-size:6.5pt; color:#555; }
 </style>
@@ -84,10 +84,10 @@
 <table class="data">
     <colgroup>
         <col style="width:3%">
-        <col style="width:10%">
-        <col style="width:20%">
+        <col style="width:12%">
+        <col style="width:21%">
         @for($i=1;$i<=16;$i++)<col style="width:2.5%">@endfor
-        <col style="width:5.6%"><col style="width:5.6%"><col style="width:5.6%"><col style="width:5.6%"><col style="width:5.6%">
+        <col style="width:5.4%"><col style="width:5.4%"><col style="width:5.4%"><col style="width:5.4%"><col style="width:5.4%">
     </colgroup>
     <thead>
         <tr>
