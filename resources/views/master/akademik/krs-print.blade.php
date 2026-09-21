@@ -46,7 +46,8 @@
 <body>
 @php
     // Data identitas mahasiswa untuk report KRS.
-    $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? '-';
+    $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
+    $dosenNidn = $dosenWali->nidn ?? $dosenWali->nidn_number ?? $dosenWali->numb_nidn ?? $dosenWali->number_nidn ?? '-';
     $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
     $tahunMasuk = '-';
     if ($tahunMasukRaw !== null && $tahunMasukRaw !== '') {
@@ -240,12 +241,12 @@
             <td class="signature-cell">
                 <div class="signature-title">Mahasiswa</div>
                 <div class="signature-name">{{ $krs->mahasiswa->name }}</div>
-                <div class="signature-nip">NIM. {{ $krs->mahasiswa->nim }}</div>
+                <div class="signature-nip">NIM. {{ $nim }}</div>
             </td>
             <td class="signature-cell">
                 <div class="signature-title">Dosen Pembimbing Akademik</div>
                 <div class="signature-name">{{ $dosenWali->name ?? '[Nama Dosen PA]' }}</div>
-                <div class="signature-nip">NIDN. {{ $dosenWali->nidn ?? '[NIDN Dosen PA]' }}</div>
+                <div class="signature-nip">NIDN. {{ $dosenNidn !== '-' ? $dosenNidn : '[NIDN Dosen PA]' }}</div>
                 @if ($krs->approved_at)
                     <div style="font-size:7.5pt;margin-top:4px;">Disetujui: {{ $krs->approved_at->format('d/m/Y H:i') }}</div>
                 @endif
@@ -253,7 +254,7 @@
             <td class="signature-cell">
                 <div class="signature-title">Ketua Program Studi</div>
                 <div class="signature-name">{{ $kaprodi->name ?? '[Nama Ketua Prodi]' }}</div>
-                <div class="signature-nip">NIDN. {{ $kaprodi->nidn ?? '[NIDN Ketua Prodi]' }}</div>
+                <div class="signature-nip">NIDN. {{ $kaprodi->nidn ?? $kaprodi->nidn_number ?? $kaprodi->numb_nidn ?? $kaprodi->number_nidn ?? '[NIDN Ketua Prodi]' }}</div>
             </td>
         </tr>
     </table>
