@@ -68,7 +68,7 @@
         padding: 3px 1px; 
         vertical-align: middle; 
         line-height: 1.1;
-        font-size: 6pt;
+        font-size: 7pt;
     }
     .data th { 
         background: #eee; 
