@@ -168,7 +168,7 @@ class Nilai extends Model
         $this->nilai_angka = round($nilaiAkhir, 2);
         $this->updateNilaiHurufDanMutu();
         $this->mutu_x_sks = $this->nilai_mutu * $this->sks;
-        $this->save();
+        $this->saveQuietly();
         return $this->nilai_angka;
     }
 
