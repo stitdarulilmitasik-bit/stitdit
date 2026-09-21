@@ -550,7 +550,7 @@
                                         <option value="">Belum ditentukan</option>
                                         @foreach ($kelas as $k)
                                             <option value="{{ $k->id }}" {{ (int) $item->kelas_id === (int) $k->id ? 'selected' : '' }}>
-                                                {{ $k->name }}{{ $k->programStudi ? ' - ' . $k->programStudi->name : '' }}
+                                                {{ $k->name }}
                                             </option>
                                         @endforeach
                                     </select>
