@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Rekap Kehadiran {{ $mataKuliah->name ?? 'Mata Kuliah' }}</title>
 <style>
-    @page { size: A4 landscape; margin: 12mm 12mm 16mm; }
+    @page { size: A4 landscape; margin: 12mm 10mm 16mm; }
     * { box-sizing:border-box; }
     body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:7.5pt; color:#111; margin:0; }
     .kop { border-bottom:3px solid #111; padding-bottom:6px; margin-bottom:10px; }
@@ -23,13 +23,14 @@
     .info td { padding:2px 3px; vertical-align:top; }
     .info .label { width:90px; font-weight:bold; }
     table.data { width:100%; border-collapse:collapse; table-layout:fixed; }
-    .data th,.data td { border:1px solid #333; padding:3px 2px; vertical-align:middle; overflow:hidden; white-space:nowrap; }
-    .data th { background:#eee; text-align:center; font-weight:bold; font-size:7pt; }
-    .data td { font-size:7pt; }
+    .data th,.data td { border:1px solid #333; padding:3px 1px; vertical-align:middle; overflow:hidden; white-space:nowrap; }
+    .data th { background:#eee; text-align:center; font-weight:bold; font-size:6.8pt; }
+    .data td { font-size:6.8pt; }
     .center { text-align:center; }
-    .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; }
+    .student { text-align:left; white-space:normal !important; overflow-wrap:anywhere; word-break:break-word; padding-left:4px !important; padding-right:4px !important; }
     .student strong { font-size:7.2pt; line-height:1.15; display:block; white-space:normal; }
-    .student small { color:#555; font-size:6.2pt; }
+    .nim { padding-left:4px !important; padding-right:4px !important; }
+    .pct { font-size:6.6pt !important; padding-left:3px !important; padding-right:3px !important; }
     .footer { position:fixed; left:0; right:0; bottom:-9mm; border-top:1px solid #777; padding-top:3px; text-align:center; font-size:6.5pt; color:#555; }
 </style>
 </head>
@@ -84,10 +85,11 @@
 <table class="data">
     <colgroup>
         <col style="width:3%">
-        <col style="width:15%">
-        <col style="width:24%">
-        @for($i=1;$i<=16;$i++)<col style="width:2.5%">@endfor
-        <col style="width:4.6%"><col style="width:4.6%"><col style="width:4.6%"><col style="width:4.6%"><col style="width:4.6%">
+        <col style="width:16%">
+        <col style="width:25%">
+        @for($i=1;$i<=16;$i++)<col style="width:2.45%">@endfor
+        <col style="width:4.4%"><col style="width:4.4%"><col style="width:4.4%"><col style="width:4.4%">
+        <col style="width:5.4%">
     </colgroup>
     <thead>
         <tr>
@@ -109,7 +111,7 @@
         @endphp
         <tr>
             <td class="center">{{ $index+1 }}</td>
-            <td class="center"><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
+            <td class="center nim"><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
             <td class="student"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
             @for($i=1;$i<=16;$i++)
                 @php $a=$att[$i]??null; @endphp
@@ -122,7 +124,7 @@
                 </td>
             @endfor
             <td class="center">{{ $hadir }}</td><td class="center">{{ $izin }}</td><td class="center">{{ $sakit }}</td><td class="center">{{ $alpa }}</td>
-            <td class="center"><strong>{{ number_format($persentase,2) }}%</strong></td>
+            <td class="center pct"><strong>{{ number_format($persentase,2) }}%</strong></td>
         </tr>
     @endforeach
     </tbody>
