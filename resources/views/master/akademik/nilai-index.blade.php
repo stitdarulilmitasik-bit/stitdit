@@ -323,6 +323,55 @@
                                         @enderror
                                     </div>
                                     <div class="col-12 mb-3">
+                                        <div class="card border">
+                                            <div class="card-body">
+                                                <h6 class="mb-3 fw-bold text-primary"><i class="fas fa-clipboard-check me-2"></i>Komponen Nilai</h6>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Tugas (rata-rata Tugas 1-3)</label>
+                                                        <div class="row g-2">
+                                                            <div class="col-4"><input type="number" class="form-control komponen-nilai" name="tugas_1" id="tugas_1" min="0" max="100" step="0.01" placeholder="Tugas 1"></div>
+                                                            <div class="col-4"><input type="number" class="form-control komponen-nilai" name="tugas_2" id="tugas_2" min="0" max="100" step="0.01" placeholder="Tugas 2"></div>
+                                                            <div class="col-4"><input type="number" class="form-control komponen-nilai" name="tugas_3" id="tugas_3" min="0" max="100" step="0.01" placeholder="Tugas 3"></div>
+                                                        </div>
+                                                        <small class="text-muted">Rata-rata: <strong id="rata_tugas_preview">0.00</strong></small>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Quiz (rata-rata Quiz 1-2)</label>
+                                                        <div class="row g-2">
+                                                            <div class="col-6"><input type="number" class="form-control komponen-nilai" name="quiz_1" id="quiz_1" min="0" max="100" step="0.01" placeholder="Quiz 1"></div>
+                                                            <div class="col-6"><input type="number" class="form-control komponen-nilai" name="quiz_2" id="quiz_2" min="0" max="100" step="0.01" placeholder="Quiz 2"></div>
+                                                        </div>
+                                                        <small class="text-muted">Rata-rata: <strong id="rata_quiz_preview">0.00</strong></small>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-semibold">UTS</label>
+                                                        <input type="number" class="form-control komponen-nilai" name="uts" id="uts" min="0" max="100" step="0.01" placeholder="0-100">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-semibold">UAS</label>
+                                                        <input type="number" class="form-control komponen-nilai" name="uas" id="uas" min="0" max="100" step="0.01" placeholder="0-100">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-semibold">Praktikum</label>
+                                                        <input type="number" class="form-control komponen-nilai" name="praktikum" id="praktikum" min="0" max="100" step="0.01" placeholder="0-100">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Kehadiran (otomatis dari absensi)</label>
+                                                        <input type="number" class="form-control" name="kehadiran" id="kehadiran" value="0" min="0" max="100" step="0.01" readonly>
+                                                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Nilai kehadiran akan mengikuti data absensi mahasiswa.</small>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Nilai Akhir</label>
+                                                        <input type="number" class="form-control fw-bold" id="nilai_akhir_preview" value="0.00" readonly>
+                                                        <small class="text-muted">Dihitung otomatis berdasarkan bobot di bawah.</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
                                         <div class="card border bg-light">
                                             <div class="card-body">
                                                 <h6 class="mb-2 fw-bold text-primary"><i class="fas fa-sliders-h me-2"></i>Bobot Komponen Nilai (WAJIB 100%)</h6>
