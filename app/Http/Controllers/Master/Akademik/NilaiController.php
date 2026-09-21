@@ -235,7 +235,20 @@ class NilaiController extends Controller
                     throw $e;
                 }
 
-                $nilai = Nilai::where($key)->firstOrFail();
+                // Ambil ulang berdasarkan unique key setelah konflik insert.
+                // Jika record belum terlihat karena transaksi bersamaan, ulangi beberapa kali.
+                $nilai = null;
+                for ($attempt = 0; $attempt < 3 && !$nilai; $attempt++) {
+                    $nilai = Nilai::where($key)->first();
+                    if (!$nilai) {
+                        usleep(100000);
+                    }
+                }
+
+                if (!$nilai) {
+                    throw new \RuntimeException('Data nilai sudah dibuat oleh proses lain, tetapi belum dapat ditemukan. Silakan buka ulang halaman Nilai dan coba lagi.');
+                }
+
                 $nilai->update([
                     'bobot_tugas' => $request->bobot_tugas,
                     'bobot_quiz' => $request->bobot_quiz,
