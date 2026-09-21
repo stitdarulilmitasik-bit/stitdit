@@ -14,6 +14,7 @@ use App\Models\Jabatan;
 use App\Models\Akademik\KrsDetail;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\Kelas;
+use App\Models\Akademik\JadwalKuliah;
 use App\Models\Akademik\TahunAkademik;
 use App\Models\Mahasiswa;
 use App\Models\Dosen;
@@ -58,6 +59,9 @@ class KRSController extends Controller
 
         $data['available_matakuliah'] = MataKuliah::where('prodi_id', $data['krs']->mahasiswa->prodi_id)->get();
         $data['kelas'] = Kelas::all();
+        $data['jadwal_kuliah'] = JadwalKuliah::with(['kelas', 'dosen', 'waktuKuliah', 'ruang'])
+            ->whereIn('matkul_id', $data['available_matakuliah']->pluck('id'))
+            ->get();
         $data['dosens'] = Dosen::where('type', 1)->get();
 
         return view('master.akademik.krs-detail', $data, compact('user'));
@@ -181,8 +185,8 @@ class KRSController extends Controller
 
             $request->validate([
                 'mata_kuliah_id' => 'required|exists:mata_kuliahs,id',
-                'kelas_id' => 'nullable|exists:kelas,id',
-                'dosen_id' => 'nullable|exists:dosens,id',
+                'kelas_id' => 'required|exists:kelas,id',
+                'jadwal_kuliah_id' => 'required|exists:jadwal_kuliahs,id',
                 'notes' => 'nullable|string',
             ]);
 
@@ -197,7 +201,17 @@ class KRSController extends Controller
                 return redirect()->back();
             }
 
-            $mataKuliah = MataKuliah::find($request->mata_kuliah_id);
+            $mataKuliah = MataKuliah::findOrFail($request->mata_kuliah_id);
+            $jadwalKuliah = JadwalKuliah::with(['kelas', 'dosen'])
+                ->where('id', $request->jadwal_kuliah_id)
+                ->where('matkul_id', $mataKuliah->id)
+                ->firstOrFail();
+
+            if (!$jadwalKuliah->kelas->contains('id', (int) $request->kelas_id)) {
+                throw new \Exception('Kelas yang dipilih tidak terdaftar pada jadwal mata kuliah tersebut.');
+            }
+
+            $dosenId = $jadwalKuliah->dosen_id;
 
             // Cek batas SKS
             if (!$krs->canAddMatakuliah($mataKuliah->sks)) {
@@ -213,7 +227,8 @@ class KRSController extends Controller
                 'krs_id' => $krs->id,
                 'matkul_id' => $request->mata_kuliah_id,
                 'kelas_id' => $request->kelas_id,
-                'dosen_id' => $request->dosen_id,
+                'jadwal_kuliah_id' => $jadwalKuliah->id,
+                'dosen_id' => $dosenId,
                 'sks' => $mataKuliah->sks,
                 'notes' => $request->notes,
                 'prasyarat_terpenuhi' => true, // TODO: Implementasi cek prasyarat
