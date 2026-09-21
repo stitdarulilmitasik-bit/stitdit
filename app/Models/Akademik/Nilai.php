@@ -204,9 +204,16 @@ class Nilai extends Model
             'kehadiran' => $this->kehadiran,
         ];
 
-        $this->nilai_angka = round(collect($scores)->sum(
-            fn ($score, $key) => $score === null ? 0 : ((float) $score * $weights[$key] / 100)
-        ), 2);
+        // Collection::sum() pada Laravel 12 memanggil callback hanya dengan nilai item,
+        // sehingga jangan mengandalkan parameter $key di callback.
+        $nilaiAkhir = 0.0;
+        foreach ($scores as $key => $score) {
+            $nilaiAkhir += $score === null
+                ? 0
+                : ((float) $score * $weights[$key] / 100);
+        }
+
+        $this->nilai_angka = round($nilaiAkhir, 2);
 
         $this->assignGradeFromScore();
         $this->mutu_x_sks = round((float) $this->nilai_mutu * (float) $this->sks, 2);
