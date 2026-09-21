@@ -238,7 +238,7 @@ class AkademikOperasionalController extends Controller
         $pertemuan = max(1, min(16, (int)$request->input('pertemuan', 1)));
 
         // Pastikan KRS yang sudah disetujui memiliki record nilai.
-        KRS::whereIn('status', ['approved', 'Disetujui'])
+        KRS::where('status', 'Disetujui')
             ->with('details')
             ->get()
             ->each(fn($krs) => $krs->syncNilai());
@@ -351,7 +351,7 @@ class AkademikOperasionalController extends Controller
     {
         $dosen = $this->dosen();
         $krs = KRS::where('code',$code)->whereHas('details', fn($q) => $q->where('dosen_id',$dosen->id))->firstOrFail();
-        abort_unless(in_array($krs->getRawOriginal('status'), ['Diajukan', 'diajukan', 'submitted'], true), 403, 'KRS tidak sedang menunggu persetujuan.');
+        abort_unless($krs->getRawOriginal('status') === 'Diajukan', 403, 'KRS tidak sedang menunggu persetujuan.');
         $request->validate(['notes'=>'required|string']);
         $krs->reject($request->notes);
         return back()->with('success','KRS berhasil ditolak.');
