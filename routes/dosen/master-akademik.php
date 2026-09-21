@@ -74,6 +74,7 @@ Route::patch('/akademik/krs/{code}',[App\Http\Controllers\Master\Akademik\KRSCon
 Route::delete('/akademik/krs/{code}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'deleteKRS'])->name('akademik.krs-delete');
 Route::post('/akademik/krs/{code}/add-matakuliah',[App\Http\Controllers\Master\Akademik\KRSController::class, 'addMatakuliah'])->name('akademik.krs-add-matakuliah');
 Route::delete('/akademik/krs/{code}/remove-matakuliah/{detailId}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'removeMatakuliah'])->name('akademik.krs-remove-matakuliah');
+Route::patch('/akademik/krs/{code}/matakuliah/{detailId}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'updateMatakuliah'])->name('akademik.krs-update-matakuliah');
 Route::post('/akademik/krs/{code}/approve',[App\Http\Controllers\Master\Akademik\KRSController::class, 'approveKRS'])->name('akademik.krs-approve');
 Route::post('/akademik/krs/{code}/reject',[App\Http\Controllers\Master\Akademik\KRSController::class, 'rejectKRS'])->name('akademik.krs-reject');
 Route::post('/akademik/krs/{code}/publish',[App\Http\Controllers\Master\Akademik\KRSController::class, 'publishKRS'])->name('akademik.krs-publish');
