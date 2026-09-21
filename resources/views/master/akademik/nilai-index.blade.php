@@ -876,10 +876,10 @@
 
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
-                const mahasiswaText = row.cells[1].textContent.toLowerCase();
-                const mataKuliahText = row.cells[2].textContent.toLowerCase();
-                const tahunAkademikText = row.cells[3].textContent.toLowerCase();
-                const gradeText = row.cells[5].textContent.toLowerCase();
+                const mahasiswaText = (row.dataset.mahasiswa || '').toLowerCase();
+                const mataKuliahText = (row.dataset.mataKuliah || '').toLowerCase();
+                const tahunAkademikText = (row.dataset.tahunAkademik || '').toLowerCase();
+                const gradeText = (row.dataset.grade || '').toLowerCase();
 
                 let showRow = true;
 
