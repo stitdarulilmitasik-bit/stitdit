@@ -361,7 +361,42 @@ class NilaiController extends Controller
             $nilai->hitungNilaiAkhir();
             $nilai->refresh();
 
-            // Pastikan bobot sudah lengkap 100% (termasuk kehadiran 20%).
+            // Kehadiran ditetapkan 20%. Lima komponen akademik harus
+            // bersama-sama menjadi 80%. Data lama yang masih memakai
+            // bobot akademik 95% akan dinormalisasi menjadi 80%.
+            $bobotKehadiran = (float) ($nilai->bobot_kehadiran ?? 20);
+            $bobotAkademik = (float) $nilai->bobot_tugas
+                + (float) $nilai->bobot_quiz
+                + (float) $nilai->bobot_uts
+                + (float) $nilai->bobot_uas
+                + (float) $nilai->bobot_praktikum;
+
+            if (abs($bobotKehadiran - 20) <= 0.01 && abs($bobotAkademik - 95) <= 0.01) {
+                $skala = 80 / $bobotAkademik;
+
+                $nilai->bobot_tugas = round((float) $nilai->bobot_tugas * $skala, 2);
+                $nilai->bobot_quiz = round((float) $nilai->bobot_quiz * $skala, 2);
+                $nilai->bobot_uts = round((float) $nilai->bobot_uts * $skala, 2);
+                $nilai->bobot_uas = round((float) $nilai->bobot_uas * $skala, 2);
+                $nilai->bobot_praktikum = round((float) $nilai->bobot_praktikum * $skala, 2);
+
+                // Koreksi pembulatan pada komponen terakhir agar tepat 80%.
+                $jumlahAkademikBaru = (float) $nilai->bobot_tugas
+                    + (float) $nilai->bobot_quiz
+                    + (float) $nilai->bobot_uts
+                    + (float) $nilai->bobot_uas
+                    + (float) $nilai->bobot_praktikum;
+
+                $nilai->bobot_praktikum = round(
+                    (float) $nilai->bobot_praktikum + (80 - $jumlahAkademikBaru),
+                    2
+                );
+                $nilai->bobot_kehadiran = 20;
+                $nilai->saveQuietly();
+                $nilai->refresh();
+            }
+
+            // Validasi akhir: bobot akademik 80% + kehadiran 20% = 100%.
             $totalBobot = (float) $nilai->bobot_tugas
                 + (float) $nilai->bobot_quiz
                 + (float) $nilai->bobot_uts
@@ -370,7 +405,7 @@ class NilaiController extends Controller
                 + (float) $nilai->bobot_kehadiran;
 
             if (abs($totalBobot - 100) > 0.01) {
-                Alert::error('Error', 'Nilai belum lengkap. Total bobot harus 100%. Saat ini: ' . $totalBobot . '%');
+                Alert::error('Error', 'Nilai belum lengkap. Total bobot harus 100%. Saat ini: ' . $totalBobot . '%. Bobot akademik harus 80% dan kehadiran 20%.');
                 return redirect()->back();
             }
 
