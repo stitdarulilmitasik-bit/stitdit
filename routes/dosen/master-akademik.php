@@ -31,6 +31,10 @@ Route::delete('/akademik/kurikulum/{code}',[App\Http\Controllers\Master\Akademik
 
 // Mata Kuliah
 Route::get('/akademik/mata-kuliah',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'renderMataKuliah'])->name('akademik.mata-kuliah-render');
+Route::get('/akademik/mata-kuliah/export-excel',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'exportMataKuliahExcel'])->name('akademik.mata-kuliah-export-excel');
+Route::get('/akademik/mata-kuliah/export-full-excel',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'exportMataKuliahFullExcel'])->name('akademik.mata-kuliah-export-full-excel');
+Route::get('/akademik/mata-kuliah/import-template',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'downloadMataKuliahImportTemplate'])->name('akademik.mata-kuliah-import-template');
+Route::post('/akademik/mata-kuliah/import-excel',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'importMataKuliahExcel'])->name('akademik.mata-kuliah-import-excel');
 Route::post('/akademik/mata-kuliah',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'handleMataKuliah'])->name('akademik.mata-kuliah-handle');
 Route::patch('/akademik/mata-kuliah/{code}',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'updateMataKuliah'])->name('akademik.mata-kuliah-update');
 Route::delete('/akademik/mata-kuliah/{code}',[App\Http\Controllers\Master\Akademik\MataKuliahController::class, 'deleteMataKuliah'])->name('akademik.mata-kuliah-delete');
