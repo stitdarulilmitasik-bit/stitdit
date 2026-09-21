@@ -150,7 +150,11 @@ class KRSController extends Controller
                 'periode_mulai' => $request->periode_mulai,
                 'periode_selesai' => $request->periode_selesai,
                 'notes' => $request->notes,
-                'status' => $request->status ?? $krs->status,
+                'status' => $request->status ? match ($request->status) {
+                    'Draft' => 'draft', 'Diajukan' => 'submitted', 'Disetujui' => 'approved',
+                    'Ditolak' => 'rejected', 'Dipublish' => 'published', 'Dikunci' => 'locked',
+                    default => $request->status,
+                } : $krs->status,
                 'updated_by' => Auth::id(),
             ]);
 
@@ -392,7 +396,7 @@ class KRSController extends Controller
 
             $krs = KRS::where('code', $code)->firstOrFail();
 
-            if ($krs->status !== 'Draft') {
+            if ($krs->status !== 'draft') {
                 Alert::error('Error', 'Hanya KRS dengan status Draft yang dapat dihapus');
                 return redirect()->back();
             }
@@ -479,7 +483,7 @@ class KRSController extends Controller
     public function publishKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if (!in_array($krs->status, ['Disetujui','Diajukan'])) {
+        if (!in_array($krs->status, ['approved','submitted'], true)) {
             return redirect()->back()->with('error','KRS belum siap dipublish.');
         }
         $krs->update(['status'=>'Dipublish']);
@@ -489,7 +493,9 @@ class KRSController extends Controller
     public function lockKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if ($krs->status !== 'Disetujui') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
+        if ($krs->status !== 'approved') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
+        $krs->update(['status' => 'locked']);
+        return redirect()->back()->with('success','KRS berhasil dikunci. Status menjadi Dikunci.');
         return redirect()->back()->with('success','KRS berstatus disetujui dan tidak dapat diedit.');
     }
 
@@ -509,7 +515,7 @@ class KRSController extends Controller
             $krsList = KRS::whereIn('code', $ids)->get();
 
             foreach ($krsList as $krs) {
-                if ($krs->status !== 'Diajukan') {
+                if ($krs->status !== 'submitted') {
                     $skipped++;
                     continue;
                 }
