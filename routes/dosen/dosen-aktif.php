@@ -22,6 +22,7 @@ Route::group(['prefix' => 'dosen', 'middleware' => ['checkUser:Dosen Aktif', 'do
     Route::patch('/akademik/nilai-operasional/{code}',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'updateNilai'])->name('akademik.nilai-operasional.update');
 
     Route::get('/akademik/kehadiran',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'kehadiran'])->name('akademik.kehadiran');
+    Route::get('/akademik/kehadiran/{mahasiswaId}/pdf',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'dosenKehadiranPdf'])->name('akademik.kehadiran.pdf');
     Route::post('/akademik/kehadiran',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'simpanKehadiran'])->name('akademik.kehadiran.store');
 
     Route::get('/akademik/krs-operasional',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'krs'])->name('akademik.krs-operasional');
