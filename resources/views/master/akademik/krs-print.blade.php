@@ -45,6 +45,18 @@
 </head>
 <body>
 @php
+    // Data identitas mahasiswa untuk report KRS.
+    $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? '-';
+    $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
+    $tahunMasuk = '-';
+    if ($tahunMasukRaw !== null && $tahunMasukRaw !== '') {
+        $tahunMasukRaw = trim((string) $tahunMasukRaw);
+        $tahunMasuk = preg_match('/^\\d{2}$/', $tahunMasukRaw)
+            ? (string) (2000 + (int) $tahunMasukRaw)
+            : $tahunMasukRaw;
+    }
+    $dosenWali = $krs->dosenPA ?? null;
+
     $logo = null;
     $logoCandidates = [
         storage_path('app/public/images/logo/logo-vert.png'),
@@ -99,12 +111,12 @@
             <td class="label" style="padding-left:25px;">Program Studi</td><td class="colon">:</td><td>{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">NIM</td><td class="colon">:</td><td>{{ $krs->mahasiswa->nim }}</td>
-            <td class="label" style="padding-left:25px;">Tahun Masuk</td><td class="colon">:</td><td>{{ $krs->mahasiswa->angkatan ?? '-' }}</td>
+            <td class="label">NIM</td><td class="colon">:</td><td>{{ $nim }}</td>
+            <td class="label" style="padding-left:25px;">Tahun Masuk</td><td class="colon">:</td><td>{{ $tahunMasuk }}</td>
         </tr>
         <tr>
             <td class="label">Semester</td><td class="colon">:</td><td>{{ $krs->semester }}</td>
-            <td class="label" style="padding-left:25px;">Dosen Wali</td><td class="colon">:</td><td>{{ $krs->dosenWali->name ?? $krs->dosenPA->name ?? '-' }}</td>
+            <td class="label" style="padding-left:25px;">Dosen Wali</td><td class="colon">:</td><td>{{ $dosenWali->name ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label">Status KRS</td><td class="colon">:</td><td><span class="status-badge">{{ strtoupper($krs->status) }}</span></td>
@@ -221,8 +233,8 @@
             </td>
             <td class="signature-cell">
                 <div class="signature-title">Dosen Pembimbing Akademik</div>
-                <div class="signature-name">{{ $krs->dosenWali->name ?? $krs->dosenPA->name ?? '[Nama Dosen PA]' }}</div>
-                <div class="signature-nip">NIDN. {{ $krs->dosenWali->nidn ?? $krs->dosenPA->nidn ?? '[NIDN Dosen PA]' }}</div>
+                <div class="signature-name">{{ $dosenWali->name ?? '[Nama Dosen PA]' }}</div>
+                <div class="signature-nip">NIDN. {{ $dosenWali->nidn ?? '[NIDN Dosen PA]' }}</div>
                 @if ($krs->approved_at)
                     <div style="font-size:7.5pt;margin-top:4px;">Disetujui: {{ $krs->approved_at->format('d/m/Y H:i') }}</div>
                 @endif
