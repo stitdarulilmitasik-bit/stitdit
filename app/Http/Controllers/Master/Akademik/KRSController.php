@@ -479,17 +479,17 @@ class KRSController extends Controller
     public function publishKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if (!in_array($krs->status, ['approved','submitted'])) {
+        if (!in_array($krs->status, ['Disetujui','Diajukan'])) {
             return redirect()->back()->with('error','KRS belum siap dipublish.');
         }
-        $krs->update(['status'=>'published']);
+        $krs->update(['status'=>'Dipublish']);
         return redirect()->back()->with('success','KRS berhasil dipublish.');
     }
 
     public function lockKRS($code)
     {
         $krs = KRS::where('code',$code)->firstOrFail();
-        if ($krs->status !== 'approved') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
+        if ($krs->status !== 'Disetujui') return redirect()->back()->with('error','KRS harus disetujui terlebih dahulu.');
         return redirect()->back()->with('success','KRS berstatus disetujui dan tidak dapat diedit.');
     }
 
@@ -509,7 +509,7 @@ class KRSController extends Controller
             $krsList = KRS::whereIn('code', $ids)->get();
 
             foreach ($krsList as $krs) {
-                if ($krs->status !== 'submitted') {
+                if ($krs->status !== 'Diajukan') {
                     $skipped++;
                     continue;
                 }
@@ -623,13 +623,13 @@ class KRSController extends Controller
                                 'notes' => 'Template KRS dari ' . ($source->mahasiswa->name ?? $source->code),
                                 'ipk_sebelumnya' => $source->ipk_sebelumnya,
                                 'max_sks' => $source->max_sks ?: 15,
-                                'status' => 'draft',
+                                'status' => 'Draft',
                                 'created_by' => Auth::id(),
                             ]
                         );
 
                         $targetStatus = $target->getRawOriginal('status');
-                        if (in_array($targetStatus, ['submitted', 'Diajukan', 'approved', 'Disetujui', 'published', 'Dipublish', 'locked', 'Dikunci'], true)) {
+                        if (in_array($targetStatus, ['Diajukan', 'Disetujui', 'Dipublish', 'Dikunci'], true)) {
                             $skippedTargets++;
                             continue;
                         }
