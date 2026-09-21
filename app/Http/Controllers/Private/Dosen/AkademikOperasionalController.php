@@ -278,7 +278,7 @@ class AkademikOperasionalController extends Controller
             'kehadiranMahasiswa',
             'tahunAkademik',
         ])
-            ->where('mata_kuliah_id', $mataKuliah->id)
+            ->where('matkul_id', $mataKuliah->id)
             ->where('semester', $semester)
             ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
             ->get()
