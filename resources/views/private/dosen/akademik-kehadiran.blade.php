@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
             <h2 class="mb-1">Input Kehadiran Mahasiswa</h2>
-            <p class="text-muted mb-0">Catat kehadiran mahasiswa berdasarkan semester dan pertemuan.</p>
+            <p class="text-muted mb-0">Catat kehadiran per mahasiswa dan pertemuan. Persentase hadir akan dihitung otomatis dan menyumbang 20% nilai akhir.</p>
         </div>
         <a href="{{ route('dosen.akademik.nilai-render') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i> Kembali ke Nilai Mahasiswa
@@ -43,7 +43,7 @@
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <div class="alert alert-info mb-0 w-100 py-2">
-                        Pilih semester dan pertemuan untuk menampilkan status kehadiran.
+                        Kehadiran dihitung kumulatif per mata kuliah. Nilai kehadiran menjadi <strong>20%</strong> dari nilai akhir semester; 80% berasal dari komponen nilai akademik.
                     </div>
                 </div>
             </div>
@@ -61,6 +61,7 @@
                         <th>Semester</th>
                         <th>Pertemuan</th>
                         <th>Status Kehadiran</th>
+                        <th>Rekap Kehadiran</th>
                         <th>Simpan</th>
                     </tr>
                 </thead>
@@ -95,7 +96,16 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td>
+                        <td class="text-nowrap">
+                            @php
+                                $totalPertemuan = $existing->count();
+                                $jumlahHadir = $existing->where('status', 'Hadir')->count();
+                                $persentase = $totalPertemuan > 0 ? round(($jumlahHadir / $totalPertemuan) * 100, 2) : 0;
+                            @endphp
+                            <div><strong>{{ $persentase }}%</strong></div>
+                            <small class="text-muted">{{ $jumlahHadir }}/{{ $totalPertemuan }} hadir</small>
+                        </td>
+                        <td class="text-nowrap">
                             <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route('dosen.akademik.kehadiran.store') }}">
                                 @csrf
                                 <input type="hidden" name="nilai_id" value="{{ $n->id }}">
@@ -108,7 +118,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center py-4 text-muted">Belum ada data mahasiswa dari KRS/nilai yang diampu.</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-muted">Belum ada data mahasiswa dari KRS/nilai yang diampu.</td></tr>
                 @endforelse
                 </tbody>
             </table>
