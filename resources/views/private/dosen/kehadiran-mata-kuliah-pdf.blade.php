@@ -88,14 +88,13 @@
         <col style="width:14%">
         <col style="width:29%">
         @for($i=1;$i<=16;$i++)<col style="width:1.9%">@endfor
-        <col style="width:3.6%"><col style="width:3.6%"><col style="width:3.6%"><col style="width:3.6%">
-        <col style="width:4.6%">
+        <col style="width:5.6%">
     </colgroup>
     <thead>
         <tr>
             <th>No.</th><th>NIM</th><th>Nama Mahasiswa</th>
             @for($i=1;$i<=16;$i++)<th>P{{ $i }}</th>@endfor
-            <th>Hadir</th><th>Izin</th><th>Sakit</th><th>Alpa</th><th>% Hadir</th>
+            <th>% Hadir</th>
         </tr>
     </thead>
     <tbody>
@@ -123,7 +122,6 @@
                     @else—@endif
                 </td>
             @endfor
-            <td class="center">{{ $hadir }}</td><td class="center">{{ $izin }}</td><td class="center">{{ $sakit }}</td><td class="center">{{ $alpa }}</td>
             <td class="center pct"><strong>{{ number_format($persentase,2) }}%</strong></td>
         </tr>
     @endforeach
