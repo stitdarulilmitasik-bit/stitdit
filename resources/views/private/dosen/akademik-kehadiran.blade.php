@@ -88,7 +88,6 @@
                     @endphp
                     @foreach($rows as $index => $n)
                     @php
-                        $nim = $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-';
                         $existing = $n->kehadiranMahasiswa->keyBy('pertemuan');
                         $currentAttendance = $existing[(int)$pertemuan] ?? null;
                         $totalPertemuan = $existing->count();
@@ -144,10 +143,10 @@
                             </form>
                         </td>
                     </tr>
+                    @endforeach
                 @empty
                     <tr><td colspan="9" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
                 @endforelse
-                    @endforeach
                 </tbody>
             </table>
         </div>
