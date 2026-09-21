@@ -172,8 +172,11 @@ class KHS extends Model
 
         // Hitung statistik semester
         $this->total_sks_tempuh = $nilaiSemester->sum('sks');
-        $this->total_sks_lulus = $nilaiSemester->where('nilai_mutu', '>=', 2.00)->sum('sks');
-        $this->total_mutu = $nilaiSemester->sum('mutu_x_sks');
+        $this->total_sks_lulus = $nilaiSemester
+            ->filter(fn ($nilai) => $nilai->nilai_mutu_efektif >= 2.00)
+            ->sum('sks');
+        $this->total_mutu = $nilaiSemester
+            ->sum(fn ($nilai) => $nilai->mutu_x_sks_efektif);
         $this->ips = $this->total_sks_tempuh > 0 ?
             round($this->total_mutu / $this->total_sks_tempuh, 2) : 0.00;
 
@@ -202,8 +205,11 @@ class KHS extends Model
             ->whereIn('status', ['Published', 'Locked'])
             ->get();
 
-        $this->total_sks_kumulatif = $semuaNilai->where('nilai_mutu', '>=', 2.00)->sum('sks');
-        $this->total_mutu_kumulatif = $semuaNilai->sum('mutu_x_sks');
+        $this->total_sks_kumulatif = $semuaNilai
+            ->filter(fn ($nilai) => $nilai->nilai_mutu_efektif >= 2.00)
+            ->sum('sks');
+        $this->total_mutu_kumulatif = $semuaNilai
+            ->sum(fn ($nilai) => $nilai->mutu_x_sks_efektif);
         $this->ipk = $this->total_sks_kumulatif > 0
             ? round($this->total_mutu_kumulatif / $this->total_sks_kumulatif, 2)
             : 0.00;
