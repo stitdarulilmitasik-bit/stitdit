@@ -689,11 +689,16 @@
             const dosenSelect = document.getElementById('dosen_id');
             if (!mkSelect || !dosenSelect) return;
 
-            const dosens = @json($dosens->keyBy('id')->map(fn ($d) => [
-                'id' => $d->id,
-                'nidn' => $d->nidn,
-                'name' => $d->name,
-            ]));
+            @php
+                $dosensForJs = $dosens->keyBy('id')->map(function ($d) {
+                    return [
+                        'id' => $d->id,
+                        'nidn' => $d->nidn,
+                        'name' => $d->name,
+                    ];
+                });
+            @endphp
+            const dosens = @json($dosensForJs);
 
             function refreshDosenPengampu() {
                 const selected = mkSelect.options[mkSelect.selectedIndex];
