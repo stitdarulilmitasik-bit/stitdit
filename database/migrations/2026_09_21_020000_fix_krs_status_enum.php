@@ -5,13 +5,23 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * KRS sebelumnya menggunakan ENUM status berbahasa Indonesia.
-     * Status aplikasi sekarang menggunakan nilai kanonik berbahasa Inggris.
-     */
     public function up(): void
     {
-        // Pastikan seluruh nilai lama sudah dinormalisasi sebelum mempersempit/menata ENUM.
+        // Perluas ENUM terlebih dahulu agar nilai kanonik dapat ditulis.
+        DB::statement("ALTER TABLE k_r_s MODIFY status ENUM(
+            'Draft',
+            'Diajukan',
+            'Disetujui',
+            'Ditolak',
+            'draft',
+            'submitted',
+            'approved',
+            'rejected',
+            'published',
+            'locked'
+        ) NOT NULL DEFAULT 'draft'");
+
+        // Konversi data lama ke status kanonik.
         DB::statement("UPDATE k_r_s SET status = CASE
             WHEN status = 'Draft' THEN 'draft'
             WHEN status = 'Diajukan' THEN 'submitted'
@@ -20,6 +30,7 @@ return new class extends Migration
             ELSE status
         END");
 
+        // Setelah data dinormalisasi, batasi ENUM ke nilai kanonik.
         DB::statement("ALTER TABLE k_r_s MODIFY status ENUM(
             'draft',
             'submitted',
@@ -32,6 +43,19 @@ return new class extends Migration
 
     public function down(): void
     {
+        DB::statement("ALTER TABLE k_r_s MODIFY status ENUM(
+            'Draft',
+            'Diajukan',
+            'Disetujui',
+            'Ditolak',
+            'draft',
+            'submitted',
+            'approved',
+            'rejected',
+            'published',
+            'locked'
+        ) NOT NULL DEFAULT 'Draft'");
+
         DB::statement("UPDATE k_r_s SET status = CASE
             WHEN status = 'draft' THEN 'Draft'
             WHEN status = 'submitted' THEN 'Diajukan'
