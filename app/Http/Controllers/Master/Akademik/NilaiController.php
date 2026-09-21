@@ -138,18 +138,6 @@ class NilaiController extends Controller
                 'krs_detail_id' => 'nullable|exists:krs_details,id',
             ]);
 
-            // Cek apakah nilai untuk kombinasi ini sudah ada
-            $existingNilai = Nilai::where('mahasiswa_id', $request->mahasiswa_id)
-                ->where('matkul_id', $request->matkul_id)
-                ->where('taka_id', $request->tahun_akademik_id)
-                ->where('semester', $request->semester)
-                ->first();
-
-            if ($existingNilai) {
-                Alert::error('Error', 'Nilai untuk kombinasi mahasiswa, mata kuliah, tahun akademik, dan semester ini sudah ada');
-                return redirect()->back()->withInput();
-            }
-
             $mataKuliah = MataKuliah::findOrFail($request->matkul_id);
 
             // Dosen hanya boleh membuat nilai untuk mata kuliah yang diampunya.
@@ -162,20 +150,40 @@ class NilaiController extends Controller
                 abort_unless($allowed, 403, 'Mata kuliah bukan mata kuliah yang Anda ampu.');
             }
 
-            $nilai = Nilai::create([
-                'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
-                'mahasiswa_id' => $request->mahasiswa_id,
-                'matkul_id' => $request->matkul_id,
-                'taka_id' => $request->tahun_akademik_id,
-                'semester' => $request->semester,
-                'krs_detail_id' => $request->krs_detail_id,
-                'sks' => $mataKuliah->sks,
-                'created_by' => $actor,
-            ]);
+            /*
+             * Kombinasi mahasiswa + mata kuliah + tahun akademik + semester
+             * adalah UNIQUE di tabel nilais. Gunakan firstOrCreate agar
+             * pengiriman form ganda / request bersamaan tidak mencoba INSERT
+             * baris kedua dan memicu SQLSTATE 23000.
+             */
+            $nilai = Nilai::firstOrCreate(
+                [
+                    'mahasiswa_id' => $request->mahasiswa_id,
+                    'matkul_id' => $request->matkul_id,
+                    'taka_id' => $request->tahun_akademik_id,
+                    'semester' => $request->semester,
+                ],
+                [
+                    'code' => 'NIL-' . date('Ymd') . '-' . Str::random(8),
+                    'krs_detail_id' => $request->krs_detail_id,
+                    'sks' => $mataKuliah->sks,
+                    'created_by' => $actor,
+                ]
+            );
 
             DB::commit();
-            Alert::success('Success', 'Data nilai berhasil dibuat');
-            return redirect()->route(Auth::user()->prefix . 'akademik.nilai-view', $nilai->code);
+
+            if ($nilai->wasRecentlyCreated) {
+                Alert::success('Success', 'Data nilai berhasil dibuat');
+            } else {
+                Alert::info('Informasi', 'Data nilai untuk kombinasi tersebut sudah ada. Sistem membuka data yang sudah tersedia.');
+            }
+
+            $prefix = $this->isDosen()
+                ? 'dosen.'
+                : (Auth::user()->prefix ?? '');
+
+            return redirect()->route($prefix . 'akademik.nilai-view', $nilai->code);
 
         } catch (\Exception $e) {
             DB::rollback();
