@@ -11,7 +11,7 @@ Repository -> Settings -> Secrets and variables -> Actions -> New repository sec
 - `BYETHOST_FTP_PASSWORD` = FTP password
 - `BYETHOST_FTP_PORT` = `21`
 
-The workflow deploys the Laravel project to `/htdocs/` whenever code is pushed to `main`.
+The workflow deploys the Laravel project to `/httpdocs/` whenever code is pushed to `main`.
 
 ## First-time ByetHost setup
 
@@ -28,7 +28,7 @@ The workflow deploys the Laravel project to `/htdocs/` whenever code is pushed t
    - `CACHE_STORE=file`
    - `QUEUE_CONNECTION=database` only if the queue tables and a worker/cron are available
 5. Keep the Laravel project under `htdocs`. The repository's root `.htaccess` forwards web requests to `public/`.
-6. If ByetHost gives a different FTP document-root directory, change `server-dir` in the workflow accordingly.
+6. The current ByetHost document root identified for this account is `/httpdocs/`. If the FTP account exposes that directory as the FTP root instead, use `server-dir: /`.
 
 ## Important
 
