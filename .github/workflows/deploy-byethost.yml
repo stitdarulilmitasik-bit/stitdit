@@ -61,7 +61,7 @@ jobs:
           password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
           protocol: ftp
           port: ${{ secrets.BYETHOST_FTP_PORT || 21 }}
-          server-dir: /htdocs/
+          server-dir: /httpdocs/
           local-dir: ./
           dangerous-clean-slate: false
           exclude: |
@@ -71,6 +71,5 @@ jobs:
             **/tests/**
             **/.env
             **/.env.*
-            !.env.example
-            **/storage/app/public/**
+            **/storage/app/public/*
             **/storage/logs/*.log
