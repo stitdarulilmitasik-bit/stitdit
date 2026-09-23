@@ -8,8 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Database production may already have this enum updated manually.
-        // This migration keeps fresh and existing installations consistent.
+        // Keep existing installations consistent with semester values 1-8.
         Schema::table('tahun_akademiks', function (Blueprint $table) {
             $table->enum('type', ['1', '2', '3', '4', '5', '6', '7', '8'])
                 ->change();
@@ -18,7 +17,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Do not automatically restore Ganjil/Genap because existing
-        // semester 1-8 records cannot be safely converted without data loss.
+        // Keep semester 1-8 values on rollback to avoid data loss.
     }
 };
