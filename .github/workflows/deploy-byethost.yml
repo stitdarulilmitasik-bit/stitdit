@@ -53,6 +53,22 @@ jobs:
           touch storage/logs/.gitkeep
           touch storage/app/public/.gitkeep
 
+      - name: Prepare ByetHost document root
+        run: |
+          rm -rf deploy
+          mkdir -p deploy
+
+          # Laravel application files stay in the same document-root tree.
+          # public/* is moved to the FTP document root so index.php can be served directly.
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='tests/' --exclude='.env' --exclude='.env.*' --exclude='deploy/' ./ deploy/
+          rsync -a public/ deploy/
+          rm -rf deploy/public
+
+          # The public .htaccess must be the document-root .htaccess.
+          test -f deploy/index.php
+          test -f deploy/.htaccess
+          test -f deploy/vendor/autoload.php
+
       - name: Deploy to ByetHost via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -61,8 +77,8 @@ jobs:
           password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
           protocol: ftp
           port: ${{ secrets.BYETHOST_FTP_PORT || 21 }}
-          server-dir: /httpdocs/
-          local-dir: ./
+          server-dir: /htdocs/
+          local-dir: ./deploy/
           dangerous-clean-slate: false
           exclude: |
             **/.git*
