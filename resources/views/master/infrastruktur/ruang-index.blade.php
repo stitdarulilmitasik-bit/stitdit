@@ -111,41 +111,20 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .table-responsive table,
-            .table-responsive thead,
-            .table-responsive tbody,
-            .table-responsive th,
-            .table-responsive td,
-            .table-responsive tr {
-                display: block;
-                width: 100%;
-            }
-            .table-responsive thead {
-                display: none;
-            }
-            .table-responsive tr {
-                margin-bottom: 1rem;
-                border-bottom: 2px solid #eee;
-            }
-            .table-responsive td {
-                position: relative;
-                padding-left: 50%;
-                text-align: left !important;
-                border: none;
-                border-bottom: 1px solid #eee;
-            }
-            .table-responsive td:before {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 48%;
-                padding-left: 1rem;
-                white-space: nowrap;
-                font-weight: bold;
-                color: #888;
-                content: attr(data-label);
-            }
+                /* Responsive table: keep dense admin tables horizontally scrollable on mobile */
+        .table-responsive { width:100%; overflow-x:auto; overflow-y:visible; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+        .table-responsive > .table { width:max-content; min-width:100%; margin-bottom:0; }
+        .table-responsive .table th, .table-responsive .table td { white-space:nowrap; }
+        .table-responsive .table .btn-group { display:inline-flex; flex-wrap:nowrap; white-space:nowrap; }
+        .table-responsive .table .btn { flex:0 0 auto; }
+        @media (max-width:768px) {
+            .card-body { padding:1rem; }
+            .table-responsive { margin-left:-0.25rem; margin-right:-0.25rem; width:calc(100% + 0.5rem); }
+            .table-responsive > .table { min-width:760px; }
+            .table-responsive .table th, .table-responsive .table td { padding:0.55rem 0.65rem; font-size:0.875rem; vertical-align:middle; }
+            .table-responsive .table th { white-space:nowrap; }
+            .table-responsive .table td[data-label]::before { content:none !important; }
+            .table-responsive .table .btn-group .btn { padding:0.3rem 0.5rem; }
         }
     </style>
 @endsection
@@ -479,7 +458,7 @@
                         previous: "Sebelumnya"
                     }
                 },
-                responsive: true,
+                responsive: false,
                 pageLength: 10,
                 lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
             });
