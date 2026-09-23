@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tahun_akademiks', function (Blueprint $table) {
             $table->id();
             $table->string('name');                                         // NAMA
-            $table->enum('type', ['Ganjil', 'Genap']);                      // TIPE SEMESTER
+            $table->enum('type', ['1', '2', '3', '4', '5', '6', '7', '8']);                      // SEMESTER 1-8
             $table->string('code')->unique();                               // KODE
             $table->date('start_date');                                     // TANGGAL MULAI
             $table->date('ended_date');                                     // TANGGAL BERAKHIR
