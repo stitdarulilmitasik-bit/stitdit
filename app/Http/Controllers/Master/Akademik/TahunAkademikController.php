@@ -36,7 +36,7 @@ class TahunAkademikController extends Controller
 
             $request->validate([
                 'name' => 'required|string|max:255',
-                'type' => 'required|in:Ganjil,Genap',
+                'type' => 'required|in:1,2,3,4,5,6,7,8',
                 'start_date' => 'required|date',
                 'ended_date' => 'required|date|after:start_date',
                 'desc' => 'nullable|string',
@@ -75,7 +75,7 @@ class TahunAkademikController extends Controller
 
             $request->validate([
                 'name' => 'required|string|max:255',
-                'type' => 'required|in:Ganjil,Genap',
+                'type' => 'required|in:1,2,3,4,5,6,7,8',
                 'start_date' => 'required|date',
                 'ended_date' => 'required|date|after:start_date',
                 'desc' => 'nullable|string',
