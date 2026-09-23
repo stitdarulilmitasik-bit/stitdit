@@ -201,8 +201,14 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="type" class="form-label">Semester</label>
                                         <select class="form-select" name="type" id="type">
-                                            <option value="Ganjil">Ganjil</option>
-                                            <option value="Genap">Genap</option>
+                                            <option value="1">Semester 1</option>
+                                            <option value="2">Semester 2</option>
+                                            <option value="3">Semester 3</option>
+                                            <option value="4">Semester 4</option>
+                                            <option value="5">Semester 5</option>
+                                            <option value="6">Semester 6</option>
+                                            <option value="7">Semester 7</option>
+                                            <option value="8">Semester 8</option>
                                         </select>
                                         @error('type')
                                             <small class="text-danger">{{ $message }}</small>
@@ -361,8 +367,14 @@
                             <div class="mb-3">
                                 <label for="edit_type{{ $item->code }}" class="form-label">Semester</label>
                                 <select class="form-select" name="type" id="edit_type{{ $item->code }}">
-                                    <option value="Ganjil" {{ $item->type == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
-                                    <option value="Genap" {{ $item->type == 'Genap' ? 'selected' : '' }}>Genap</option>
+                                    <option value="1" {{ (string)$item->type === '1' ? 'selected' : '' }}>Semester 1</option>
+                                    <option value="2" {{ (string)$item->type === '2' ? 'selected' : '' }}>Semester 2</option>
+                                    <option value="3" {{ (string)$item->type === '3' ? 'selected' : '' }}>Semester 3</option>
+                                    <option value="4" {{ (string)$item->type === '4' ? 'selected' : '' }}>Semester 4</option>
+                                    <option value="5" {{ (string)$item->type === '5' ? 'selected' : '' }}>Semester 5</option>
+                                    <option value="6" {{ (string)$item->type === '6' ? 'selected' : '' }}>Semester 6</option>
+                                    <option value="7" {{ (string)$item->type === '7' ? 'selected' : '' }}>Semester 7</option>
+                                    <option value="8" {{ (string)$item->type === '8' ? 'selected' : '' }}>Semester 8</option>
                                 </select>
                                 @error('type')
                                     <small class="text-danger">{{ $message }}</small>
