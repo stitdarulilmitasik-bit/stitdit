@@ -199,7 +199,7 @@
                                         @enderror
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="type" class="form-label">Tipe Semester</label>
+                                        <label for="type" class="form-label">Semester</label>
                                         <select class="form-select" name="type" id="type">
                                             <option value="Ganjil">Ganjil</option>
                                             <option value="Genap">Genap</option>
@@ -260,12 +260,12 @@
                                             <div class="d-flex flex-column">
                                                 <span class="fw-bold">{{ $item->name }}</span>
                                                 @if($item->type)
-                                                    <small class="text-muted">{{ Str::limit($item->type) }}</small>
+                                                    <small class="text-muted">Semester {{ $item->type }}</small>
                                                 @endif
                                             </div>
                                         </td>
                                         <td data-label="Semester">
-                                            <span class="badge bg-light-primary text-primary">{{ $item->type }}</span>
+                                            <span class="badge bg-light-primary text-primary">Semester {{ $item->type }}</span>
                                         </td>
                                         <td data-label="Periode">
                                             <small>{{ \Carbon\Carbon::parse($item->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($item->ended_date)->format('d M Y') }}</small>
@@ -324,7 +324,7 @@
                                     <div class="list-group-item list-group-item-action">
                                         <div class="d-flex w-100 justify-content-between">
                                             <h6 class="mb-1">{{ $active->name }}</h6>
-                                            <small class="text-muted">{{ $active->type }}</small>
+                                            <small class="text-muted">Semester {{ $active->type }}</small>
                                         </div>
                                         <p class="mb-1">{{ Str::limit($active->desc, 50) }}</p>
                                         <small>{{ \Carbon\Carbon::parse($active->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($active->ended_date)->format('d M Y') }}</small>
@@ -359,7 +359,7 @@
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="edit_type{{ $item->code }}" class="form-label">Tipe Semester</label>
+                                <label for="edit_type{{ $item->code }}" class="form-label">Semester</label>
                                 <select class="form-select" name="type" id="edit_type{{ $item->code }}">
                                     <option value="Ganjil" {{ $item->type == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
                                     <option value="Genap" {{ $item->type == 'Genap' ? 'selected' : '' }}>Genap</option>
