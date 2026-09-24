@@ -439,7 +439,6 @@ class KRSController extends Controller
         $logoDataUri = null;
         $logoCandidates = [
             'images/logo/logo-vert.png',
-            'images/logo/logo_vert.png',
             'images/logo/logo-hori.png',
             'images/default/logo-vertical.png',
             'images/default/logo-horizontal.png',
