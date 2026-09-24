@@ -21,12 +21,21 @@
 
         .kop-table {
             width: 100%;
-            border-collapse: collapse;
+            border: 0 !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            background: transparent !important;
         }
 
+        .kop-table tr,
         .kop-table td {
-            border: 0;
+            border: 0 !important;
+            border-top: 0 !important;
+            border-right: 0 !important;
+            border-bottom: 0 !important;
+            border-left: 0 !important;
             padding: 0;
+            background: transparent !important;
             vertical-align: middle;
         }
 
@@ -96,11 +105,12 @@
 
         .student-info table {
             width: 100%;
+            border: 0 !important;
             border-collapse: collapse;
         }
 
         .student-info td {
-            border: 0;
+            border: 0 !important;
             padding: 2.5px 2px;
             vertical-align: middle;
         }
@@ -195,6 +205,7 @@
 
         .signatures {
             width: 100%;
+            border: 0 !important;
             border-collapse: collapse;
             page-break-inside: avoid;
             margin-top: 4px;
@@ -202,7 +213,7 @@
 
         .signatures td {
             width: 33.33%;
-            border: 0;
+            border: 0 !important;
             text-align: center;
             vertical-align: top;
             padding: 4px 8px;
