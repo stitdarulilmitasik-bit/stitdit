@@ -422,7 +422,7 @@ body.cms-front-page .page-body > .container-xl{
                     <div class="col-lg-5">
                         <div class="cms-hero-visual">
                             @if($hero?->image)
-                                <img src="{{ $hero->image }}" alt="{{ $hero->title ?: $webs->school_name }}">
+                                <img src="{{ stit_image_url($hero->image) }}" alt="{{ $hero->title ?: $webs->school_name }}">
                             @else
                                 <img src="{{ $webs->school_logo_hori }}" alt="Logo {{ $webs->school_name }}">
                             @endif
@@ -451,7 +451,7 @@ body.cms-front-page .page-body > .container-xl{
                     <div class="col-lg-6">
                         <div class="cms-about-image">
                             @if($about->image)
-                                <img src="{{ $about->image }}" alt="{{ $about->title }}">
+                                <img src="{{ stit_image_url($about->image) }}" alt="{{ $about->title }}">
                             @else
                                 <img src="{{ $webs->school_logo_hori }}" alt="Logo {{ $webs->school_name }}">
                             @endif
@@ -484,7 +484,7 @@ body.cms-front-page .page-body > .container-xl{
                     </div>
                     @if($section->image)
                     <div class="col-lg-5">
-                        <div class="cms-about-image"><img src="{{ $section->image }}" alt="{{ $section->title }}"></div>
+                        <div class="cms-about-image"><img src="{{ stit_image_url($section->image) }}" alt="{{ $section->title }}"></div>
                     </div>
                     @endif
                 </div>
