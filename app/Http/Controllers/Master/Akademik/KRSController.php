@@ -443,19 +443,46 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // KRS PDF uses a logo copied into the public tree so Dompdf can read it
-        // as a local file on shared hosting. Storage paths may be blocked by
-        // open_basedir and remote URLs may be disabled by the PDF renderer.
+        // Embed the STIT logo directly into the PDF HTML. Dompdf on shared hosting
+        // can fail to resolve public URLs even when the same image is visible in a browser.
+        // Try the public asset first, then the existing public storage asset, without
+        // calling disk->path()/realpath() (which can trigger open_basedir restrictions).
         $logoDataUri = null;
-        $logoPath = public_path('images/logo-vert1.png');
-        if (is_file($logoPath) && is_readable($logoPath)) {
+        $logoSources = [
+            [
+                'type' => 'file',
+                'path' => public_path('images/logo-vert1.png'),
+            ],
+            [
+                'type' => 'file',
+                'path' => base_path('public/images/logo-vert1.png'),
+            ],
+            [
+                'type' => 'storage',
+                'path' => 'images/logo/logo-vert1.png',
+            ],
+        ];
+
+        foreach ($logoSources as $source) {
             try {
-                $bytes = file_get_contents($logoPath);
+                if ($source['type'] === 'storage') {
+                    if (!Storage::disk('public')->exists($source['path'])) {
+                        continue;
+                    }
+                    $bytes = Storage::disk('public')->get($source['path']);
+                } else {
+                    if (!is_file($source['path']) || !is_readable($source['path'])) {
+                        continue;
+                    }
+                    $bytes = file_get_contents($source['path']);
+                }
+
                 if (is_string($bytes) && $bytes !== '') {
                     $logoDataUri = 'data:image/png;base64,' . base64_encode($bytes);
+                    break;
                 }
-            } catch (\Throwable $e) {
-                $logoDataUri = null;
+            } catch (\\Throwable $e) {
+                // Try the next known asset location.
             }
         }
 
