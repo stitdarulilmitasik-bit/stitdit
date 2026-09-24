@@ -12,7 +12,7 @@ if (! function_exists('stit_image_url')) {
         $path = trim((string) $path);
 
         if ($path === '') {
-            return asset(ltrim($fallback, '/'));
+            return url('/media/' . ltrim($fallback, '/'));
         }
 
         $path = str_replace('\\', '/', $path);
@@ -32,7 +32,7 @@ if (! function_exists('stit_image_url')) {
 
         // Never make the public site depend on an old/template image host.
         if (filter_var($path, FILTER_VALIDATE_URL)) {
-            return asset(ltrim($fallback, '/'));
+            return url('/media/' . ltrim($fallback, '/'));
         }
 
         if (Storage::disk('public')->exists($path)) {
@@ -47,7 +47,7 @@ if (! function_exists('stit_image_url')) {
         }
         return Storage::disk('public')->exists($fallback)
             ? asset('storage/' . $fallback)
-            : asset('storage/images/placeholders/news-placeholder.svg');
+            : url('/media/images/placeholders/news-placeholder.svg');
     }
 }
 
