@@ -66,14 +66,27 @@
 <tbody>
 @forelse($krs_list as $krs)
 @php
-    $mahasiswa = $krs->mahasiswa;
-    $tahunAkademik = $krs->tahunAkademik;
+    // Relasi dapat bernilai null jika data master mahasiswa/tahun akademik
+    // sudah dihapus atau terdapat data KRS lama yang orphan. Jangan biarkan
+    // satu record rusak membuat seluruh halaman KRS gagal dirender.
+    $krsMahasiswa = $krs->mahasiswa;
+    $krsTahunAkademik = $krs->tahunAkademik;
     $status = $krs->status ?? 'Draft';
 @endphp
 <tr>
 <td class="text-center" data-label="Pilih"><input type="checkbox" class="krs-checkbox" value="{{ $krs->code }}"></td>
-<td data-label="Mahasiswa"><div class="d-flex flex-column"><strong>{{ $krs->mahasiswa->name }}</strong><small class="text-muted">{{ $krs->mahasiswa->numb_nim }}</small></div></td>
-<td data-label="Tahun Akademik">{{ $krs->tahunAkademik->name }}</td>
+<td data-label="Mahasiswa">
+<div class="d-flex flex-column">
+<strong>{{ $krsMahasiswa?->name ?? 'Mahasiswa tidak ditemukan' }}</strong>
+<small class="text-muted">{{ $krsMahasiswa?->numb_nim ?? ('ID: ' . ($krs->mahasiswa_id ?? '-')) }}</small>
+</div>
+</td>
+<td data-label="Tahun Akademik">
+{{ $krsTahunAkademik?->name ?? 'Tahun akademik tidak ditemukan' }}
+@if(!$krsTahunAkademik)
+<small class="d-block text-danger">ID: {{ $krs->taka_id ?? '-' }}</small>
+@endif
+</td>
 <td class="text-center" data-label="Semester">{{ $krs->semester }}</td>
 <td class="text-center" data-label="Total SKS"><span class="badge bg-info">{{ $krs->total_sks }} SKS</span></td>
 <td class="text-center" data-label="Status">
@@ -128,7 +141,7 @@ $statusLabels=['Draft'=>'Draft','Diajukan'=>'Diajukan','Disetujui'=>'Disetujui',
 <div class="mb-3"><label class="form-label fw-bold">Mahasiswa Tujuan</label><input type="text" id="copyTargetSearch" class="form-control mb-2" placeholder="Cari NIM atau nama mahasiswa..." oninput="filterCopyTargets()">
 <div class="copy-target-list">
 @foreach($mahasiswa as $m)
-<label class="copy-target-item d-flex align-items-center gap-2 copy-target-row" data-search="{{ strtolower($m->numb_nim.' '.$m->name) }}"><input type="checkbox" class="copy-target-checkbox" value="{{ $m->id }}" data-name="{{ $m->name }}"><span><strong>{{ $m->numb_nim }}</strong> - {{ $m->name }}</span></label>
+<label class="copy-target-item d-flex align-items-center gap-2 copy-target-row" data-search="{{ strtolower(($m->numb_nim ?? '').' '.($m->name ?? '')) }}"><input type="checkbox" class="copy-target-checkbox" value="{{ $m->id }}" data-name="{{ $m->name }}"><span><strong>{{ $m->numb_nim ?? '-' }}</strong> - {{ $m->name ?? 'Nama tidak tersedia' }}</span></label>
 @endforeach
 </div></div>
 <div class="d-flex justify-content-between align-items-center"><span class="text-muted small" id="copySelectionSummary">0 KRS sumber · 0 mahasiswa tujuan</span><button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleCopyTargets()">Pilih/Batal Semua Mahasiswa</button></div>
