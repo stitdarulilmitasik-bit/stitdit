@@ -123,3 +123,46 @@ if (! function_exists('stit_gallery_image_url')) {
             : asset('images/profile/default.png');
     }
 }
+
+
+if (! function_exists('stit_image_url')) {
+    /**
+     * Resolve a generic site image URL with a safe default fallback.
+     */
+    function stit_image_url(?string $filename): string
+    {
+        $filename = $filename ? ltrim($filename, '/') : '';
+
+        if ($filename && filter_var($filename, FILTER_VALIDATE_URL)) {
+            return $filename;
+        }
+
+        $candidates = [];
+
+        if ($filename) {
+            $candidates = [
+                'images/' . $filename,
+                'images/gallery/' . $filename,
+                'images/galleries/' . $filename,
+                'gallery/' . $filename,
+                'galleries/' . $filename,
+            ];
+        }
+
+        foreach ($candidates as $path) {
+            try {
+                if (Storage::disk('public')->exists($path)) {
+                    return Storage::disk('public')->url($path);
+                }
+            } catch (\\Throwable $e) {
+                // Continue to public asset fallback.
+            }
+
+            if (file_exists(public_path($path))) {
+                return asset($path);
+            }
+        }
+
+        return asset('images/profile/default.png');
+    }
+}
