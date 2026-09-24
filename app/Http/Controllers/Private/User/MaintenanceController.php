@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Private\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use Throwable;
 
 class MaintenanceController extends Controller
@@ -95,7 +94,7 @@ class MaintenanceController extends Controller
      * ;, |, &, $, >, <, backtick dan newline ditolak agar input tidak
      * berubah menjadi arbitrary shell command.
      */
-    public function runComposer(Illuminate\Http\Request $request): RedirectResponse
+    public function runComposer(Request $request): RedirectResponse
     {
         $user = Auth::guard('web')->user();
 
