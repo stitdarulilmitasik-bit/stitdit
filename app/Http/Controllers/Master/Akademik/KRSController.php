@@ -440,20 +440,17 @@ class KRSController extends Controller
             ->orderBy('sort_order')
             ->first();
 
-        // Logo KRS: baca file fisik secara langsung lalu tanam sebagai Base64.
-        // File utama pada ByetHost: /htdocs/storage/app/public/images/logo/logo-vert1.png
+        // Logo KRS: gunakan path Laravel agar mematuhi open_basedir pada ByetHost.
+        // storage_path() akan menunjuk ke direktori aplikasi yang diizinkan hosting.
         $logoDataUri = null;
         $logoFileCandidates = array_values(array_unique(array_filter([
-            '/htdocs/storage/app/public/images/logo/logo-vert1.png',
             storage_path('app/public/images/logo/logo-vert1.png'),
             base_path('storage/app/public/images/logo/logo-vert1.png'),
-            public_path('storage/images/logo/logo-vert1.png'),
-            public_path('../storage/app/public/images/logo/logo-vert1.png'),
         ])));
 
         foreach ($logoFileCandidates as $candidate) {
-            $candidate = realpath($candidate) ?: $candidate;
-
+            // Jangan memeriksa /htdocs secara hard-code karena ByetHost
+            // menerapkan open_basedir ke /home/.../htdocs.
             if (!is_file($candidate) || !is_readable($candidate)) {
                 continue;
             }
@@ -482,7 +479,7 @@ class KRSController extends Controller
                 $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
                 break;
             } catch (\Throwable $e) {
-                // Coba kandidat lokasi berikutnya.
+                // Coba lokasi Laravel berikutnya.
             }
         }
 
