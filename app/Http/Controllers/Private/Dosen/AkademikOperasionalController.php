@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AkademikOperasionalController extends Controller
 {
@@ -251,7 +251,7 @@ class AkademikOperasionalController extends Controller
         $mahasiswa = $nilai->first()->mahasiswa;
         $webs = WebSetting::first();
 
-        $pdf = PDF::loadView('private.dosen.kehadiran-mahasiswa-pdf', [
+        $pdf = Pdf::loadView('private.dosen.kehadiran-mahasiswa-pdf', [
             'mahasiswa' => $mahasiswa,
             'nilai' => $nilai,
             'semester' => $semester,
@@ -288,7 +288,7 @@ class AkademikOperasionalController extends Controller
         abort_if($nilai->isEmpty(), 404, 'Belum ada mahasiswa untuk mata kuliah ini pada semester terpilih.');
 
         $webs = WebSetting::first();
-        $pdf = PDF::loadView('private.dosen.kehadiran-mata-kuliah-pdf', [
+        $pdf = Pdf::loadView('private.dosen.kehadiran-mata-kuliah-pdf', [
             'mataKuliah' => $mataKuliah,
             'nilai' => $nilai,
             'semester' => $semester,
@@ -396,7 +396,7 @@ class AkademikOperasionalController extends Controller
         $mahasiswa = $nilai->first()->mahasiswa;
         $webs = WebSetting::first();
 
-        $pdf = PDF::loadView('private.dosen.kehadiran-mahasiswa-pdf', [
+        $pdf = Pdf::loadView('private.dosen.kehadiran-mahasiswa-pdf', [
             'mahasiswa' => $mahasiswa,
             'nilai' => $nilai,
             'semester' => $semester,
@@ -431,7 +431,7 @@ class AkademikOperasionalController extends Controller
         abort_if($nilai->isEmpty(), 404, 'Belum ada mahasiswa untuk mata kuliah ini pada semester terpilih.');
 
         $webs = WebSetting::first();
-        $pdf = PDF::loadView('private.dosen.kehadiran-mata-kuliah-pdf', [
+        $pdf = Pdf::loadView('private.dosen.kehadiran-mata-kuliah-pdf', [
             'mataKuliah' => $mataKuliah,
             'nilai' => $nilai,
             'semester' => $semester,
