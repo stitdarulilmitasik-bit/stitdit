@@ -23,7 +23,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0"><img src="{{ $user->photo }}" alt="Profile" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;"></div>
+                    <div class="flex-shrink-0"><img src="{{ stit_profile_image_url($user->photo) }}" alt="Profile" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;"></div>
                     <div class="flex-grow-1 ms-3">
                         <h4 class="mb-1">Selamat datang, {{ $user->name }}!</h4>
                         <p class="text-muted mb-0">Berikut ringkasan aktivitas dan data akademik STIT Darul Ilmi Tasikmalaya.</p>
