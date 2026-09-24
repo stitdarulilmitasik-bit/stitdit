@@ -16,7 +16,8 @@ use App\Models\Akademik\TahunAkademik;
 use App\Models\Akademik\Kelas;
 use App\Models\Dosen;
 use App\Models\Jabatan;
-use PDF;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 
 class AkademikController extends Controller
 {
@@ -134,20 +135,42 @@ class AkademikController extends Controller
             }
         }
 
-        return PDF::loadView('private.mahasiswa.akademik.cetak-krs', [
+        $html = view('private.mahasiswa.akademik.cetak-krs', [
             'webs' => WebSetting::first(),
             'mahasiswa' => $user,
             'currentSemester' => $s,
             'krsHeader' => $h,
             'krs' => $d,
             'logoDataUri' => $logoDataUri,
-        ])
-            ->setOption([
-                'isRemoteEnabled' => true,
-                'isHtml5ParserEnabled' => true,
-            ])
-            ->setPaper('a4', 'portrait')
-            ->download('KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->name ?? $user->numb_nim ?? 'mahasiswa') . '.pdf');
+        ])->render();
+
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0775, true);
+        }
+
+        $mpdf = new Mpdf([
+            'tempDir' => $tempDir,
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 10,
+            'margin_bottom' => 15,
+        ]);
+
+        $mpdf->SetTitle('KRS - ' . ($user->name ?? $user->numb_nim ?? 'Mahasiswa'));
+        $mpdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
+        $mpdf->WriteHTML($html);
+
+        $filename = 'KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->name ?? $user->numb_nim ?? 'mahasiswa') . '.pdf';
+        $pdfContent = $mpdf->Output($filename, Destination::STRING_RETURN);
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length' => strlen($pdfContent),
+        ]);
     }
 
     public function khs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $w=WebSetting::first(); return view('private.mahasiswa.akademik.khs',['webs'=>$w,'user'=>$user,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Hasil Studi (KHS)','academy'=>$w?$w->school_apps.' by '.$w->school_name:'SIAKAD','khsList'=>\App\Models\Akademik\KHS::with(['tahunAkademik','nilaiSemester.mataKuliah'])->where('mahasiswa_id',$user->id)->orderBy('semester')->get()]); }
