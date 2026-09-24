@@ -1,3 +1,29 @@
+@php
+$mahasiswa = $krs->mahasiswa;
+$nim = $mahasiswa?->numb_nim
+    ?? $mahasiswa?->nim
+    ?? $mahasiswa?->code
+    ?? '-';
+
+$tahunMasuk = $mahasiswa?->taka_regist;
+if ($tahunMasuk !== null && $tahunMasuk !== '') {
+    $tahunMasuk = (int) $tahunMasuk < 100
+        ? 2000 + (int) $tahunMasuk
+        : $tahunMasuk;
+} else {
+    $tahunMasuk = '-';
+}
+
+$dosenWali = $krs->dosenPA;
+$dosenNidn = $dosenWali?->nidn
+    ?? $dosenWali?->nidn_number
+    ?? $dosenWali?->numb_nidn
+    ?? $dosenWali?->number_nidn
+    ?? '-';
+
+$tahunAkademik = $krs->tahunAkademik?->name ?? '-';
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
