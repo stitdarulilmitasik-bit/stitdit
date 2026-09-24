@@ -18,7 +18,7 @@ use App\Models\Mahasiswa;
 use App\Models\Pengaturan\WebSetting;
 // Use Plugins
 use Alert;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KHSController extends Controller
 {
@@ -345,7 +345,7 @@ class KHSController extends Controller
             $data['dosen_pa'] = KRS::where('mahasiswa_id', $khs->mahasiswa_id)->where('taka_id', $khs->taka_id)->where('semester', $khs->semester)->with('dosenPA')->first()?->dosenPA;
             $data['kaprodi'] = $khs->mahasiswa->programStudi->kaprodi ?? null;
 
-            $pdf = PDF::loadView('master.akademik.khs-print', $data)
+            $pdf = Pdf::loadView('master.akademik.khs-print', $data)
                 ->setPaper('a4', 'portrait');
 
             return $pdf->download('KHS-' . $khs->mahasiswa->name . '-Semester-' . $khs->semester . '.pdf');
@@ -469,7 +469,7 @@ class KHSController extends Controller
             $data['totalSks'] = $totalSks;
             $data['ipk'] = $ipk;
 
-            $pdf = PDF::loadView('master.akademik.transkrip-pdf', $data)
+            $pdf = Pdf::loadView('master.akademik.transkrip-pdf', $data)
                 ->setPaper('a4', 'portrait');
 
             return $pdf->download('Transkrip-' . $mahasiswa->name . '.pdf');
