@@ -11,11 +11,11 @@ php artisan storage:link
 php artisan optimize:clear
 ```
 
-`storage:link` diperlukan agar foto berita, galeri, profil, dan asset upload lain di `storage/app/public` dapat diakses melalui `/storage/...`.
+`storage:link` diperlukan agar seluruh gambar aplikasi di `storage/app/public/images` dapat diakses melalui `/storage/images/...`.
 
-## Asset branding
+## Asset gambar
 
-Logo utama berada di `public/images/branding/` sehingga header/login tidak bergantung pada symbolic link storage. Placeholder profil dan berita berada di `public/images/placeholders/`.
+Seluruh gambar aplikasi dipusatkan di `storage/app/public/images/`, termasuk logo, foto profil, berita, pengumuman, galeri, dan placeholder. Aplikasi menggunakan URL `/storage/images/...` setelah `storage:link`.
 
 ## Catatan
 
