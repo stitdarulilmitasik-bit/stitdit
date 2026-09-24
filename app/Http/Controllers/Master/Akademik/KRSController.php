@@ -454,7 +454,7 @@ class KRSController extends Controller
                 if (is_string($bytes) && $bytes !== '') {
                     $logoDataUri = 'data:image/png;base64,' . base64_encode($bytes);
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 $logoDataUri = null;
             }
         }
