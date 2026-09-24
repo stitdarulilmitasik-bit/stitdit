@@ -120,12 +120,18 @@ jobs:
           rsync -a public/ deploy/
           rm -rf deploy/public
 
-          php -r '$p="deploy/index.php"; $s=file_get_contents($p); $s=str_replace("__DIR__.'/../storage'", "__DIR__.'/storage'", $s); $s=str_replace("__DIR__.'/../vendor'", "__DIR__.'/vendor'", $s); $s=str_replace("__DIR__.'/../bootstrap'", "__DIR__.'/bootstrap'", $s); file_put_contents($p, $s);'
+          sed -i \
+            -e "s#\../storage#storage#g" \
+            -e "s#\../vendor#vendor#g" \
+            -e "s#\../bootstrap#bootstrap#g" \
+            deploy/index.php
 
           test -f deploy/index.php
           test -f deploy/.htaccess
           test -f deploy/vendor/autoload.php
           test -f deploy/bootstrap/app.php
+          grep -q "vendor/autoload.php" deploy/index.php
+          grep -q "bootstrap/app.php" deploy/index.php
 
       - name: Deploy to ByetHost via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
