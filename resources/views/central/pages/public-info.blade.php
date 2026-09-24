@@ -65,7 +65,6 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-transparent py-4 text-center">
                     <h1 class="card-title mb-2">{{ $info['heading'] }}</h1>
-                    <div class="text-muted">{{ $webs->school_name ?? 'STIT Darul Ilmi Tasikmalaya' }}</div>
                 </div>
 
                 <div class="card-body py-4">
