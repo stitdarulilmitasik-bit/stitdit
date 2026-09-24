@@ -473,6 +473,8 @@ class KRSController extends Controller
             }
         }
 
+        $webs = WebSetting::first();
+
         $data = [
             'krs' => $krs,
             'webs' => $webs,
