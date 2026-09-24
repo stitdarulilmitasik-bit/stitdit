@@ -74,7 +74,7 @@
 @php
   // Reliable image fallback generator
   function news_fallback($w=1200,$h=630,$text='Berita'){
-    return asset('images/placeholders/news-placeholder.svg');
+    return stit_image_url(null);
   }
   $heroImage = $heroImage ?? null;
 @endphp
