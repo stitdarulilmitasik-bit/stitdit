@@ -459,8 +459,13 @@ class KRSController extends Controller
             }
 
             $candidates = array_values(array_unique(array_filter([
+                // Lokasi baru yang dipakai hosting: app/public/images/default/
+                base_path('app/public/images/default/' . $logoName),
+                // Fallback standar Laravel.
                 \Illuminate\Support\Facades\Storage::disk('public')->path('images/logo/' . $logoName),
                 storage_path('app/public/images/logo/' . $logoName),
+                public_path('images/default/' . $logoName),
+                public_path('images/logo/' . $logoName),
             ])));
 
             foreach ($candidates as $candidate) {
