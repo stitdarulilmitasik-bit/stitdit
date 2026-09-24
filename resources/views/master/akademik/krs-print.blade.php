@@ -64,20 +64,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 </div>
 <div class="container"><div class="kop-surat">
 <div class="kop-logo">
-@php
-$logoPath = public_path('images/logo/logo-vert1.png');
-$logoBase64 = '';
-if (is_file($logoPath) && is_readable($logoPath)) {
-    try {
-        $logoBytes = file_get_contents($logoPath);
-        if (is_string($logoBytes) && $logoBytes !== '') {
-            $logoBase64 = 'data:image/png;base64,' . base64_encode($logoBytes);
-        }
-    } catch (\Throwable $e) {
-        $logoBase64 = '';
-    }
-}
-@endphp
+@if(!empty($logoDataUri))<img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">@endif
 @if($logoBase64)<img src="{{ $logoBase64 }}" alt="Logo STIT Darul Ilmi">@endif
 </div>
 <div class="kop-text">
