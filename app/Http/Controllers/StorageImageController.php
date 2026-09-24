@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Storage;
 
 class StorageImageController extends Controller
@@ -11,7 +11,7 @@ class StorageImageController extends Controller
      * Serve application images directly from storage/app/public/images.
      * This avoids depending on a public/storage symlink on shared hosting.
      */
-    public function show(string $path): Response
+    public function show(string $path): BinaryFileResponse
     {
         $path = ltrim(str_replace('\\', '/', $path), '/');
 
