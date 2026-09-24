@@ -108,7 +108,6 @@ class AkademikController extends Controller
         $logoDataUri = null;
         foreach ([
             'images/logo/logo-vert.png',
-            'images/logo/logo_vert.png',
             'images/logo/logo-hori.png',
             'images/logo/logo_hori.png',
             'images/default/logo-vertical.png',
