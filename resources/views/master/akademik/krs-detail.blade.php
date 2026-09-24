@@ -142,12 +142,40 @@
 @endsection
 
 @section('content')
+    @php
+        // KRS lama dapat menyimpan mahasiswa/tahun akademik yang sudah tidak tersedia.
+        // Jangan biarkan relasi null menyebabkan 500 pada halaman detail.
+        $mahasiswa = $krs->mahasiswa;
+        $tahunAkademik = $krs->tahunAkademik;
+    @endphp
+
+    @if (!$mahasiswa || !$tahunAkademik)
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning d-flex align-items-start gap-3">
+                    <i class="fas fa-triangle-exclamation mt-1"></i>
+                    <div>
+                        <strong>Data KRS tidak lengkap.</strong>
+                        <div class="mt-1">
+                            {{ !$mahasiswa ? 'Data mahasiswa yang terkait dengan KRS ini tidak ditemukan.' : '' }}
+                            {{ (!$mahasiswa && !$tahunAkademik) ? ' ' : '' }}
+                            {{ !$tahunAkademik ? 'Data tahun akademik yang terkait dengan KRS ini tidak ditemukan.' : '' }}
+                        </div>
+                        <small class="text-muted">Kode KRS: {{ $krs->code }}</small>
+                    </div>
+                </div>
+                <a href="{{ route($spref . 'akademik.krs-render') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Kembali ke daftar KRS
+                </a>
+            </div>
+        </div>
+    @else
     <div class="row">
         <div class="col-12 mb-3">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h4 class="mb-1">Detail KRS - {{ $krs->mahasiswa->name }}</h4>
-                    <p class="text-muted mb-0">{{ $krs->mahasiswa->nim }} | {{ $krs->tahunAkademik->name }} - {{ $krs->tahunAkademik->semester }}</p>
+                    <h4 class="mb-1">Detail KRS - {{ $mahasiswa->name ?? $mahasiswa->numb_nim ?? '-' }}</h4>
+                    <p class="text-muted mb-0">{{ $mahasiswa->nim ?? $mahasiswa->numb_nim ?? '-' }} | {{ $tahunAkademik->name ?? '-' }} - {{ $tahunAkademik->semester ?? '-' }}</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route($spref . 'akademik.krs-render') }}" class="btn btn-secondary">
@@ -181,11 +209,11 @@
                     </div>
                     <div class="info-item">
                         <div class="info-label">Program Studi</div>
-                        <div class="info-value">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</div>
+                        <div class="info-value">{{ $mahasiswa->programStudi?->name ?? '-' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Tahun Akademik</div>
-                        <div class="info-value">{{ $krs->tahunAkademik->name }} - {{ $krs->tahunAkademik->semester }}</div>
+                        <div class="info-value">{{ $tahunAkademik->name ?? '-' }} - {{ $tahunAkademik->semester ?? '-' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Semester</div>
@@ -509,6 +537,7 @@
                 </div>
             </div>
         </div>
+    @endif
     @endif
 @endsection
 
