@@ -208,7 +208,7 @@
     <div class="header">
         @if (!empty($logoDataUri))
             <div style="text-align:center; margin-bottom:6px;">
-                <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi" style="width:70px; height:70px;">
+                <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi" style="width:91px; height:91px;">
             </div>
         @endif
         <div class="university-name">{{ $webs->school_name ?? "PERGURUAN TINGGI" }}</div>
