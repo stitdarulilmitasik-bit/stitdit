@@ -43,7 +43,6 @@ if (! function_exists('stit_storage_image_url')) {
     }
 }
 
-
 if (! function_exists('stit_profile_image_url')) {
     /**
      * Resolve a user profile photo URL.
@@ -52,7 +51,6 @@ if (! function_exists('stit_profile_image_url')) {
     {
         $filename = $filename ? ltrim($filename, '/') : 'default.png';
 
-        // Keep already absolute/external URLs untouched.
         if (filter_var($filename, FILTER_VALIDATE_URL)) {
             return $filename;
         }
@@ -124,7 +122,6 @@ if (! function_exists('stit_gallery_image_url')) {
     }
 }
 
-
 if (! function_exists('stit_image_url')) {
     /**
      * Resolve a generic site image URL with a safe default fallback.
@@ -154,7 +151,7 @@ if (! function_exists('stit_image_url')) {
                 if (Storage::disk('public')->exists($path)) {
                     return Storage::disk('public')->url($path);
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // Continue to public asset fallback.
             }
 
