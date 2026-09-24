@@ -72,8 +72,6 @@ jobs:
           rm -f bootstrap/cache/*.php
 
       - name: Discover Laravel packages
-
-      - name: Discover Laravel packages
         run: |
           php artisan package:discover --ansi
           test -f bootstrap/cache/packages.php
@@ -142,7 +140,7 @@ jobs:
           grep -q "bootstrap/app.php" deploy/index.php
 
       - name: Deploy to ByetHost via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.BYETHOST_FTP_SERVER }}
           username: ${{ secrets.BYETHOST_FTP_USERNAME }}
@@ -152,6 +150,9 @@ jobs:
           server-dir: /htdocs/
           local-dir: ./deploy/
           dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state.json
+          log-level: minimal
+          timeout: 180000
           exclude: |
             **/.git*
             **/.github/**
