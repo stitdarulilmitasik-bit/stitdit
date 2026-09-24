@@ -444,9 +444,7 @@ class KRSController extends Controller
         $logoDataUri = null;
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
         $logoCandidates = [
-            'images/logo/logo-hori.png',
-            'images/default/logo-vertical.png',
-            'images/default/logo-horizontal.png',
+            'images/logo/logo-vert1.png',
         ];
 
         foreach ($logoCandidates as $logoPath) {
