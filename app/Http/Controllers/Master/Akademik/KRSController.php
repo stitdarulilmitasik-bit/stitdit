@@ -443,17 +443,47 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Dompdf di shared hosting ini tidak merender Data URI PNG dengan
-        // konsisten. Gunakan endpoint /media Laravel yang sudah tersedia.
-        // Endpoint tersebut membaca asset dari storage/app/public tanpa symlink.
-        $logoUrl = url('/media/images/logo/logo-vert1.png');
+        // Embed logo entirely in memory. This avoids both open_basedir and
+        // Dompdf remote-URL/SSL restrictions on shared hosting.
+        $logoDataUri = null;
+        foreach ([
+            'images/logo/logo-vert1.png',
+            'images/logo/logo-vert.png',
+        ] as $logoPath) {
+            try {
+                $disk = Storage::disk('public');
+                if (!$disk->exists($logoPath)) {
+                    continue;
+                }
 
-        try {
-            if (!Storage::disk('public')->exists('images/logo/logo-vert1.png')) {
-                $logoUrl = url('/media/images/logo/logo-vert.png');
+                $bytes = $disk->get($logoPath);
+                if (!is_string($bytes) || $bytes === '') {
+                    continue;
+                }
+
+                // Prefer an in-memory JPEG when GD is available. This avoids
+                // PNG decoding differences in the Dompdf build on hosting.
+                if (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
+                    $image = @imagecreatefromstring($bytes);
+                    if ($image !== false) {
+                        ob_start();
+                        imagejpeg($image, null, 92);
+                        $jpegBytes = ob_get_clean();
+                        imagedestroy($image);
+
+                        if (is_string($jpegBytes) && $jpegBytes !== '') {
+                            $logoDataUri = 'data:image/jpeg;base64,' . base64_encode($jpegBytes);
+                            break;
+                        }
+                    }
+                }
+
+                // Fallback: keep the original PNG, still entirely in memory.
+                $logoDataUri = 'data:image/png;base64,' . base64_encode($bytes);
+                break;
+            } catch (\Throwable $e) {
+                continue;
             }
-        } catch (\Throwable $e) {
-            $logoUrl = url('/media/images/logo/logo-vert.png');
         }
 
         $data = [
@@ -466,7 +496,7 @@ class KRSController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->first()?->dosen,
-            'logoUrl' => $logoUrl,
+            'logoDataUri' => $logoDataUri,
         ];
 
         $pdf = Pdf::loadView('master.akademik.krs-print', $data)
@@ -474,7 +504,7 @@ class KRSController extends Controller
             ->setOptions([
                 'defaultFont' => 'Helvetica',
                 'isHtml5ParserEnabled' => true,
-                'isRemoteEnabled' => true,
+                'isRemoteEnabled' => false,
                 'isPhpEnabled' => false,
                 'dpi' => 96,
                 'enable_font_subsetting' => true,
