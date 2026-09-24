@@ -40,7 +40,7 @@ th { background:#eee; }
         <tr>
             <td class="logo">
                 @php
-                    $logoCandidates = [storage_path('app/public/images/logo/logo-vert.png'), public_path('storage/images/logo/logo-vert.png')];
+                    $logoCandidates = [storage_path('app/public/images/logo/logo-vert.png'), storage_path('app/public/images/default/logo-vertical.png')];
                     $logo = null;
                     foreach ($logoCandidates as $candidate) {
                         if (is_file($candidate)) {
