@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Dosen;
 use App\Models\Pengaturan\WebSetting;
 use App\Exports\DosenExport;
@@ -43,7 +43,7 @@ class DosenController extends Controller
                 'webs' => WebSetting::first(),
             ];
 
-            $pdf = PDF::loadView('master.pengguna.dosen-pdf', $data)
+            $pdf = Pdf::loadView('master.pengguna.dosen-pdf', $data)
                 ->setPaper('a4', 'landscape');
 
             return $pdf->download('daftar-dosen-' . now()->format('Y-m-d') . '.pdf');
