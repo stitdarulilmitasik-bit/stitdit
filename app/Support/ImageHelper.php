@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('stit_image_url')) {
     /**
-     * Resolve a public image path and return a safe fallback when the file is missing.
-     * Supports paths stored in the public storage disk as well as public/ assets.
+     * Resolve all application images from storage/app/public/images.
+     * The public web URL is exposed only through /storage after storage:link.
      */
     function stit_image_url(?string $path, string $fallback = 'images/placeholders/news-placeholder.svg'): string
     {
@@ -25,6 +25,10 @@ if (! function_exists('stit_image_url')) {
         if (str_starts_with($path, 'public/')) {
             $path = substr($path, 7);
         }
+        if (str_starts_with($path, 'images/')) {
+            // Keep all application image files under storage/app/public/images.
+            $path = ltrim($path, '/');
+        }
 
         // Never make the public site depend on an old/template image host.
         if (filter_var($path, FILTER_VALIDATE_URL)) {
@@ -35,11 +39,15 @@ if (! function_exists('stit_image_url')) {
         return asset('storage/' . $path);
         }
 
-        if (is_file(public_path($path))) {
-            return asset($path);
+        // Do not fall back to public/images. All application images are stored
+        // in storage/app/public/images and exposed through /storage.
+        $fallback = str_replace('public/', '', ltrim($fallback, '/'));
+        if (str_starts_with($fallback, 'storage/')) {
+            $fallback = substr($fallback, 8);
         }
-
-        return asset(ltrim($fallback, '/'));
+        return Storage::disk('public')->exists($fallback)
+            ? asset('storage/' . $fallback)
+            : asset('storage/images/placeholders/news-placeholder.svg');
     }
 }
 
