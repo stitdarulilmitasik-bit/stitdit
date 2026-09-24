@@ -15,7 +15,46 @@
     .org-name { font-weight: 600; line-height: 1.4; }
     .org-top { width: 300px; }
     .org-note { max-width: 900px; margin: 0 auto 1.5rem; }
-    @media (max-width: 767.98px) { .org-card { width: 220px; } .org-top { width: 240px; } .org-level { gap: .75rem; } }
+    .vision-mission { max-width: 980px; margin: 0 auto; }
+    .vision-mission-section + .vision-mission-section { margin-top: 2.5rem; }
+    .vision-mission-title {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        min-height: 42px;
+        margin: 0 0 1rem;
+        padding: .65rem 1rem;
+        border-left: 4px solid var(--tblr-primary);
+        background: rgba(var(--tblr-primary-rgb), .06);
+        border-radius: .35rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+    .vision-mission-content {
+        margin: 0;
+        padding: 0 1rem;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+    .vision-mission-list {
+        margin: 0;
+        padding-left: 2.2rem;
+        font-size: 1.05rem;
+        line-height: 1.8;
+    }
+    .vision-mission-list li { padding-left: .35rem; margin-bottom: .7rem; }
+    @media (max-width: 767.98px) {
+        .org-card { width: 220px; }
+        .org-top { width: 240px; }
+        .org-level { gap: .75rem; }
+        .vision-mission-title { font-size: 1.15rem; }
+        .vision-mission-content,
+        .vision-mission-list { font-size: 1rem; line-height: 1.7; }
+        .vision-mission-content { padding: 0 .25rem; text-align: left; }
+        .vision-mission-list { padding-left: 1.75rem; }
+    }
 </style>
 @endsection
 
@@ -79,14 +118,21 @@
                             </div>
                         </div>
                     @elseif(isset($info['vision']))
-                        <h2 class="h3">Visi</h2>
-                        <p class="fs-3 mb-5">{{ $info['vision'] }}</p>
-                        <h2 class="h3">Misi</h2>
-                        <ol class="fs-4 lh-lg">
-                            @foreach($info['missions'] as $mission)
-                                <li>{{ $mission }}</li>
-                            @endforeach
-                        </ol>
+                        <div class="vision-mission">
+                            <section class="vision-mission-section">
+                                <h2 class="vision-mission-title">Visi</h2>
+                                <p class="vision-mission-content">{{ $info['vision'] }}</p>
+                            </section>
+
+                            <section class="vision-mission-section">
+                                <h2 class="vision-mission-title">Misi</h2>
+                                <ol class="vision-mission-list">
+                                    @foreach($info['missions'] as $mission)
+                                        <li>{{ $mission }}</li>
+                                    @endforeach
+                                </ol>
+                            </section>
+                        </div>
                     @else
                         <div class="fs-4 lh-lg">{!! nl2br(e($info['content'] ?? 'Informasi belum tersedia.')) !!}</div>
                     @endif
