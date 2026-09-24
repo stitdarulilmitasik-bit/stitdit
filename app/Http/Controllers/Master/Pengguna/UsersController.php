@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 // Use Models
 use App\Models\User;
 use App\Models\Pengaturan\WebSetting;
@@ -58,7 +58,7 @@ class UsersController extends Controller
                 'webs' => WebSetting::first(),
             ];
 
-            $pdf = PDF::loadView('master.pengguna.users-pdf', $data)
+            $pdf = Pdf::loadView('master.pengguna.users-pdf', $data)
                 ->setPaper('a4', 'landscape');
 
             return $pdf->download('daftar-pengguna-' . now()->format('Y-m-d') . '.pdf');
