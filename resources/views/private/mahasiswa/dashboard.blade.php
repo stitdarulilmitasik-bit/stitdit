@@ -19,7 +19,7 @@
             <h2 class="text-white mb-1">Selamat datang, {{ $user->name }} 👋</h2>
             <div class="text-white-50">NIM {{ $user->numb_nim ?? '-' }} · Semester {{ $user->semester ?? '-' }}</div>
             <div class="mt-3 d-flex flex-wrap gap-2"><span class="badge bg-white-lt text-blue">IPK {{ number_format($ipk ?? 0,2) }}</span><span class="badge bg-white-lt text-blue">{{ $total_sks_lulus ?? 0 }} / {{ $sks_kebutuhan ?? 144 }} SKS</span><span class="badge bg-white-lt text-blue">{{ $user->type ?? 'Mahasiswa Aktif' }}</span></div>
-        </div><div class="col-auto d-none d-md-block"><span class="avatar avatar-xl rounded-circle" style="background-image:url('{{ $user->photo ?? '' }}')"></span></div></div></div></div>
+        </div><div class="col-auto d-none d-md-block"><span class="avatar avatar-xl rounded-circle" style="background-image:url('{{ stit_profile_image_url($user->photo ?? null) }}')"></span></div></div></div></div>
     </div>
 
     <div class="col-sm-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="subheader">IPK Kumulatif</div><div class="h1 mb-2">{{ number_format($ipk ?? 0,2) }}</div><div class="text-secondary">IPS terakhir: <strong>{{ number_format($ips ?? 0,2) }}</strong></div></div></div></div>
