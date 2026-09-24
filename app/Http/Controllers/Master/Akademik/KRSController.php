@@ -447,28 +447,33 @@ class KRSController extends Controller
         // filesystem aplikasi dan tidak bergantung pada path absolut hosting.
         // Ini juga menghindari masalah open_basedir saat path storage berbeda
         // antara lokal dan ByetHost.
-        // Ambil logo dari disk public dan berikan ke Dompdf sebagai file lokal.
-        // Ini menghindari kegagalan Data URI pada beberapa konfigurasi ByetHost.
-        $logoPath = null;
+        // Baca logo langsung dari Laravel public disk sebagai Data URI.
+        // Jangan gunakan disk->path(), is_file(), realpath(), atau chroot
+        // karena ByetHost menerapkan open_basedir pada path filesystem.
+        $logoDataUri = null;
         $logoCandidates = [
             'images/logo/logo-vert1.png',
             'images/logo/logo-vert.png',
         ];
 
         $disk = Storage::disk('public');
-        foreach ($logoCandidates as $candidate) {
+        foreach ($logoCandidates as $logoPath) {
             try {
-                if (!$disk->exists($candidate)) {
+                if (!$disk->exists($logoPath)) {
                     continue;
                 }
 
-                $resolvedPath = $disk->path($candidate);
-                if (is_file($resolvedPath) && is_readable($resolvedPath)) {
-                    $logoPath = $resolvedPath;
-                    break;
+                $logoBytes = $disk->get($logoPath);
+                if (!is_string($logoBytes) || $logoBytes === '') {
+                    continue;
                 }
+
+                // File yang dipilih adalah PNG berdasarkan nama asset.
+                // Tidak menggunakan MIME detector hosting.
+                $logoDataUri = 'data:image/png;base64,' . base64_encode($logoBytes);
+                break;
             } catch (\Throwable $e) {
-                // Coba logo cadangan.
+                continue;
             }
         }
 
@@ -482,7 +487,7 @@ class KRSController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->first()?->dosen,
-            'logoPath' => $logoPath,
+            'logoDataUri' => $logoDataUri,
         ];
 
         $pdf = Pdf::loadView('master.akademik.krs-print', $data)
@@ -494,7 +499,6 @@ class KRSController extends Controller
                 'isPhpEnabled' => false,
                 'dpi' => 96,
                 'enable_font_subsetting' => true,
-                'chroot' => base_path(),
             ]);
 
         $filename = 'KRS-' . preg_replace(
