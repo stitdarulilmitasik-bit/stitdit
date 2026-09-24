@@ -125,6 +125,10 @@
 </head>
 
 @php
+    // Beberapa halaman (termasuk Maintenance Composer) tidak mengirim $spref.
+    // Untuk halaman backend tanpa prefix, gunakan guard web-admin sebagai default.
+    $spref = $spref ?? 'web-admin.';
+
     /*
      * Gunakan identitas dari guard yang memang memiliki prefix halaman.
      * Ini mencegah variabel $user dari child view/loop menimpa identitas
