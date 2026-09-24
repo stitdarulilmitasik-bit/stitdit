@@ -88,8 +88,8 @@
     <table class="kop-table">
         <tr>
             <td class="kop-logo">
-                @if($logo)
-                    <img src="{{ $logoPath }}" alt="Logo STIT Darul Ilmi">
+                @if($logoPath)
+                    <img src="{{ $logoPath }}" alt="Logo STIT Darul Ilmi" width="82" height="82">
                 @endif
             </td>
             <td class="kop-text">
