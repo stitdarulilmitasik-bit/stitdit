@@ -447,37 +447,28 @@ class KRSController extends Controller
         // filesystem aplikasi dan tidak bergantung pada path absolut hosting.
         // Ini juga menghindari masalah open_basedir saat path storage berbeda
         // antara lokal dan ByetHost.
-        $logoDataUri = null;
+        // Ambil logo dari disk public dan berikan ke Dompdf sebagai file lokal.
+        // Ini menghindari kegagalan Data URI pada beberapa konfigurasi ByetHost.
+        $logoPath = null;
         $logoCandidates = [
             'images/logo/logo-vert1.png',
             'images/logo/logo-vert.png',
         ];
 
-        foreach ($logoCandidates as $logoPath) {
+        $disk = Storage::disk('public');
+        foreach ($logoCandidates as $candidate) {
             try {
-                $disk = Storage::disk('public');
-
-                if (!$disk->exists($logoPath)) {
+                if (!$disk->exists($candidate)) {
                     continue;
                 }
 
-                $logoBytes = $disk->get($logoPath);
-                if (!is_string($logoBytes) || $logoBytes === '') {
-                    continue;
+                $resolvedPath = $disk->path($candidate);
+                if (is_file($resolvedPath) && is_readable($resolvedPath)) {
+                    $logoPath = $resolvedPath;
+                    break;
                 }
-
-                // Logo yang dipakai adalah PNG yang memang ditentukan oleh
-                // nama file. Jangan bergantung pada MIME detector hosting karena
-                // ByetHost dapat mengembalikan application/octet-stream untuk PNG.
-                // Dompdf cukup menerima Data URI dengan MIME image/png yang eksplisit.
-                if (function_exists('getimagesizefromstring') && @getimagesizefromstring($logoBytes) === false) {
-                    continue;
-                }
-
-                $logoDataUri = 'data:image/png;base64,' . base64_encode($logoBytes);
-                break;
             } catch (\Throwable $e) {
-                // Lanjutkan ke logo cadangan bila asset pertama tidak dapat dibaca.
+                // Coba logo cadangan.
             }
         }
 
@@ -491,7 +482,7 @@ class KRSController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->first()?->dosen,
-            'logoDataUri' => $logoDataUri,
+            'logoPath' => $logoPath,
         ];
 
         $pdf = Pdf::loadView('master.akademik.krs-print', $data)
@@ -503,6 +494,7 @@ class KRSController extends Controller
                 'isPhpEnabled' => false,
                 'dpi' => 96,
                 'enable_font_subsetting' => true,
+                'chroot' => base_path(),
             ]);
 
         $filename = 'KRS-' . preg_replace(
