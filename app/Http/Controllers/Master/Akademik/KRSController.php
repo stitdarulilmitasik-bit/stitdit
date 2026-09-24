@@ -442,17 +442,23 @@ class KRSController extends Controller
         // Logo ditanam sebagai data URI agar Dompdf tidak bergantung pada
         // URL/storage link/public document root saat membuat PDF.
         $logoDataUri = null;
+
+        // Dompdf tidak boleh bergantung pada URL /storage atau route /media.
+        // Ambil file logo langsung dari filesystem dan tanam sebagai data URI.
+        // Beberapa deployment lama masih menyimpan logo dengan nama lama,
+        // sehingga gunakan logo-vert1 terlebih dahulu lalu logo-vert sebagai fallback.
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
         $logoCandidates = [
             'images/logo/logo-vert1.png',
+            'images/logo/logo-vert.png',
         ];
 
         foreach ($logoCandidates as $logoPath) {
-            if (!$disk->exists($logoPath)) {
-                continue;
-            }
-
             try {
+                if (!$disk->exists($logoPath)) {
+                    continue;
+                }
+
                 $logoBytes = $disk->get($logoPath);
                 if ($logoBytes === '') {
                     continue;
@@ -462,7 +468,30 @@ class KRSController extends Controller
                 $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
                 break;
             } catch (\Throwable $e) {
-                continue;
+                // Coba kandidat berikutnya.
+            }
+        }
+
+        // Fallback untuk hosting yang tidak memetakan disk public secara normal.
+        if (!$logoDataUri) {
+            foreach ($logoCandidates as $logoPath) {
+                $candidate = storage_path('app/public/' . $logoPath);
+                if (!is_file($candidate) || !is_readable($candidate)) {
+                    continue;
+                }
+
+                try {
+                    $logoBytes = file_get_contents($candidate);
+                    if ($logoBytes === false || $logoBytes === '') {
+                        continue;
+                    }
+
+                    $mime = mime_content_type($candidate) ?: 'image/png';
+                    $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                    break;
+                } catch (\Throwable $e) {
+                    // Coba kandidat berikutnya.
+                }
             }
         }
 
