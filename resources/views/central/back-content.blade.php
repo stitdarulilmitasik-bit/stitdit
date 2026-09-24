@@ -96,7 +96,7 @@
             <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
                     <h5 class="mb-1"><i class="fas fa-tools me-2"></i>Maintenance Sistem</h5>
-                    <p class="text-muted mb-0">Bersihkan cache Laravel langsung dari dashboard tanpa Terminal.</p>
+                    <p class="text-muted mb-0">Kelola cache Laravel dan jalankan perintah Composer dari Maintenance Sistem.</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <form method="POST" action="{{ route('web-admin.maintenance.clear-cache') }}" onsubmit="return confirm('Bersihkan cache dan optimasi Laravel sekarang?');">
@@ -117,6 +117,9 @@
                             <i class="fas fa-file-code me-2"></i>Clear View Cache
                         </button>
                     </form>
+                    <a href="{{ route('web-admin.maintenance.composer') }}" class="btn btn-dark">
+                        <i class="fas fa-terminal me-2"></i>Terminal Composer
+                    </a>
                 </div>
             </div>
         </div>
