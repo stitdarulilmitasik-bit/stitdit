@@ -175,8 +175,8 @@ class UsersController extends Controller
             // Handle photo upload
             if ($request->hasFile('photo')) {
                 // Hapus foto lama
-                if ($user->photo && $user->photo !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . $user->photo);
+                if ($user->getRawOriginal('photo') && $user->getRawOriginal('photo') !== 'default.jpg') {
+                    Storage::disk('public')->delete('images/profile/' . $user->getRawOriginal('photo'));
                 }
             
                 // Simpan foto baru
