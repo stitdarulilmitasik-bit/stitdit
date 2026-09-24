@@ -1,8 +1,212 @@
- - name: Prepare ByetHost deployment
+name: Deploy Laravel to ByetHost
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: byethost-production
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ============================================================
+      # 1. CHECKOUT
+      # ============================================================
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ============================================================
+      # 2. SETUP PHP
+      # ============================================================
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, curl, mysql, gd, zip, intl
+          tools: composer:v2
+          coverage: none
+
+      # ============================================================
+      # 3. VALIDATE COMPOSER
+      # ============================================================
+      - name: Validate composer.json
         run: |
+          composer validate \
+            --no-check-publish \
+            --no-check-lock
+
+      # ============================================================
+      # 4. SYNC COMPOSER LOCK
+      # ============================================================
+      - name: Sync Composer lock file when needed
+        run: |
+          if composer validate --no-check-publish --check-lock; then
+            echo "composer.lock is synchronized."
+          else
+            echo "composer.lock is out of sync."
+            echo "Updating composer.lock..."
+
+            composer update \
+              --no-dev \
+              --prefer-dist \
+              --optimize-autoloader \
+              --no-interaction \
+              --no-scripts
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            git add composer.lock
+
+            if ! git diff --cached --quiet; then
+              git commit -m "chore: sync composer lock [skip ci]"
+              git push origin HEAD:main
+            else
+              echo "No composer.lock changes."
+            fi
+          fi
+
+      # ============================================================
+      # 5. INSTALL DEPENDENCIES FOR CI ONLY
+      #
+      # vendor dibuat di runner GitHub untuk validasi.
+      # vendor TIDAK akan dikirim ke ByetHost.
+      # ============================================================
+      - name: Install PHP dependencies for CI
+        run: |
+          composer install \
+            --no-dev \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-interaction \
+            --no-scripts
+
+      # ============================================================
+      # 6. VERIFY COMPOSER
+      # ============================================================
+      - name: Verify Composer dependencies
+        run: |
+          composer validate --no-check-publish
+
+          test -f composer.lock
+          test -d vendor
+          test -f vendor/autoload.php
+
+          echo "Composer dependencies verified."
+
+      # ============================================================
+      # 7. CLEAR LARAVEL CACHE
+      # ============================================================
+      - name: Clear Laravel cache
+        run: |
+          php artisan optimize:clear
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan event:clear
+
+          rm -f bootstrap/cache/*.php
+
+      # ============================================================
+      # 8. DISCOVER PACKAGES
+      # ============================================================
+      - name: Discover Laravel packages
+        run: |
+          php artisan package:discover --ansi
+
+          test -f bootstrap/cache/packages.php
+          test -f bootstrap/cache/services.php
+
+          echo "Laravel packages discovered."
+
+      # ============================================================
+      # 9. VERIFY TURNSTILE
+      # ============================================================
+      - name: Verify Turnstile package and Blade component
+        run: |
+          echo "Checking Laravel Turnstile..."
+
+          test -d vendor/coderflex/laravel-turnstile
+          test -f resources/views/components/turnstile-widget.blade.php
+
+          grep -q "cf-turnstile" \
+            resources/views/components/turnstile-widget.blade.php
+
+          echo "Turnstile package and component verified."
+
+      # ============================================================
+      # 10. SETUP NODE
+      # ============================================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # ============================================================
+      # 11. INSTALL FRONTEND DEPENDENCIES
+      # ============================================================
+      - name: Install frontend dependencies
+        run: |
+          npm ci --prefer-offline
+
+      # ============================================================
+      # 12. BUILD FRONTEND
+      # ============================================================
+      - name: Build frontend
+        run: |
+          npm run build
+
+      # ============================================================
+      # 13. PREPARE STORAGE
+      # ============================================================
+      - name: Prepare Laravel writable directories
+        run: |
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          mkdir -p storage/logs
+          mkdir -p storage/app/public
+
+          touch storage/framework/cache/.gitkeep
+          touch storage/framework/sessions/.gitkeep
+          touch storage/framework/views/.gitkeep
+          touch storage/logs/.gitkeep
+          touch storage/app/public/.gitkeep
+
+      # ============================================================
+      # 14. PREPARE BYETHOST DEPLOYMENT
+      #
+      # IMPORTANT:
+      # vendor sengaja TIDAK dimasukkan.
+      # /htdocs/vendor di server akan dipertahankan.
+      # ============================================================
+      - name: Prepare ByetHost deployment
+        shell: bash
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "Preparing ByetHost deployment"
+          echo "=========================================="
+
           rm -rf deploy
           mkdir -p deploy
 
+          # --------------------------------------------------------
+          # Copy Laravel application
+          # EXCLUDE vendor
+          # --------------------------------------------------------
           echo "Copying Laravel application without vendor..."
 
           rsync -a \
@@ -17,17 +221,31 @@
             --exclude='storage/logs/*.log' \
             ./ deploy/
 
+          # --------------------------------------------------------
+          # Copy public directory into document root
+          # --------------------------------------------------------
           echo "Copying public files to document root..."
 
           rsync -a \
             --exclude='vendor/' \
             public/ deploy/
 
-          echo "Removing any vendor directory from deployment..."
+          # --------------------------------------------------------
+          # Remove nested public directory
+          # --------------------------------------------------------
+          rm -rf deploy/public
+
+          # --------------------------------------------------------
+          # Safety cleanup
+          # --------------------------------------------------------
+          echo "Removing vendor from deployment package..."
 
           rm -rf deploy/vendor
           rm -rf deploy/public/vendor
 
+          # --------------------------------------------------------
+          # Adjust Laravel paths
+          # --------------------------------------------------------
           echo "Adjusting Laravel paths for ByetHost..."
 
           sed -i \
@@ -36,6 +254,19 @@
             -e 's#\.\./bootstrap#bootstrap#g' \
             deploy/index.php
 
+          # --------------------------------------------------------
+          # Show vendor locations for diagnostics
+          # --------------------------------------------------------
+          echo "Checking deployment for vendor directories..."
+
+          find deploy \
+            -type d \
+            -name vendor \
+            -print || true
+
+          # --------------------------------------------------------
+          # Verify required files
+          # --------------------------------------------------------
           echo "Verifying deployment..."
 
           test -f deploy/index.php
@@ -44,6 +275,9 @@
           test -f deploy/composer.json
           test -f deploy/composer.lock
 
+          # --------------------------------------------------------
+          # Verify vendor is NOT included
+          # --------------------------------------------------------
           echo "Confirming vendor is NOT included..."
 
           if [ -e "deploy/vendor" ]; then
@@ -56,4 +290,56 @@
             exit 1
           fi
 
+          # --------------------------------------------------------
+          # Verify index.php points to server vendor
+          # --------------------------------------------------------
+          echo "Checking index.php..."
+
+          grep -q "vendor/autoload.php" deploy/index.php
+          grep -q "bootstrap/app.php" deploy/index.php
+
+          echo "=========================================="
           echo "Deployment package ready."
+          echo "vendor will NOT be uploaded."
+          echo "/htdocs/vendor will remain untouched."
+          echo "=========================================="
+
+      # ============================================================
+      # 15. DEPLOY TO BYETHOST
+      # ============================================================
+      - name: Deploy to ByetHost via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.BYETHOST_FTP_SERVER }}
+          username: ${{ secrets.BYETHOST_FTP_USERNAME }}
+          password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
+
+          protocol: ftp
+
+          port: ${{ secrets.BYETHOST_FTP_PORT || 21 }}
+
+          server-dir: /htdocs/
+          local-dir: ./deploy/
+
+          # NEVER DELETE SERVER FILES
+          # Especially /htdocs/vendor and .env
+          dangerous-clean-slate: false
+
+          state-name: .ftp-deploy-sync-state.json
+
+          log-level: minimal
+
+          timeout: 180000
+
+          # --------------------------------------------------------
+          # NEVER DEPLOY THESE
+          # --------------------------------------------------------
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/tests/**
+            **/.env
+            **/.env.*
+            **/vendor/**
+            **/storage/logs/*.log
