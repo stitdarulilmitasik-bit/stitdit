@@ -1,6 +1,6 @@
 @php
     $logo = null;
-    $candidates = [storage_path('app/public/images/logo/logo-vert.png'), public_path('storage/images/logo/logo-vert.png')];
+    $candidates = [storage_path('app/public/images/logo/logo-vert.png')];
     foreach ($candidates as $candidate) {
         if (is_file($candidate)) {
             $mime = mime_content_type($candidate) ?: 'image/png';
