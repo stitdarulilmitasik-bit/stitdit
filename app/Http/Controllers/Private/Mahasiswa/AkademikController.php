@@ -16,7 +16,7 @@ use App\Models\Akademik\TahunAkademik;
 use App\Models\Akademik\Kelas;
 use App\Models\Dosen;
 use App\Models\Jabatan;
-use TCPDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AkademikController extends Controller
 {
@@ -131,38 +131,25 @@ class AkademikController extends Controller
             }
         }
 
-        $html = view('private.mahasiswa.akademik.cetak-krs', [
+        $pdf = Pdf::loadView('private.mahasiswa.akademik.cetak-krs', [
             'webs' => WebSetting::first(),
             'mahasiswa' => $user,
             'currentSemester' => $s,
             'krsHeader' => $h,
             'krs' => $d,
             'logoDataUri' => $logoDataUri,
-        ])->render();
-
-        // TCPDF tidak membutuhkan URL publik atau storage symlink untuk logo.
-        // Logo sudah ditanam sebagai data URI sebelum HTML dirender.
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-        $pdf->SetCreator('STIT Darul Ilmi Tasikmalaya');
-        $pdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
-        $pdf->SetTitle('KRS - ' . ($user->name ?? $user->numb_nim ?? 'Mahasiswa'));
-        $pdf->SetSubject('Kartu Rencana Studi');
-        $pdf->SetMargins(15, 10, 15);
-        $pdf->SetAutoPageBreak(true, 15);
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-        $pdf->SetFont('helvetica', '', 9);
-        $pdf->AddPage('P', 'A4');
-        $pdf->writeHTML($html, true, false, true, false, '');
+        ])->setPaper('a4', 'portrait')->setOptions([
+            'defaultFont' => 'Helvetica',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'dpi' => 96,
+            'enable_font_subsetting' => true,
+        ]);
 
         $filename = 'KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->name ?? $user->numb_nim ?? 'mahasiswa') . '.pdf';
-        $pdfContent = $pdf->Output($filename, 'S');
 
-        return response($pdfContent, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Content-Length' => strlen($pdfContent),
-        ]);
+        return $pdf->download($filename);
     }
 
     public function khs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $w=WebSetting::first(); return view('private.mahasiswa.akademik.khs',['webs'=>$w,'user'=>$user,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Hasil Studi (KHS)','academy'=>$w?$w->school_apps.' by '.$w->school_name:'SIAKAD','khsList'=>\App\Models\Akademik\KHS::with(['tahunAkademik','nilaiSemester.mataKuliah'])->where('mahasiswa_id',$user->id)->orderBy('semester')->get()]); }
