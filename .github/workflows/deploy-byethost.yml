@@ -52,7 +52,8 @@ jobs:
       - name: Verify Turnstile package and Blade component
         run: |
           test -d vendor/coderflex/laravel-turnstile
-          grep -R "turnstile-widget" vendor/coderflex/laravel-turnstile/resources vendor/coderflex/laravel-turnstile/src
+          test -f resources/views/components/turnstile-widget.blade.php
+          grep -q "cf-turnstile" resources/views/components/turnstile-widget.blade.php
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
