@@ -447,7 +447,7 @@ class KRSController extends Controller
         // as a local file on shared hosting. Storage paths may be blocked by
         // open_basedir and remote URLs may be disabled by the PDF renderer.
         $logoDataUri = null;
-        $logoPath = public_path('images/logo.png');
+        $logoPath = public_path('images/logo/logo-vert1.png');
         if (is_file($logoPath) && is_readable($logoPath)) {
             try {
                 $bytes = file_get_contents($logoPath);
