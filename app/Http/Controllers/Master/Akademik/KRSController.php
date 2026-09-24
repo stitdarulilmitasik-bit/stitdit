@@ -433,34 +433,36 @@ class KRSController extends Controller
 
         // Embedding logo sebagai data URI membuat PDF mandiri dan tidak
         // bergantung pada URL, storage symlink, atau document root hosting.
+        // Dompdf pada hosting tidak boleh bergantung pada URL /media atau
+        // symlink public/storage. Baca langsung dari Laravel public disk dan
+        // ubah menjadi data URI sehingga logo benar-benar tertanam di PDF.
         $logoDataUri = null;
         $logoCandidates = [
-            storage_path('app/public/images/logo/logo-vert.png'),
-            storage_path('app/public/images/default/logo-vertical.png'),
-            storage_path('app/public/images/logo/logo-hori.png'),
+            'images/logo/logo-vert.png',
+            'images/logo/logo-hori.png',
+            'images/default/logo-vertical.png',
+            'images/default/logo-horizontal.png',
         ];
 
-        foreach ($logoCandidates as $logoFile) {
-            if (!is_file($logoFile) || !is_readable($logoFile)) {
+        foreach ($logoCandidates as $logoPath) {
+            $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+            if (!$disk->exists($logoPath)) {
                 continue;
             }
 
-            $logoBytes = @file_get_contents($logoFile);
-            if ($logoBytes === false || $logoBytes === '') {
+            try {
+                $logoBytes = $disk->get($logoPath);
+                if ($logoBytes === '') {
+                    continue;
+                }
+
+                $mime = $disk->mimeType($logoPath) ?: 'image/png';
+                $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                break;
+            } catch (\Throwable $e) {
                 continue;
             }
-
-            $extension = strtolower(pathinfo($logoFile, PATHINFO_EXTENSION));
-            $mime = match ($extension) {
-                'jpg', 'jpeg' => 'image/jpeg',
-                'gif' => 'image/gif',
-                'webp' => 'image/webp',
-                'svg' => 'image/svg+xml',
-                default => 'image/png',
-            };
-
-            $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-            break;
         }
 
         $data = [
