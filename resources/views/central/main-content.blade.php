@@ -515,7 +515,7 @@
                 @forelse($fakultas ?? [] as $fak)
                     <div class="col-md-4">
                         <div class="card news-card h-100">
-                            <img src="{{ asset('images/placeholders/news-placeholder.svg') }}" class="card-img-top" alt="{{ $fak->name }}" loading="lazy">
+                            <img src="{{ stit_image_url(null) }}" class="card-img-top" alt="{{ $fak->name }}" loading="lazy">
                             <div class="card-body">
                                 <h5 class="card-title">{{ $fak->name }}</h5>
                                 <p class="card-text">
@@ -556,7 +556,7 @@
         @php
         // Helper fallback image (reliable)
         function news_fallback($w, $h, $text='Berita'){
-            return asset('images/placeholders/news-placeholder.svg');
+            return stit_image_url(null);
         }
         @endphp
 
@@ -728,7 +728,7 @@
                         <div class="col-lg-4 col-md-6">
                             <div class="card rounded-4 overflow-hidden news-card">
                                 <div class="position-relative">
-                                    <img src="{{ stit_gallery_image_url($galeri->photo) }}" class="card-img-top" alt="{{ $galeri->name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/placeholders/news-placeholder.svg') }}'" style="height: 220px; object-fit: cover;">
+                                    <img src="{{ stit_gallery_image_url($galeri->photo) }}" class="card-img-top" alt="{{ $galeri->name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ stit_image_url(null) }}'" style="height: 220px; object-fit: cover;">
                                     <div class="position-absolute top-0 start-0 p-3">
                                         <span class="badge bg-primary">{{ $galeri->fotos->count() }} foto</span>
                                     </div>
