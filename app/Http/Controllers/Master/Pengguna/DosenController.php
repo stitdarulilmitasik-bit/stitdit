@@ -173,8 +173,8 @@ class DosenController extends Controller
             $request->validate($rules);
             $updateData = $request->except(['_token', '_method', 'photo']);
             if ($request->hasFile('photo')) {
-                if ($dosen->photo && $dosen->photo !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . $dosen->photo);
+                if ($dosen->getRawOriginal('photo') && $dosen->getRawOriginal('photo') !== 'default.jpg') {
+                    Storage::disk('public')->delete('images/profile/' . $dosen->getRawOriginal('photo'));
                 }
                 $photoName = time() . '-' . $dosen->code . '-' . uniqid() . '.' . $request->photo->getClientOriginalExtension();
                 $request->photo->storeAs('images/profile', $photoName, 'public');
