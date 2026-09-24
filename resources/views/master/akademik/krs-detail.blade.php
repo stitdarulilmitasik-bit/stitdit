@@ -191,6 +191,26 @@
         </div>
     </div>
 
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fas fa-file-pdf me-2 text-danger"></i>Preview PDF KRS</h6>
+                    <a href="{{ route($spref . 'akademik.krs-print', $krs->code) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="fas fa-external-link-alt me-1"></i>Buka PDF
+                    </a>
+                </div>
+                <div class="card-body p-2">
+                    <iframe
+                        src="{{ route($spref . 'akademik.krs-preview', $krs->code) }}"
+                        title="Preview PDF KRS {{ $krs->code }}"
+                        style="width:100%;height:820px;border:1px solid #dee2e6;border-radius:8px;background:#f8f9fa;"
+                        loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- KRS Information -->
         <div class="col-lg-4 col-12 mb-3">
