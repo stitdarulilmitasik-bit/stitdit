@@ -1,467 +1,99 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Kartu Rencana Studi - {{ $krs->mahasiswa->name }}</title>
-    <style>
-        body {
-            font-family: helvetica, sans-serif;
-            font-size: 9pt;
-            color: #111111;
-            margin: 0;
-            padding: 0;
-        }
-
-        .kop {
-            width: 100%;
-            border-bottom: 2px solid #111111;
-            padding-bottom: 7px;
-            margin-bottom: 10px;
-        }
-
-        .kop-table {
-            width: 100%;
-            border: 0 !important;
-            border-collapse: separate !important;
-            border-spacing: 0 !important;
-            background: transparent !important;
-        }
-
-        .kop-table tr,
-        .kop-table td {
-            border: 0 !important;
-            border-top: 0 !important;
-            border-right: 0 !important;
-            border-bottom: 0 !important;
-            border-left: 0 !important;
-            padding: 0;
-            background: transparent !important;
-            vertical-align: middle;
-        }
-
-        .kop-logo {
-            width: 18%;
-            text-align: center;
-        }
-
-        .kop-logo img {
-            width: 68px;
-            height: 68px;
-        }
-
-        .kop-text {
-            width: 82%;
-            text-align: center;
-        }
-
-        .kop-text .line1 {
-            font-size: 11pt;
-            font-weight: bold;
-        }
-
-        .kop-text .line2 {
-            font-size: 15pt;
-            font-weight: bold;
-        }
-
-        .kop-text .line3 {
-            font-size: 8pt;
-            font-weight: bold;
-            margin-top: 2px;
-        }
-
-        .kop-text .address {
-            font-size: 7.5pt;
-            margin-top: 2px;
-        }
-
-        .document-header {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .document-header .faculty {
-            font-size: 9pt;
-            font-weight: bold;
-        }
-
-        .document-header .title {
-            font-size: 13pt;
-            font-weight: bold;
-            text-decoration: underline;
-            margin-top: 2px;
-        }
-
-        .document-header .semester {
-            font-size: 9pt;
-            margin-top: 2px;
-        }
-
-        .student-info {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        .student-info table {
-            width: 100%;
-            border: 0 !important;
-            border-collapse: collapse;
-        }
-
-        .student-info td {
-            border: 0 !important;
-            padding: 2.5px 2px;
-            vertical-align: middle;
-        }
-
-        .student-info .label {
-            width: 16%;
-            font-weight: bold;
-        }
-
-        .student-info .colon {
-            width: 2%;
-            text-align: center;
-        }
-
-        .student-info .value {
-            width: 32%;
-        }
-
-        .student-info .label-right {
-            width: 16%;
-            font-weight: bold;
-            padding-left: 8px;
-        }
-
-        .student-info .value-right {
-            width: 32%;
-        }
-
-        .status {
-            font-weight: bold;
-        }
-
-        .courses {
-            width: 100%;
-            border-collapse: collapse;
-            border: 0.6px solid #222222;
-            margin-bottom: 8px;
-        }
-
-        .courses th {
-            background-color: #e9ecef;
-            border: 0.6px solid #222222;
-            padding: 4px 3px;
-            font-size: 8pt;
-            font-weight: bold;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .courses td {
-            border: 0.6px solid #222222;
-            padding: 4px 3px;
-            font-size: 8pt;
-            line-height: 1.15;
-            vertical-align: middle;
-        }
-
-        .center {
-            text-align: center;
-        }
-
-        .left {
-            text-align: left;
-        }
-
-        .total-row td {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        .notes {
-            width: 100%;
-            border: 0.6px solid #777777;
-            padding: 5px 7px;
-            margin-bottom: 9px;
-            font-size: 7.8pt;
-        }
-
-        .notes-title {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .notes ol {
-            margin: 0;
-            padding-left: 15px;
-        }
-
-        .notes li {
-            margin-bottom: 1px;
-        }
-
-        .signatures {
-            width: 100%;
-            border: 0 !important;
-            border-collapse: collapse;
-            page-break-inside: avoid;
-            margin-top: 4px;
-        }
-
-        .signatures td {
-            width: 33.33%;
-            border: 0 !important;
-            text-align: center;
-            vertical-align: top;
-            padding: 4px 8px;
-        }
-
-        .signature-title {
-            font-weight: bold;
-            min-height: 30px;
-        }
-
-        .signature-space {
-            height: 38px;
-        }
-
-        .signature-name {
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        .signature-number {
-            font-size: 7.5pt;
-            margin-top: 2px;
-        }
-
-        .print-info {
-            font-size: 6.8pt;
-            color: #666666;
-            text-align: center;
-            margin-top: 7px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRS - {{ $krs->mahasiswa->name }} ({{ $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? '-' }})</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;color:#000;background:#fff;padding:20px}
+.container{width:100%;max-width:800px;margin:0 auto}
+.kop-surat{display:table;width:100%;border-bottom:3px double #000;padding-bottom:10px;margin-bottom:15px}
+.kop-logo{display:table-cell;width:100px;vertical-align:middle;text-align:center}
+.kop-logo img{width:85px;height:auto;display:block;margin:0 auto}
+.kop-text{display:table-cell;vertical-align:middle;text-align:center}
+.kop-text h3{font-size:14pt;font-weight:bold;text-transform:uppercase}
+.kop-text h2{font-size:16pt;font-weight:bold;text-transform:uppercase;margin:2px 0}
+.kop-text p{font-size:9pt;margin-top:2px}
+.judul-doc{text-align:center;margin-bottom:15px}
+.judul-doc h4{font-size:13pt;text-transform:uppercase;text-decoration:underline}
+.judul-doc p{font-size:11pt;font-weight:bold}
+.table-bio{width:100%;margin-bottom:15px;border-collapse:collapse}
+.table-bio td{padding:3px 0;vertical-align:top;font-size:10.5pt}
+.table-krs{width:100%;border-collapse:collapse;margin-bottom:15px}
+.table-krs th,.table-krs td{border:1px solid #000;padding:5px 6px;font-size:10pt}
+.table-krs th{background:#f2f2f2;text-align:center;font-weight:bold}
+.text-center{text-align:center}.text-bold{font-weight:bold}
+.catatan{font-size:9pt;margin-bottom:25px}.catatan ol{padding-left:18px}
+.table-ttd{width:100%;border-collapse:collapse;text-align:center;margin-top:10px}
+.table-ttd td{width:33.3%;vertical-align:top;padding-bottom:10px;font-size:10.5pt}
+.space-ttd{height:60px}
+.footer-print{margin-top:20px;border-top:1px solid #ccc;padding-top:5px;font-size:8pt;color:#555}
+@media print{body{padding:0}.container{max-width:100%}.no-print{display:none}@page{size:A4;margin:1.5cm}}
+</style>
 </head>
 <body>
+<div class="no-print" style="margin-bottom:20px;text-align:right">
+<button onclick="window.print()" style="padding:8px 16px;background:#007bff;color:#fff;border:0;border-radius:4px">Cetak KRS</button>
+</div>
+<div class="container"><div class="kop-surat">
+<div class="kop-logo">
 @php
-    $nim = $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? $krs->mahasiswa->code ?? '-';
-
-    $tahunMasukRaw = $krs->mahasiswa->taka_regist ?? null;
-    $tahunMasuk = '-';
-    if ($tahunMasukRaw !== null && $tahunMasukRaw !== '') {
-        $tahunMasukRaw = trim((string) $tahunMasukRaw);
-        $tahunMasuk = preg_match('/^\d{2}$/', $tahunMasukRaw)
-            ? (string) (2000 + (int) $tahunMasukRaw)
-            : $tahunMasukRaw;
+$logoPath = public_path('images/logo/logo-vert1.png');
+$logoBase64 = '';
+if (is_file($logoPath) && is_readable($logoPath)) {
+    try {
+        $logoBytes = file_get_contents($logoPath);
+        if (is_string($logoBytes) && $logoBytes !== '') {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode($logoBytes);
+        }
+    } catch (\Throwable $e) {
+        $logoBase64 = '';
     }
-
-    $dosenWali = $krs->dosenPA ?? null;
-    if (!$dosenWali) {
-        $fallbackJabatan = \App\Models\Jabatan::with('dosen')
-            ->where('is_active', true)
-            ->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])
-            ->where(function ($q) use ($krs) {
-                $q->whereNull('prodi_id')->orWhere('prodi_id', $krs->mahasiswa->prodi_id);
-            })
-            ->whereNotNull('dosen_id')
-            ->orderBy('sort_order')
-            ->first();
-
-        $dosenWali = $fallbackJabatan?->dosen;
-    }
-
-    $dosenNidn = $dosenWali?->nidn
-        ?? $dosenWali?->nidn_number
-        ?? $dosenWali?->numb_nidn
-        ?? $dosenWali?->number_nidn
-        ?? '-';
-
-    $logo = $logoDataUri ?? null;
-
-    $tahunAkademikRaw = (string) ($krs->tahunAkademik->name ?? '');
-    if (preg_match('/(\d{4}\s*\/\s*\d{4})/', $tahunAkademikRaw, $matches)) {
-        $tahunAkademik = preg_replace('/\s+/', '', $matches[1]);
-    } else {
-        $tahunAkademik = trim(preg_replace('/\s*[-|]\s*(Ganjil|Genap)\s*$/i', '', $tahunAkademikRaw));
-    }
+}
 @endphp
-
-<div class="kop">
-    <table class="kop-table">
-        <tr>
-            <td class="kop-logo">
-                @if (!empty($logoDataUri))
-                    <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi" width="68" height="68" style="display:block;margin:0 auto;">
-                @endif
-            </td>
-            <td class="kop-text">
-                <div class="line1">SEKOLAH TINGGI ILMU TARBIYAH</div>
-                <div class="line2">STIT DARUL ILMI TASIKMALAYA</div>
-                <div class="line3">SK Menteri Agama RI No. 536 Tahun 2026</div>
-                <div class="address">Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div>
-            </td>
-        </tr>
-    </table>
+@if($logoBase64)<img src="{{ $logoBase64 }}" alt="Logo STIT Darul Ilmi">@endif
 </div>
-
-<div class="document-header">
-    <div class="faculty">{{ $krs->mahasiswa->programStudi->fakultas->name ?? 'FAKULTAS' }}</div>
-    <div class="title">KARTU RENCANA STUDI (KRS)</div>
-    <div class="semester">Semester {{ $krs->semester }} &nbsp;|&nbsp; Tahun Akademik {{ $tahunAkademik ?: '-' }}</div>
+<div class="kop-text">
+<h3>SEKOLAH TINGGI ILMU TARBIYAH</h3>
+<h2>STIT DARUL ILMI TASIKMALAYA</h2>
+<p>SK Menteri Agama RI No. 536 Tahun 2026</p>
+<p>Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</p>
 </div>
-
-<div class="student-info">
-    <table>
-        <tr>
-            <td class="label">Nama Mahasiswa</td>
-            <td class="colon">:</td>
-            <td class="value">{{ $krs->mahasiswa->name }}</td>
-            <td class="label-right">Program Studi</td>
-            <td class="colon">:</td>
-            <td class="value-right">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">NIM</td>
-            <td class="colon">:</td>
-            <td class="value">{{ $nim }}</td>
-            <td class="label-right">Tahun Masuk</td>
-            <td class="colon">:</td>
-            <td class="value-right">{{ $tahunMasuk }}</td>
-        </tr>
-        <tr>
-            <td class="label">Semester</td>
-            <td class="colon">:</td>
-            <td class="value">{{ $krs->semester }}</td>
-            <td class="label-right">Dosen Wali</td>
-            <td class="colon">:</td>
-            <td class="value-right">{{ $dosenWali->name ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">Status KRS</td>
-            <td class="colon">:</td>
-            <td class="value status">{{ $krs->status }}</td>
-            <td class="label-right">Total SKS</td>
-            <td class="colon">:</td>
-            <td class="value-right"><strong>{{ $krs->total_sks }} SKS</strong></td>
-        </tr>
-    </table>
 </div>
-
-<table class="courses">
-    <thead>
-        <tr>
-            <th width="5%">No</th>
-            <th width="12%">Kode MK</th>
-            <th width="31%">Mata Kuliah</th>
-            <th width="7%">SKS</th>
-            <th width="9%">Kelas</th>
-            <th width="10%">Ruang</th>
-            <th width="26%">Dosen</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse ($krs->details as $detail)
-            @php
-                $jadwal = $detail->kelas?->jadwalKuliah
-                    ?->first(function ($item) use ($detail) {
-                        return (int) ($item->matkul_id ?? 0) === (int) ($detail->matkul_id ?? 0);
-                    });
-                $jadwal = $jadwal ?: $detail->kelas?->jadwalKuliah?->first();
-                $dosen1 = $detail->mataKuliah?->dosen1 ?? null;
-                $dosen2 = $detail->mataKuliah?->dosen2 ?? null;
-            @endphp
-            <tr>
-                <td class="center">{{ $loop->iteration }}</td>
-                <td class="center">{{ $detail->mataKuliah->code ?? '-' }}</td>
-                <td class="left">{{ $detail->mataKuliah->name ?? '-' }}</td>
-                <td class="center">{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td>
-                <td class="center">{{ $detail->kelas->name ?? '-' }}</td>
-                <td class="center">{{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}</td>
-                <td class="left">
-                    @if ($dosen1)
-                        {{ $dosen1->name }}
-                        @if ($dosen2)
-                            <br>{{ $dosen2->name }}
-                        @endif
-                    @else
-                        -
-                    @endif
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="7" class="center"><i>Belum ada mata kuliah yang dipilih.</i></td>
-            </tr>
-        @endforelse
-
-        @if ($krs->details->count() > 0)
-            <tr class="total-row">
-                <td colspan="3" class="left">TOTAL SKS</td>
-                <td class="center">{{ $krs->total_sks }}</td>
-                <td colspan="3"></td>
-            </tr>
-        @endif
-    </tbody>
+<div class="judul-doc">
+<p style="font-size:11pt;text-transform:uppercase">Fakultas Tarbiyah</p>
+<h4>KARTU RENCANA STUDI (KRS)</h4>
+<p>Semester {{ $krs->semester }} Tahun Akademik {{ $tahunAkademik ?? '-' }}</p>
+</div>
+<table class="table-bio">
+<tr><td width="18%">Nama Mahasiswa</td><td width="2%">:</td><td width="30%" class="text-bold">{{ $krs->mahasiswa->name }}</td><td width="18%">Program Studi</td><td width="2%">:</td><td width="30%">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td></tr>
+<tr><td>NIM</td><td>:</td><td>{{ $nim }}</td><td>Tahun Masuk</td><td>:</td><td>{{ $tahunMasuk }}</td></tr>
+<tr><td>Semester</td><td>:</td><td>{{ $krs->semester }}</td><td>Dosen Wali</td><td>:</td><td>{{ $dosenWali->name ?? '-' }}</td></tr>
+<tr><td>Status KRS</td><td>:</td><td class="text-bold">{{ $krs->status }}</td><td>Total SKS</td><td>:</td><td>{{ $krs->total_sks }} SKS</td></tr>
 </table>
-
-<table class="notes">
-    <tr>
-        <td style="border:0; padding:0;">
-            <div class="notes-title">CATATAN PENTING</div>
-            <ol>
-                <li>KRS ini harus mendapat persetujuan dari Dosen Pembimbing Akademik.</li>
-                <li>Perubahan KRS hanya dapat dilakukan pada periode yang telah ditentukan.</li>
-                <li>Mahasiswa wajib mengikuti semua mata kuliah yang tercantum dalam KRS.</li>
-                <li>KRS yang telah disetujui dan dikunci tidak dapat diubah.</li>
-            </ol>
-        </td>
-    </tr>
-</table>
-
-<table class="signatures">
-    <tr>
-        <td>
-            <div class="signature-title">Mahasiswa</div>
-            <div class="signature-space"></div>
-            <div class="signature-name">{{ $krs->mahasiswa->name }}</div>
-            <div class="signature-number">NIM. {{ $nim }}</div>
-        </td>
-        <td>
-            <div class="signature-title">Dosen Pembimbing Akademik</div>
-            <div class="signature-space"></div>
-            <div class="signature-name">{{ $dosenWali->name ?? '[Nama Dosen PA]' }}</div>
-            <div class="signature-number">NIDN. {{ $dosenNidn !== '-' ? $dosenNidn : '[NIDN Dosen PA]' }}</div>
-            @if ($krs->approved_at)
-                <div class="signature-number">Disetujui: {{ $krs->approved_at->format('d/m/Y H:i') }}</div>
-            @endif
-        </td>
-        <td>
-            <div class="signature-title">Ketua Program Studi</div>
-            <div class="signature-space"></div>
-            <div class="signature-name">{{ $kaprodi->name ?? '[Nama Ketua Prodi]' }}</div>
-            <div class="signature-number">
-                NIDN. {{ $kaprodi->nidn ?? $kaprodi->nidn_number ?? $kaprodi->numb_nidn ?? $kaprodi->number_nidn ?? '[NIDN Ketua Prodi]' }}
-            </div>
-        </td>
-    </tr>
-</table>
-
-<div class="print-info">
-    Dicetak pada: {{ now()->locale('id')->translatedFormat('d F Y H:i:s') }}
-    &nbsp;|&nbsp; Status KRS: {{ $krs->status }}
-    &nbsp;|&nbsp;
-    @if ($krs->approved_at)
-        Disetujui: {{ $krs->approved_at->format('d F Y H:i') }}
-    @else
-        Belum Disetujui
-    @endif
-    @if ($krs->published_at)
-        &nbsp;|&nbsp; Dipublish: {{ $krs->published_at->format('d F Y H:i') }}
-    @endif
+<table class="table-krs">
+<thead><tr><th width="5%">No</th><th width="12%">Kode MK</th><th width="33%">Mata Kuliah</th><th width="7%">SKS</th><th width="8%">Kelas</th><th width="10%">Ruang</th><th width="25%">Dosen</th></tr></thead>
+<tbody>
+@forelse($krs->details as $detail)
+@php
+$jadwal=$detail->kelas?->jadwalKuliah?->first(function($item)use($detail){return (int)($item->matkul_id??0)===(int)($detail->matkul_id??0);});
+$jadwal=$jadwal?:$detail->kelas?->jadwalKuliah?->first();
+$dosen1=$detail->mataKuliah?->dosen1;
+$dosen2=$detail->mataKuliah?->dosen2;
+@endphp
+<tr><td class="text-center">{{ $loop->iteration }}</td><td class="text-center">{{ $detail->mataKuliah->code ?? '-' }}</td><td>{{ $detail->mataKuliah->name ?? '-' }}</td><td class="text-center">{{ $detail->mataKuliah->sks ?? $detail->sks ?? 0 }}</td><td class="text-center">{{ $detail->kelas->name ?? '-' }}</td><td class="text-center">{{ $jadwal?->ruang?->name ?? $jadwal?->ruang ?? '-' }}</td><td>{{ $dosen1?->name ?? '-' }}@if($dosen2)<br>{{ $dosen2->name }}@endif</td></tr>
+@empty
+<tr><td colspan="7" class="text-center">Belum ada mata kuliah yang diambil.</td></tr>
+@endforelse
+@if($krs->details->count())<tr><td colspan="3" class="text-bold text-center">TOTAL SKS</td><td class="text-center text-bold">{{ $krs->total_sks }}</td><td colspan="3"></td></tr>@endif
+</tbody></table>
+<div class="catatan"><strong>CATATAN PENTING:</strong><ol><li>KRS ini harus mendapat persetujuan dari Dosen Pembimbing Akademik.</li><li>Perubahan KRS hanya dapat dilakukan pada periode yang telah ditentukan.</li><li>Mahasiswa wajib mengikuti semua mata kuliah yang tercantum dalam KRS.</li><li>KRS yang telah disetujui dan dikunci tidak dapat diubah.</li></ol></div>
+<table class="table-ttd"><tr>
+<td>Mahasiswa<div class="space-ttd"></div><strong><u>{{ $krs->mahasiswa->name }}</u></strong><br>NIM. {{ $nim }}</td>
+<td>Dosen Pembimbing Akademik<div class="space-ttd"></div><strong><u>{{ $dosenWali->name ?? '-' }}</u></strong><br>NIDN. {{ $dosenNidn }}</td>
+<td>Ketua Program Studi<div class="space-ttd"></div><strong><u>{{ $kaprodi->name ?? '-' }}</u></strong><br>NIDN. {{ $kaprodi->nidn ?? $kaprodi->nidn_number ?? $kaprodi->numb_nidn ?? $kaprodi->number_nidn ?? '-' }}</td>
+</tr></table>
+<div class="footer-print">Dicetak pada: {{ now()->locale('id')->translatedFormat('d F Y H:i:s') }} | Status KRS: {{ $krs->status }} | @if($krs->approved_at)Disetujui: {{ $krs->approved_at->format('d F Y H:i') }}@else Belum Disetujui @endif</div>
 </div>
-</body>
-</html>
+</body></html>
