@@ -22,7 +22,7 @@ use App\Models\Akademik\ProgramStudi;
 use App\Models\PMB\JalurPendaftaran;
 use App\Models\PMB\GelombangPendaftaran;
 // Use Plugins
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Excel;
 
 class PendaftarController extends Controller
@@ -442,7 +442,7 @@ class PendaftarController extends Controller
             $data['pendaftars'] = $pendaftars;
             $data['webs'] = WebSetting::first();
 
-            $pdf = PDF::loadView('master.pmb.pendaftar-pdf', $data);
+            $pdf = Pdf::loadView('master.pmb.pendaftar-pdf', $data);
             return $pdf->download('pendaftar-' . date('Y-m-d') . '.pdf');
 
         } catch (\Exception $e) {
