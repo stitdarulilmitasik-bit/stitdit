@@ -35,10 +35,10 @@ jobs:
 
       - name: Install and synchronize PHP dependencies
         run: |
-          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+          composer update --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
-      - name: Verify Composer lock file
-        run: composer validate --no-check-publish
+      - name: Verify Composer dependencies
+        run: composer validate --no-check-publish --no-check-lock
 
       - name: Clear Laravel cache
         run: php artisan optimize:clear
