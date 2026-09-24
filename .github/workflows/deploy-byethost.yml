@@ -10,9 +10,13 @@ concurrency:
   group: byethost-production
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -25,9 +29,22 @@ jobs:
           extensions: mbstring, dom, fileinfo, curl, mysql, gd, zip, intl
           tools: composer:v2
           coverage: none
-          
-     - name: Clear cache
-       run: php artisan optimize:clear
+
+      - name: Validate Composer files
+        run: composer validate --no-check-publish
+
+      - name: Install PHP dependencies
+        run: |
+          # composer.lock in the repository can lag behind composer.json.
+          # Resolve the current production dependency set so deployment does not
+          # fail with "Required package ... is not present in the lock file".
+          composer update --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+
+      - name: Clear Laravel cache
+        run: php artisan optimize:clear
+
+      - name: Discover Laravel packages
+        run: php artisan package:discover --ansi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -58,16 +75,32 @@ jobs:
           rm -rf deploy
           mkdir -p deploy
 
-          # Laravel application files stay in the same document-root tree.
-          # public/* is moved to the FTP document root so index.php can be served directly.
-          rsync -a --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='tests/' --exclude='.env' --exclude='.env.*' --exclude='deploy/' ./ deploy/
+          # Copy the Laravel application while excluding local/dev files.
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='deploy/' \
+            ./ deploy/
+
+          # ByetHost serves /htdocs as the document root. Move the contents
+          # of Laravel's public directory to that root.
           rsync -a public/ deploy/
           rm -rf deploy/public
 
-          # The public .htaccess must be the document-root .htaccess.
+          # The copied public/index.php normally expects ../vendor and
+          # ../bootstrap. Because public/ is flattened into /htdocs, rewrite
+          # those paths for the new document root.
+          php -r '$p="deploy/index.php"; $s=file_get_contents($p); $s=str_replace("__DIR__.'/../storage", "__DIR__.'/storage", $s); $s=str_replace("__DIR__.'/../vendor", "__DIR__.'/vendor", $s); $s=str_replace("__DIR__.'/../bootstrap", "__DIR__.'/bootstrap", $s); file_put_contents($p,$s);'
+
+          # Fail the build if the deployment package is incomplete.
           test -f deploy/index.php
           test -f deploy/.htaccess
           test -f deploy/vendor/autoload.php
+          test -f deploy/bootstrap/app.php
 
       - name: Deploy to ByetHost via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -87,5 +120,4 @@ jobs:
             **/tests/**
             **/.env
             **/.env.*
-            **/storage/app/public/*
             **/storage/logs/*.log
