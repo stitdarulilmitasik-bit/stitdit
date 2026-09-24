@@ -122,7 +122,6 @@
     $logo = null;
     $logoCandidates = [
         storage_path('app/public/images/logo/logo-vert.png'),
-        public_path('storage/images/logo/logo-vert.png'),
     ];
     foreach ($logoCandidates as $candidate) {
         if (is_file($candidate)) {
