@@ -1,132 +1,4 @@
-name: Deploy Laravel to ByetHost
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-concurrency:
-  group: byethost-production
-  cancel-in-progress: true
-
-permissions:
-  contents: write
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP 8.3
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, dom, fileinfo, curl, mysql, gd, zip, intl
-          tools: composer:v2
-          coverage: none
-
-      - name: Validate composer.json
-        run: composer validate --no-check-publish --no-check-lock
-
-      - name: Sync Composer lock file when needed
-        run: |
-          if composer validate --no-check-publish --check-lock; then
-            echo "composer.lock is synchronized."
-          else
-            echo "composer.lock is out of sync."
-            echo "Updating lock file..."
-
-            composer update \
-              --no-dev \
-              --prefer-dist \
-              --optimize-autoloader \
-              --no-interaction \
-              --no-scripts
-
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-            git add composer.lock
-
-            if ! git diff --cached --quiet; then
-              git commit -m "chore: sync composer lock [skip ci]"
-              git push origin HEAD:main
-            else
-              echo "No composer.lock changes."
-            fi
-          fi
-
-      - name: Install PHP dependencies for CI verification
-        run: |
-          composer install \
-            --no-dev \
-            --prefer-dist \
-            --optimize-autoloader \
-            --no-interaction \
-            --no-scripts
-
-      - name: Verify Composer dependencies
-        run: |
-          composer validate --no-check-publish
-          test -f composer.lock
-          test -d vendor
-          test -f vendor/autoload.php
-
-      - name: Clear Laravel cache
-        run: |
-          php artisan optimize:clear
-          php artisan config:clear
-          php artisan route:clear
-          php artisan view:clear
-          php artisan event:clear
-
-          rm -f bootstrap/cache/*.php
-
-      - name: Discover Laravel packages
-        run: |
-          php artisan package:discover --ansi
-
-          test -f bootstrap/cache/packages.php
-          test -f bootstrap/cache/services.php
-
-      - name: Verify Turnstile package and Blade component
-        run: |
-          test -d vendor/coderflex/laravel-turnstile
-          test -f resources/views/components/turnstile-widget.blade.php
-          grep -q "cf-turnstile" resources/views/components/turnstile-widget.blade.php
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
-      - name: Install frontend dependencies
-        run: npm ci --prefer-offline
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Prepare Laravel writable directories
-        run: |
-          mkdir -p storage/framework/cache
-          mkdir -p storage/framework/sessions
-          mkdir -p storage/framework/views
-          mkdir -p storage/logs
-          mkdir -p storage/app/public
-
-          touch storage/framework/cache/.gitkeep
-          touch storage/framework/sessions/.gitkeep
-          touch storage/framework/views/.gitkeep
-          touch storage/logs/.gitkeep
-          touch storage/app/public/.gitkeep
-
-      - name: Prepare ByetHost deployment
+ - name: Prepare ByetHost deployment
         run: |
           rm -rf deploy
           mkdir -p deploy
@@ -147,9 +19,14 @@ jobs:
 
           echo "Copying public files to document root..."
 
-          rsync -a public/ deploy/
+          rsync -a \
+            --exclude='vendor/' \
+            public/ deploy/
 
-          rm -rf deploy/public
+          echo "Removing any vendor directory from deployment..."
+
+          rm -rf deploy/vendor
+          rm -rf deploy/public/vendor
 
           echo "Adjusting Laravel paths for ByetHost..."
 
@@ -169,38 +46,14 @@ jobs:
 
           echo "Confirming vendor is NOT included..."
 
-          if [ -d "deploy/vendor" ]; then
-            echo "ERROR: deploy/vendor exists."
+          if [ -e "deploy/vendor" ]; then
+            echo "ERROR: deploy/vendor still exists."
+            exit 1
+          fi
+
+          if [ -e "deploy/public/vendor" ]; then
+            echo "ERROR: deploy/public/vendor still exists."
             exit 1
           fi
 
           echo "Deployment package ready."
-
-      - name: Deploy to ByetHost via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.BYETHOST_FTP_SERVER }}
-          username: ${{ secrets.BYETHOST_FTP_USERNAME }}
-          password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
-          protocol: ftp
-          port: ${{ secrets.BYETHOST_FTP_PORT || 21 }}
-
-          server-dir: /htdocs/
-          local-dir: ./deploy/
-
-          dangerous-clean-slate: false
-
-          state-name: .ftp-deploy-sync-state.json
-
-          log-level: minimal
-          timeout: 180000
-
-          exclude: |
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            **/tests/**
-            **/.env
-            **/.env.*
-            **/vendor/**
-            **/storage/logs/*.log
