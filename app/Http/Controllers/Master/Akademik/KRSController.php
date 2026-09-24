@@ -433,12 +433,9 @@ class KRSController extends Controller
 
         // Embedding logo sebagai data URI membuat PDF mandiri dan tidak
         // bergantung pada URL, storage symlink, atau document root hosting.
-        // Dompdf pada hosting tidak boleh bergantung pada URL /media atau
-        // symlink public/storage. Baca langsung dari Laravel public disk dan
-        // ubah menjadi data URI sehingga logo benar-benar tertanam di PDF.
+        // TCPDF menerima data URI secara langsung sehingga logo tertanam di PDF.
         $logoDataUri = null;
         $logoCandidates = [
-            'images/logo/logo-vert.png',
             'images/logo/logo-hori.png',
             'images/default/logo-vertical.png',
             'images/default/logo-horizontal.png',
@@ -481,8 +478,7 @@ class KRSController extends Controller
         $html = view('master.akademik.krs-print', $data)->render();
 
         // TCPDF menerima HTML hasil Blade dan menanam logo yang sudah
-        // disediakan sebagai data URI, sehingga tidak bergantung pada URL,
-        // document root, atau storage symlink hosting.
+        // disediakan sebagai data URI.
         $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
         $pdf->SetCreator('STIT Darul Ilmi Tasikmalaya');
         $pdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
