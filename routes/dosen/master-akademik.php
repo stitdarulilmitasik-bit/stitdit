@@ -70,6 +70,7 @@ Route::post('/akademik/krs',[App\Http\Controllers\Master\Akademik\KRSController:
 Route::post('/akademik/krs/bulk-copy',[App\Http\Controllers\Master\Akademik\KRSController::class, 'copyBulkKrs'])->name('akademik.krs-copy-bulk');
 Route::get('/akademik/krs/{code}/detail',[App\Http\Controllers\Master\Akademik\KRSController::class, 'detailKRS'])->name('akademik.krs-detail');
 Route::get('/akademik/krs/{code}/print',[App\Http\Controllers\Master\Akademik\KRSController::class, 'printKRS'])->name('akademik.krs-print');
+Route::get('/akademik/krs/{code}/preview',[App\Http\Controllers\Master\Akademik\KRSController::class, 'previewKRS'])->name('akademik.krs-preview');
 Route::get('/akademik/krs/{code}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'viewKRS'])->name('akademik.krs-view');
 Route::patch('/akademik/krs/{code}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'updateKRS'])->name('akademik.krs-update');
 Route::delete('/akademik/krs/{code}',[App\Http\Controllers\Master\Akademik\KRSController::class, 'deleteKRS'])->name('akademik.krs-delete');
