@@ -77,12 +77,23 @@ jobs:
           fi
 
       # ============================================================
-      # 5. INSTALL DEPENDENCIES FOR CI ONLY
-      #
-      # vendor dibuat di runner GitHub untuk validasi.
-      # vendor TIDAK akan dikirim ke ByetHost.
+      # 5. CACHE COMPOSER
       # ============================================================
-      - name: Install PHP dependencies for CI
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      # ============================================================
+      # 6. INSTALL DEPENDENCIES
+      #
+      # vendor WAJIB ikut deployment karena ByetHost tidak memiliki
+      # Terminal/Composer untuk membangun dependency di server.
+      # ============================================================
+      - name: Install PHP dependencies
         run: |
           composer install \
             --no-dev \
@@ -92,7 +103,7 @@ jobs:
             --no-scripts
 
       # ============================================================
-      # 6. VERIFY COMPOSER
+      # 7. VERIFY COMPOSER
       # ============================================================
       - name: Verify Composer dependencies
         run: |
@@ -105,7 +116,7 @@ jobs:
           echo "Composer dependencies verified."
 
       # ============================================================
-      # 7. CLEAR LARAVEL CACHE
+      # 8. CLEAR LARAVEL CACHE
       # ============================================================
       - name: Clear Laravel cache
         run: |
@@ -130,7 +141,7 @@ jobs:
           echo "Laravel packages discovered."
 
       # ============================================================
-      # 9. VERIFY TURNSTILE
+      # 10. VERIFY TURNSTILE
       # ============================================================
       - name: Verify Turnstile package and Blade component
         run: |
@@ -145,7 +156,7 @@ jobs:
           echo "Turnstile package and component verified."
 
       # ============================================================
-      # 10. SETUP NODE
+      # 11. SETUP NODE
       # ============================================================
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -154,21 +165,21 @@ jobs:
           cache: npm
 
       # ============================================================
-      # 11. INSTALL FRONTEND DEPENDENCIES
+      # 12. INSTALL FRONTEND DEPENDENCIES
       # ============================================================
       - name: Install frontend dependencies
         run: |
           npm ci --prefer-offline
 
       # ============================================================
-      # 12. BUILD FRONTEND
+      # 13. BUILD FRONTEND
       # ============================================================
       - name: Build frontend
         run: |
           npm run build
 
       # ============================================================
-      # 13. PREPARE STORAGE
+      # 14. PREPARE STORAGE
       # ============================================================
       - name: Prepare Laravel writable directories
         run: |
@@ -185,11 +196,11 @@ jobs:
           touch storage/app/public/.gitkeep
 
       # ============================================================
-      # 14. PREPARE BYETHOST DEPLOYMENT
+      # 15. PREPARE BYETHOST DEPLOYMENT
       #
       # IMPORTANT:
-      # vendor sengaja TIDAK dimasukkan.
-      # /htdocs/vendor di server akan dipertahankan.
+      # vendor WAJIB dimasukkan karena ByetHost tidak memiliki
+      # Terminal/Composer untuk membangun dependency di server.
       # ============================================================
       - name: Prepare ByetHost deployment
         shell: bash
@@ -204,10 +215,9 @@ jobs:
           mkdir -p deploy
 
           # --------------------------------------------------------
-          # Copy Laravel application
-          # EXCLUDE vendor
+          # Copy Laravel application INCLUDING vendor
           # --------------------------------------------------------
-          echo "Copying Laravel application without vendor..."
+          echo "Copying Laravel application including vendor..."
 
           rsync -a \
             --exclude='.git/' \
@@ -217,7 +227,6 @@ jobs:
             --exclude='.env' \
             --exclude='.env.*' \
             --exclude='deploy/' \
-            --exclude='vendor/' \
             --exclude='storage/logs/*.log' \
             ./ deploy/
 
@@ -238,9 +247,7 @@ jobs:
           # --------------------------------------------------------
           # Safety cleanup
           # --------------------------------------------------------
-          echo "Removing vendor from deployment package..."
-
-          rm -rf deploy/vendor
+          echo "Keeping Composer vendor in deployment package..." 
           rm -rf deploy/public/vendor
 
           # --------------------------------------------------------
@@ -276,19 +283,17 @@ jobs:
           test -f deploy/composer.lock
 
           # --------------------------------------------------------
-          # Verify vendor is NOT included
+          # Verify vendor IS included and autoload is valid
           # --------------------------------------------------------
-          echo "Confirming vendor is NOT included..."
+          echo "Confirming Composer vendor is included..."
 
-          if [ -e "deploy/vendor" ]; then
-            echo "ERROR: deploy/vendor still exists."
-            exit 1
-          fi
+          test -d deploy/vendor
+          test -f deploy/vendor/autoload.php
+          test -f deploy/vendor/coderflex/laravel-turnstile/composer.json
 
-          if [ -e "deploy/public/vendor" ]; then
-            echo "ERROR: deploy/public/vendor still exists."
-            exit 1
-          fi
+          php -r "require 'deploy/vendor/autoload.php'; if (!class_exists('Coderflex\\LaravelTurnstile\\LaravelTurnstileServiceProvider')) { fwrite(STDERR, 'ERROR: Turnstile ServiceProvider tidak ditemukan di Composer autoload.' . PHP_EOL); exit(1); } echo 'Turnstile ServiceProvider autoload OK.' . PHP_EOL;"
+
+          echo "Composer vendor and autoload verified."
 
           # --------------------------------------------------------
           # Verify index.php points to server vendor
@@ -300,12 +305,12 @@ jobs:
 
           echo "=========================================="
           echo "Deployment package ready."
-          echo "vendor will NOT be uploaded."
-          echo "/htdocs/vendor will remain untouched."
+          echo "vendor WILL be uploaded."
+          echo "Composer autoload has been verified."
           echo "=========================================="
 
       # ============================================================
-      # 15. DEPLOY TO BYETHOST
+      # 16. DEPLOY TO BYETHOST
       # ============================================================
       - name: Deploy to ByetHost via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
@@ -321,8 +326,8 @@ jobs:
           server-dir: /htdocs/
           local-dir: ./deploy/
 
-          # NEVER DELETE SERVER FILES
-          # Especially /htdocs/vendor and .env
+          # Keep server-only files such as .env.
+          # vendor is now part of the deployment package.
           dangerous-clean-slate: false
 
           state-name: .ftp-deploy-sync-state.json
@@ -341,5 +346,4 @@ jobs:
             **/tests/**
             **/.env
             **/.env.*
-            **/vendor/**
             **/storage/logs/*.log
