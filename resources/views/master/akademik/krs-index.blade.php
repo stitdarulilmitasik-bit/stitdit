@@ -6,11 +6,11 @@
 <style>
 .bg-light-primary{background-color:rgba(67,94,190,.1)}.bg-light-success{background-color:rgba(40,167,69,.1)}.bg-light-warning{background-color:rgba(255,193,7,.1)}.bg-light-info{background-color:rgba(23,162,184,.1)}.bg-light-danger{background-color:rgba(220,53,69,.1)}
 .card{border:none;box-shadow:0 0 10px rgba(0,0,0,.05);border-radius:10px}.card-header{background:none;border-bottom:1px solid rgba(0,0,0,.05);padding:1.5rem}.card-body{padding:1.5rem}
-.table{margin-bottom:0}.table thead th{border-top:none;border-bottom:2px solid rgba(0,0,0,.05);font-weight:600;color:#6c757d;padding-top:1rem;padding-bottom:.75rem;text-align:left}.table td{vertical-align:middle;padding-top:.75rem;padding-bottom:.75rem;text-align:left}.table th.text-center,.table td.text-center{text-align:center!important}
+.table{margin-bottom:0;min-width:860px}.table thead th{border-top:none;border-bottom:2px solid rgba(0,0,0,.05);font-weight:600;color:#6c757d;padding-top:1rem;padding-bottom:.75rem;text-align:left}.table td{vertical-align:middle;padding-top:.75rem;padding-bottom:.75rem;text-align:left}.table th.text-center,.table td.text-center{text-align:center!important}.krs-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}.krs-table-wrap::-webkit-scrollbar{height:7px}.krs-table-wrap table{min-width:860px}.krs-mobile-note{display:none}
 .btn{padding:.5rem 1rem;border-radius:5px}.btn-sm{padding:.25rem .5rem}.form-control,.form-select{border-radius:5px;border:1px solid rgba(0,0,0,.1);padding:.5rem 1rem}.form-control:focus,.form-select:focus{border-color:#435ebe;box-shadow:0 0 0 .2rem rgba(67,94,190,.25)}
 .badge{padding:.5em .75em;font-weight:500}.collapse{transition:all .3s ease}.collapse.show{margin-top:1rem}
 .copy-target-list{max-height:240px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px}.bulk-copy-modal .modal-content{max-height:82vh}.bulk-copy-modal .modal-header{padding:.65rem 1rem}.bulk-copy-modal .modal-body{padding:.75rem 1rem}.bulk-copy-modal .modal-footer{padding:.5rem 1rem;gap:.5rem;position:sticky;bottom:0;background:#fff;border-top:1px solid #e9ecef;z-index:2}.bulk-copy-modal .modal-footer .btn{padding:.4rem .75rem}.bulk-copy-modal .alert{padding:.6rem .75rem;margin-bottom:.75rem}.bulk-copy-modal .copy-target-item{padding:.45rem .65rem}.copy-target-item{padding:.65rem .85rem;border-bottom:1px solid #f0f0f0}.copy-target-item:last-child{border-bottom:0}.copy-target-item:hover{background:#f8fafc}
-@media(max-width:768px){.table-responsive table,.table-responsive thead,.table-responsive tbody,.table-responsive th,.table-responsive td,.table-responsive tr{display:block;width:100%}.table-responsive thead{display:none}.table-responsive tr{margin-bottom:1rem;border-bottom:2px solid #eee}.table-responsive td{position:relative;padding-left:50%;text-align:left!important;border:none;border-bottom:1px solid #eee}.table-responsive td:before{position:absolute;top:0;left:0;width:48%;padding-left:1rem;white-space:nowrap;font-weight:bold;color:#888;content:attr(data-label)}}
+@media(max-width:768px){.card-header{padding:1rem}.card-header>.d-flex{width:100%;margin-top:.75rem}.card-header>.d-flex .btn{flex:1 1 calc(50% - .5rem);min-width:140px}.card-body{padding:1rem}.krs-mobile-note{display:block;font-size:.75rem;color:#6c757d;margin-bottom:.5rem}.krs-table-wrap{margin:0 -1rem;width:calc(100% + 2rem);padding:0 1rem}.krs-table-wrap .table{min-width:860px}.table thead{display:table-header-group}.table tbody{display:table-row-group}.table tr{display:table-row;border:0}.table th,.table td{display:table-cell;white-space:nowrap}.table td{padding:.65rem .55rem}.table td:first-child,.table th:first-child{width:42px}.table td:nth-child(2){white-space:normal;min-width:190px}.table td:nth-child(8){min-width:150px}.table .btn-group{display:inline-flex;flex-wrap:nowrap}.table .btn{flex:0 0 auto}.row.mb-3{margin-left:0;margin-right:0}.row.mb-3>[class*="col-"]{margin-bottom:.5rem}.row.mb-3 .form-control,.row.mb-3 .form-select{width:100%}}
 </style>
 @endsection
 
@@ -60,7 +60,8 @@
 <div class="col-md-3"><input type="text" class="form-control" id="searchInput" placeholder="Cari mahasiswa..." onkeyup="filterTable()"></div>
 </div>
 
-<div class="table-responsive">
+<div class="krs-mobile-note"><i class="fas fa-arrows-left-right me-1"></i>Geser tabel ke kiri/kanan untuk melihat semua kolom.</div>
+<div class="krs-table-wrap">
 <table class="table table-hover" id="krsTable">
 <thead><tr><th class="text-center"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th><th>Mahasiswa</th><th>Tahun Akademik</th><th class="text-center">Semester</th><th class="text-center">Total SKS</th><th class="text-center">Status</th><th>Tanggal Dibuat</th><th class="text-center">Aksi</th></tr></thead>
 <tbody>
