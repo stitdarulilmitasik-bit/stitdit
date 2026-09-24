@@ -466,18 +466,15 @@ class KRSController extends Controller
                     continue;
                 }
 
-                $mime = $disk->mimeType($logoPath) ?: 'image/png';
-                if (!str_starts_with($mime, 'image/')) {
-                    continue;
-                }
-
-                // Validasi isi file, bukan hanya ekstensi .png, agar Dompdf
-                // tidak menerima asset yang kosong atau bukan gambar.
+                // Logo yang dipakai adalah PNG yang memang ditentukan oleh
+                // nama file. Jangan bergantung pada MIME detector hosting karena
+                // ByetHost dapat mengembalikan application/octet-stream untuk PNG.
+                // Dompdf cukup menerima Data URI dengan MIME image/png yang eksplisit.
                 if (function_exists('getimagesizefromstring') && @getimagesizefromstring($logoBytes) === false) {
                     continue;
                 }
 
-                $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                $logoDataUri = 'data:image/png;base64,' . base64_encode($logoBytes);
                 break;
             } catch (\Throwable $e) {
                 // Lanjutkan ke logo cadangan bila asset pertama tidak dapat dibaca.
