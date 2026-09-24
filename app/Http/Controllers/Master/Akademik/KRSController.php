@@ -485,23 +485,34 @@ class KRSController extends Controller
             }
         }
 
-        // 3. Fallback filesystem langsung.
+        // 3. Fallback filesystem langsung, termasuk struktur ByetHost:
+        // /htdocs/storage/app/public/images/logo/logo-vert1.png
         if (!$logoDataUri) {
-            foreach ($logoCandidates as $filename) {
-                $candidate = storage_path('app/public/images/logo/' . basename($filename));
-                if (!is_file($candidate) || !is_readable($candidate)) {
-                    continue;
-                }
+            $filesystemBases = array_values(array_unique(array_filter([
+                storage_path('app/public'),
+                base_path('storage/app/public'),
+                dirname(base_path()) . '/storage/app/public',
+                '/htdocs/storage/app/public',
+                $_SERVER['DOCUMENT_ROOT'] ?? null,
+            ])));
 
-                try {
-                    $logoBytes = file_get_contents($candidate);
-                    if ($logoBytes !== false && $logoBytes !== '') {
-                        $mime = mime_content_type($candidate) ?: 'image/png';
-                        $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-                        break;
+            foreach ($filesystemBases as $base) {
+                foreach ($logoCandidates as $filename) {
+                    $candidate = rtrim($base, '/\\') . '/images/logo/' . basename($filename);
+                    if (!is_file($candidate) || !is_readable($candidate)) {
+                        continue;
                     }
-                } catch (\\Throwable $e) {
-                    // Lanjutkan ke URL pengaturan website.
+
+                    try {
+                        $logoBytes = file_get_contents($candidate);
+                        if ($logoBytes !== false && $logoBytes !== '') {
+                            $mime = mime_content_type($candidate) ?: 'image/png';
+                            $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                            break 2;
+                        }
+                    } catch (\Throwable $e) {
+                        // Lanjutkan ke lokasi logo berikutnya.
+                    }
                 }
             }
         }
