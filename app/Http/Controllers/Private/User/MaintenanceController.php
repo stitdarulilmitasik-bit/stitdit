@@ -14,6 +14,26 @@ class MaintenanceController extends Controller
      * Jalankan pembersihan cache Laravel dari dashboard web-admin.
      * Hanya akun Web Administrator (type/raw_type = 0) yang diizinkan.
      */
+    public function clearRoutes(): RedirectResponse
+    {
+        $user = Auth::guard('web')->user();
+
+        abort_unless($user && (int) $user->raw_type === 0, 403);
+
+        try {
+            Artisan::call('route:clear');
+
+            return back()
+                ->with('maintenance_success', 'Route cache Laravel berhasil dibersihkan (php artisan route:clear).')
+                ->with('maintenance_output', trim(Artisan::output()));
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()
+                ->with('maintenance_error', 'Route cache Laravel gagal dibersihkan: ' . $e->getMessage());
+        }
+    }
+
     public function clearCache(): RedirectResponse
     {
         $user = Auth::guard('web')->user();
