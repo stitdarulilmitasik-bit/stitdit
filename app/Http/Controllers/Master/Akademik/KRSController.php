@@ -443,46 +443,19 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Embed logo entirely in memory. This avoids both open_basedir and
-        // Dompdf remote-URL/SSL restrictions on shared hosting.
+        // KRS PDF uses a logo copied into the public tree so Dompdf can read it
+        // as a local file on shared hosting. Storage paths may be blocked by
+        // open_basedir and remote URLs may be disabled by the PDF renderer.
         $logoDataUri = null;
-        foreach ([
-            'images/logo/logo-vert1.png',
-            'images/logo/logo-vert.png',
-        ] as $logoPath) {
+        $logoPath = public_path('images/logo/logo-vert1.png');
+        if (is_file($logoPath) && is_readable($logoPath)) {
             try {
-                $disk = Storage::disk('public');
-                if (!$disk->exists($logoPath)) {
-                    continue;
+                $bytes = file_get_contents($logoPath);
+                if (is_string($bytes) && $bytes !== '') {
+                    $logoDataUri = 'data:image/png;base64,' . base64_encode($bytes);
                 }
-
-                $bytes = $disk->get($logoPath);
-                if (!is_string($bytes) || $bytes === '') {
-                    continue;
-                }
-
-                // Prefer an in-memory JPEG when GD is available. This avoids
-                // PNG decoding differences in the Dompdf build on hosting.
-                if (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
-                    $image = @imagecreatefromstring($bytes);
-                    if ($image !== false) {
-                        ob_start();
-                        imagejpeg($image, null, 92);
-                        $jpegBytes = ob_get_clean();
-                        imagedestroy($image);
-
-                        if (is_string($jpegBytes) && $jpegBytes !== '') {
-                            $logoDataUri = 'data:image/jpeg;base64,' . base64_encode($jpegBytes);
-                            break;
-                        }
-                    }
-                }
-
-                // Fallback: keep the original PNG, still entirely in memory.
-                $logoDataUri = 'data:image/png;base64,' . base64_encode($bytes);
-                break;
-            } catch (\Throwable $e) {
-                continue;
+            } catch (\\Throwable $e) {
+                $logoDataUri = null;
             }
         }
 
