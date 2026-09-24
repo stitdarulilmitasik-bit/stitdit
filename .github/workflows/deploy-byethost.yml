@@ -25,9 +25,9 @@ jobs:
           extensions: mbstring, dom, fileinfo, curl, mysql, gd, zip, intl
           tools: composer:v2
           coverage: none
-
-      - name: Install PHP dependencies
-        run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+          
+     - name: Clear cache
+       run: php artisan optimize:clear
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
