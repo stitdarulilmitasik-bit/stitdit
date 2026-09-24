@@ -213,7 +213,9 @@ class AkademikController extends Controller
 
         $filename = 'KHS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->numb_nim ?? $user->name ?? 'mahasiswa') . '-Semester-' . $khs->semester . '.pdf';
 
-        return $pdf->download($filename);
+        return request()->boolean('preview')
+            ? $pdf->stream($filename)
+            : $pdf->download($filename);
     }
 
 
