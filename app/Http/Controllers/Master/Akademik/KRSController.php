@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 // Use Models
 use App\Models\Akademik\KRS;
 use App\Models\Jabatan;
@@ -442,34 +443,44 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Logo KRS menggunakan asset yang memang tersimpan dan terlacak di GitHub.
-        // Jangan bergantung pada app/public atau URL HTTP karena lokasi tersebut
-        // tidak menjadi sumber asset KRS pada repository produksi.
+        // Gunakan disk "public" Laravel agar sumber logo mengikuti konfigurasi
+        // filesystem aplikasi dan tidak bergantung pada path absolut hosting.
+        // Ini juga menghindari masalah open_basedir saat path storage berbeda
+        // antara lokal dan ByetHost.
         $logoDataUri = null;
         $logoCandidates = [
-            storage_path('app/public/images/logo/logo-vert1.png'),
-            storage_path('app/public/images/logo/logo-vert.png'),
+            'images/logo/logo-vert1.png',
+            'images/logo/logo-vert.png',
         ];
 
-        foreach ($logoCandidates as $candidate) {
-            if (!is_file($candidate) || !is_readable($candidate)) {
-                continue;
-            }
-
+        foreach ($logoCandidates as $logoPath) {
             try {
-                $logoBytes = file_get_contents($candidate);
-                if ($logoBytes === false || $logoBytes === '') {
+                $disk = Storage::disk('public');
+
+                if (!$disk->exists($logoPath)) {
                     continue;
                 }
 
-                $mime = function_exists('mime_content_type')
-                    ? (mime_content_type($candidate) ?: 'image/png')
-                    : 'image/png';
+                $logoBytes = $disk->get($logoPath);
+                if (!is_string($logoBytes) || $logoBytes === '') {
+                    continue;
+                }
+
+                $mime = $disk->mimeType($logoPath) ?: 'image/png';
+                if (!str_starts_with($mime, 'image/')) {
+                    continue;
+                }
+
+                // Validasi isi file, bukan hanya ekstensi .png, agar Dompdf
+                // tidak menerima asset yang kosong atau bukan gambar.
+                if (function_exists('getimagesizefromstring') && @getimagesizefromstring($logoBytes) === false) {
+                    continue;
+                }
 
                 $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
                 break;
             } catch (\Throwable $e) {
-                // Lanjutkan ke asset logo cadangan yang juga terlacak di repository.
+                // Lanjutkan ke logo cadangan bila asset pertama tidak dapat dibaca.
             }
         }
 
