@@ -433,7 +433,7 @@
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
-                            <span class="avatar avatar-sm" style="background-image: url({{ $user == null ? stit_profile_image_url(null) : $user->photo }})" onerror="this.style.backgroundImage='url({{ asset('storage/images/placeholders/profile-placeholder.svg') }})'">
+                            <span class="avatar avatar-sm" style="background-image: url({{ $user == null ? stit_profile_image_url(null) : stit_profile_image_url($user->photo) }})" onerror="this.style.backgroundImage='url({{ stit_profile_image_url(null) }})'">
                             </span>
                             <div class="d-none d-xl-block ps-2">
                                 <div>{{ $user == null ? 'Guest' : $user->name }}</div>
