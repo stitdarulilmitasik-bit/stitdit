@@ -35,7 +35,7 @@ jobs:
 
       - name: Install and synchronize PHP dependencies
         run: |
-          composer update --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
       - name: Verify Composer lock file
         run: composer validate --no-check-publish
@@ -44,7 +44,15 @@ jobs:
         run: php artisan optimize:clear
 
       - name: Discover Laravel packages
-        run: php artisan package:discover --ansi
+        run: |
+          php artisan package:discover --ansi
+          test -f bootstrap/cache/packages.php
+          test -f bootstrap/cache/services.php
+
+      - name: Verify Turnstile package and Blade component
+        run: |
+          test -d vendor/coderflex/laravel-turnstile
+          grep -R "turnstile-widget" vendor/coderflex/laravel-turnstile/resources vendor/coderflex/laravel-turnstile/src
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
