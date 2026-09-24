@@ -4,47 +4,58 @@ use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('stit_image_url')) {
     /**
-     * Resolve all application images from storage/app/public/images.
-     * The public web URL is served through the Laravel /media endpoint; no storage symlink is required.
+     * Resolve application images from storage/app/public/images.
+     * Images are exposed through the Laravel /media endpoint, so the site
+     * does not depend on a public/storage symlink.
      */
     function stit_image_url(?string $path, string $fallback = 'images/placeholders/news-placeholder.svg'): string
     {
         $path = trim((string) $path);
 
-        if ($path === '') {
-            return url('/media/' . ltrim($fallback, '/'));
+        $normalize = static function (string $value): string {
+            $value = trim(str_replace('\\', '/', $value));
+
+            // Accept full URLs that point back to this application's media/storage
+            // endpoints, while rejecting unrelated template/CDN image URLs.
+            if (filter_var($value, FILTER_VALIDATE_URL)) {
+                $parsed = parse_url($value);
+                $value = (string) ($parsed['path'] ?? '');
+            }
+
+            $value = ltrim($value, '/');
+
+            foreach (['media/', 'storage/', 'public/'] as $prefix) {
+                if (str_starts_with($value, $prefix)) {
+                    $value = substr($value, strlen($prefix));
+                }
+            }
+
+            return ltrim($value, '/');
+        };
+
+        $path = $normalize($path);
+
+        // Application image records are normally stored as images/foo.jpg.
+        // For legacy bare filenames, also try images/<filename>.
+        $candidates = [];
+        if ($path !== '') {
+            $candidates[] = $path;
+            if (! str_starts_with($path, 'images/')) {
+                $candidates[] = 'images/' . $path;
+            }
         }
 
-        $path = str_replace('\\', '/', $path);
-        $path = ltrim($path, '/');
-
-        // Normalize common values that were historically stored in the database.
-        if (str_starts_with($path, 'storage/')) {
-            $path = substr($path, 8);
-        }
-        if (str_starts_with($path, 'public/')) {
-            $path = substr($path, 7);
-        }
-        if (str_starts_with($path, 'images/')) {
-            // Keep all application image files under storage/app/public/images.
-            $path = ltrim($path, '/');
+        foreach (array_unique($candidates) as $candidate) {
+            if (str_starts_with($candidate, 'images/') && Storage::disk('public')->exists($candidate)) {
+                return url('/media/' . ltrim($candidate, '/'));
+            }
         }
 
-        // Never make the public site depend on an old/template image host.
-        if (filter_var($path, FILTER_VALIDATE_URL)) {
-            return url('/media/' . ltrim($fallback, '/'));
+        $fallback = $normalize($fallback);
+        if (! str_starts_with($fallback, 'images/')) {
+            $fallback = 'images/' . $fallback;
         }
 
-        if (Storage::disk('public')->exists($path)) {
-        return url('/media/' . ltrim($path, '/'));
-        }
-
-        // Do not fall back to public/images. All application images are stored
-        // in storage/app/public/images and exposed through the Laravel /media endpoint.
-        $fallback = str_replace('public/', '', ltrim($fallback, '/'));
-        if (str_starts_with($fallback, 'storage/')) {
-            $fallback = substr($fallback, 8);
-        }
         return Storage::disk('public')->exists($fallback)
             ? url('/media/' . ltrim($fallback, '/'))
             : url('/media/images/placeholders/news-placeholder.svg');
@@ -67,8 +78,11 @@ if (! function_exists('stit_storage_image_url')) {
 if (! function_exists('stit_profile_image_url')) {
     function stit_profile_image_url(?string $filename): string
     {
-        $fallback = 'images/placeholders/profile-placeholder.svg';
-        return stit_storage_image_url('images/profile', $filename, $fallback);
+        return stit_storage_image_url(
+            'images/profile',
+            $filename,
+            'images/placeholders/profile-placeholder.svg'
+        );
     }
 }
 
