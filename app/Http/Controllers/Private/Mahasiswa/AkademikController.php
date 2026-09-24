@@ -106,10 +106,7 @@ class AkademikController extends Controller
         // depend on the hosting document root, URL, or storage symlink.
         $logoDataUri = null;
         foreach ([
-            'images/logo/logo-hori.png',
-            'images/logo/logo_hori.png',
-            'images/default/logo-vertical.png',
-            'images/default/logo-horizontal.png',
+            'images/logo/logo-vert1.png',
         ] as $logoPath) {
             $disk = Storage::disk('public');
 
@@ -173,10 +170,7 @@ class AkademikController extends Controller
         // document root, URL, or public/storage symlink.
         $logoDataUri = null;
         foreach ([
-            'images/logo/logo-hori.png',
-            'images/logo/logo_hori.png',
-            'images/default/logo-horizontal.png',
-            'images/default/logo-vertical.png',
+            'images/logo/logo-vert1.png',
         ] as $logoPath) {
             $disk = Storage::disk('public');
 
