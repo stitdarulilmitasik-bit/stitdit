@@ -190,9 +190,14 @@
         }
 
         .print-info {
-            margin-top: 20px;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: -8mm;
+            border-top: 1px solid #777;
+            padding-top: 4px;
             font-size: 8pt;
-            color: #666;
+            color: #555;
             text-align: center;
         }
     </style>
@@ -418,16 +423,16 @@
             </tr>
         </table>
     </div>
-
-    <!-- Print Information -->
+    <!-- Footer / Print Information -->
     <div class="print-info">
         Dicetak pada: {{ now()->format('d F Y H:i:s') }} |
-        Status: {{ $khs->status_generate }} |
+        Status KRS: {{ $khs->status_generate }} |
         @if ($khs->published_at)
-            Dipublish: {{ $khs->published_at->format('d F Y H:i:s') }}
+            Disetujui: {{ $khs->published_at->format('d F Y H:i') }}
         @else
-            Belum Dipublish
+            Belum Disetujui
         @endif
+        &nbsp;|&nbsp; Printed via SIAKAD STIT-Darul Ilmi Tasikmalaya
     </div>
 
 </body>
