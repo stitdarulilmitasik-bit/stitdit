@@ -440,36 +440,49 @@ class KRSController extends Controller
             ->orderBy('sort_order')
             ->first();
 
-        // Logo KRS: ambil langsung dari storage aplikasi dan tanam sebagai Base64.
-        // Lokasi utama pada hosting ByetHost:
-        // /htdocs/storage/app/public/images/logo/logo-vert1.png
+        // Logo KRS: baca file fisik secara langsung lalu tanam sebagai Base64.
+        // File utama pada ByetHost: /htdocs/storage/app/public/images/logo/logo-vert1.png
         $logoDataUri = null;
-        $logoPath = storage_path('app/public/images/logo/logo-vert1.png');
-
-        // Fallback hanya untuk deployment dengan base path berbeda.
-        $logoPaths = array_values(array_unique(array_filter([
-            $logoPath,
-            base_path('storage/app/public/images/logo/logo-vert1.png'),
+        $logoFileCandidates = array_values(array_unique(array_filter([
             '/htdocs/storage/app/public/images/logo/logo-vert1.png',
+            storage_path('app/public/images/logo/logo-vert1.png'),
+            base_path('storage/app/public/images/logo/logo-vert1.png'),
+            public_path('storage/images/logo/logo-vert1.png'),
+            public_path('../storage/app/public/images/logo/logo-vert1.png'),
         ])));
 
-        foreach ($logoPaths as $candidate) {
+        foreach ($logoFileCandidates as $candidate) {
+            $candidate = realpath($candidate) ?: $candidate;
+
             if (!is_file($candidate) || !is_readable($candidate)) {
                 continue;
             }
 
             try {
                 $logoBytes = file_get_contents($candidate);
-                if ($logoBytes !== false && $logoBytes !== '') {
-                    $mime = function_exists('mime_content_type')
-                        ? (mime_content_type($candidate) ?: 'image/png')
-                        : 'image/png';
 
-                    $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-                    break;
+                if ($logoBytes === false || $logoBytes === '') {
+                    continue;
                 }
+
+                $mime = 'image/png';
+                if (function_exists('finfo_open')) {
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    if ($finfo) {
+                        $detectedMime = finfo_file($finfo, $candidate);
+                        finfo_close($finfo);
+                        if ($detectedMime) {
+                            $mime = $detectedMime;
+                        }
+                    }
+                } elseif (function_exists('mime_content_type')) {
+                    $mime = mime_content_type($candidate) ?: 'image/png';
+                }
+
+                $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                break;
             } catch (\Throwable $e) {
-                // Coba lokasi fallback berikutnya.
+                // Coba kandidat lokasi berikutnya.
             }
         }
 
