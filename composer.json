@@ -25,7 +25,7 @@
         "rap2hpoutre/fast-excel": "^5.5",
         "realrashid/sweet-alert": "^7.1",
         "spatie/ignition": "^1.14",
-        "mpdf/mpdf": "^8.2"
+        "tecnickcom/tcpdf": "^7.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
