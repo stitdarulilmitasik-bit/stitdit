@@ -16,10 +16,10 @@ class WebSetting extends Model
 
     public function getSchoolLogoHoriAttribute($value)
     {
-        return $value == 'logo-hori.png' ? asset('images/branding/logo-hori.png') : stit_storage_image_url('images/logo', $value, 'images/branding/logo-hori.png');
+        return stit_storage_image_url('images/logo', $value ?: 'logo-hori.png', 'images/logo/logo-hori.png');
     }
     public function getSchoolLogoVertAttribute($value)
     {
-        return $value == 'logo-vert.png' ? asset('images/branding/logo-vert.png') : stit_storage_image_url('images/logo', $value, 'images/branding/logo-vert.png');
+        return stit_storage_image_url('images/logo', $value ?: 'logo-vert.png', 'images/logo/logo-vert.png');
     }
 }
