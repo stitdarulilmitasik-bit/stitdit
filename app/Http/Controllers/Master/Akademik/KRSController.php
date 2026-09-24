@@ -21,7 +21,7 @@ use App\Models\Dosen;
 use App\Models\Pengaturan\WebSetting;
 // Use Plugins
 use Alert;
-use TCPDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KRSController extends Controller
 {
@@ -416,8 +416,15 @@ class KRSController extends Controller
 
     public function printKRS($code)
     {
-        $krs = KRS::with(['mahasiswa.programStudi.fakultas', 'mahasiswa.tahunAkademikRegistrasi', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas', 'details.dosen'])
-            ->where('code', $code)->firstOrFail();
+        $krs = KRS::with([
+            'mahasiswa.programStudi.fakultas',
+            'mahasiswa.tahunAkademikRegistrasi',
+            'tahunAkademik',
+            'dosenPA',
+            'details.mataKuliah',
+            'details.kelas.jadwalKuliah.ruang',
+            'details.dosen',
+        ])->where('code', $code)->firstOrFail();
 
         if (!$krs->mahasiswa) {
             return redirect()
@@ -426,25 +433,16 @@ class KRSController extends Controller
         }
 
         $kaprodi = Jabatan::with('dosen')
-            ->where('name', 'Ketua Program Studi')
+            ->whereIn('name', ['Ketua Program Studi', 'Ketua Prodi'])
             ->where('prodi_id', $krs->mahasiswa->prodi_id)
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->first();
 
-        if (!$kaprodi) {
-            $kaprodi = Jabatan::with('dosen')
-                ->where('name', 'Ketua Prodi')
-                ->where('prodi_id', $krs->mahasiswa->prodi_id)
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->first();
-        }
-
-        // Embedding logo sebagai data URI membuat PDF mandiri dan tidak
-        // bergantung pada URL, storage symlink, atau document root hosting.
-        // TCPDF menerima data URI secara langsung sehingga logo tertanam di PDF.
+        // Logo ditanam sebagai data URI agar Dompdf tidak bergantung pada
+        // URL/storage link/public document root saat membuat PDF.
         $logoDataUri = null;
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
         $logoCandidates = [
             'images/logo/logo-hori.png',
             'images/default/logo-vertical.png',
@@ -452,8 +450,6 @@ class KRSController extends Controller
         ];
 
         foreach ($logoCandidates as $logoPath) {
-            $disk = \Illuminate\Support\Facades\Storage::disk('public');
-
             if (!$disk->exists($logoPath)) {
                 continue;
             }
@@ -485,31 +481,24 @@ class KRSController extends Controller
             'logoDataUri' => $logoDataUri,
         ];
 
-        $html = view('master.akademik.krs-print', $data)->render();
+        $pdf = Pdf::loadView('master.akademik.krs-print', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'Helvetica',
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => false,
+                'isPhpEnabled' => false,
+                'dpi' => 96,
+                'enable_font_subsetting' => true,
+            ]);
 
-        // TCPDF menerima HTML hasil Blade dan menanam logo yang sudah
-        // disediakan sebagai data URI.
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-        $pdf->SetCreator('STIT Darul Ilmi Tasikmalaya');
-        $pdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
-        $pdf->SetTitle('KRS - ' . ($krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code));
-        $pdf->SetSubject('Kartu Rencana Studi');
-        $pdf->SetMargins(15, 10, 15);
-        $pdf->SetAutoPageBreak(true, 15);
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-        $pdf->SetFont('helvetica', '', 9);
-        $pdf->AddPage('P', 'A4');
-        $pdf->writeHTML($html, true, false, true, false, '');
+        $filename = 'KRS-' . preg_replace(
+            '/[^A-Za-z0-9_-]+/',
+            '-',
+            $krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code
+        ) . '.pdf';
 
-        $filename = 'KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code) . '.pdf';
-        $pdfContent = $pdf->Output($filename, 'S');
-
-        return response($pdfContent, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Content-Length' => strlen($pdfContent),
-        ]);
+        return $pdf->download($filename);
     }
 
     public function detailKRS($code)
