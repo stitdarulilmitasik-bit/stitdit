@@ -65,9 +65,15 @@
     $dosenNidn = $dosenWali?->nidn ?? $dosenWali?->nidn_number ?? $dosenWali?->numb_nidn ?? $dosenWali?->number_nidn ?? '-';
 
     $logo = null;
+    // Dompdf tidak selalu dapat membaca URL/storage symlink di hosting.
+    // Gunakan file logo langsung dari public agar logo pasti ikut ter-embed
+    // ke PDF sebagai base64, lalu sediakan beberapa fallback path.
     $logoCandidates = [
-        storage_path('app/public/images/logo/logo-vert.png'),
+        public_path('images/branding/logo-vert.png'),
+        public_path('logo.png'),
         public_path('storage/images/logo/logo-vert.png'),
+        storage_path('app/public/images/logo/logo-vert.png'),
+        storage_path('app/public/images/default/logo-vertical.png'),
     ];
     foreach ($logoCandidates as $candidate) {
         if (is_file($candidate)) {
