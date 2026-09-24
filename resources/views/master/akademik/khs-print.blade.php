@@ -206,6 +206,11 @@
 
     <!-- Header -->
     <div class="header">
+        @if (!empty($logoDataUri))
+            <div style="text-align:center; margin-bottom:6px;">
+                <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi" style="width:70px; height:70px;">
+            </div>
+        @endif
         <div class="university-name">{{ $webs->school_name ?? "PERGURUAN TINGGI" }}</div>
         <div class="faculty-name">{{ $khs->mahasiswa->programStudi->fakultas->name ?? 'FAKULTAS' }}</div>
         <div class="document-title">KARTU HASIL STUDI (KHS)</div>
@@ -425,13 +430,5 @@
         @endif
     </div>
 
-    <script>
-        // Auto print when page loads
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        };
-    </script>
 </body>
 </html>
