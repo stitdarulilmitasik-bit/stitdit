@@ -404,7 +404,7 @@
                                         <td data-label="No">{{ ++$key }}</td>
                                         <td data-label="Nama">
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ $item->photo }}" alt="{{ $item->name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef;">
+                                                <img src="{{ stit_profile_image_url($item->photo) }}" alt="{{ $item->name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef;">
                                                 <div>
                                                     <span class="fw-bold">{{ $item->name }}</span>
                                                     <br>
