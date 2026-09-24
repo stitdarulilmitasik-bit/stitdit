@@ -433,19 +433,30 @@
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
-                            <span class="avatar avatar-sm bg-primary-lt d-flex align-items-center justify-content-center" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     width="22"
-                                     height="22"
-                                     viewBox="0 0 24 24"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     stroke-width="2"
-                                     stroke-linecap="round"
-                                     stroke-linejoin="round">
-                                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
-                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                                </svg>
+                            <span class="avatar avatar-sm overflow-hidden position-relative">
+                                @if ($user && $user->photo)
+                                    <img src="{{ stit_profile_image_url($user->photo) }}"
+                                         alt="{{ $user->name }}"
+                                         class="w-100 h-100"
+                                         style="object-fit: cover; display: block;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                @endif
+                                <span class="profile-avatar-fallback bg-primary-lt align-items-center justify-content-center w-100 h-100"
+                                      style="{{ ($user && $user->photo) ? 'display:none;' : 'display:flex;' }}"
+                                      aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         width="22"
+                                         height="22"
+                                         viewBox="0 0 24 24"
+                                         fill="none"
+                                         stroke="currentColor"
+                                         stroke-width="2"
+                                         stroke-linecap="round"
+                                         stroke-linejoin="round">
+                                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                                    </svg>
+                                </span>
                             </span>
                             <div class="d-none d-xl-block ps-2">
                                 <div>{{ $user == null ? 'Guest' : $user->name }}</div>
