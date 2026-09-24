@@ -170,7 +170,7 @@
             <div class="navbar-nav flex-row order-md-last">
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Buka menu pengguna">
-                        <span class="avatar avatar-sm" style="background-image: url({{ $layoutUser == null ? '' : $layoutUser->photo }})"></span>
+                        <span class="avatar avatar-sm" style="background-image: url({{ $layoutUser == null ? stit_profile_image_url(null) : stit_profile_image_url($layoutUser->photo) }})"></span>
                         <div class="d-none d-xl-block ps-2">
                             <div>{{ $layoutUser == null ? 'Pengguna' : $layoutUser->name }}</div>
                             <div class="mt-1 small text-secondary">{{ $layoutUser == null ? '' : $layoutUser->type }}</div>
