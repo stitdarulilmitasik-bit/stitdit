@@ -57,7 +57,11 @@ class KRSController extends Controller
             ->where('code', $code)
             ->firstOrFail();
 
-        $data['available_matakuliah'] = MataKuliah::where('prodi_id', $data['krs']->mahasiswa->prodi_id)->get();
+        // KRS lama bisa memiliki mahasiswa yang sudah tidak tersedia.
+        // Tetap tampilkan detail KRS tanpa memicu error saat relasi mahasiswa null.
+        $data['available_matakuliah'] = $data['krs']->mahasiswa
+            ? MataKuliah::where('prodi_id', $data['krs']->mahasiswa->prodi_id)->get()
+            : collect();
         $data['kelas'] = Kelas::all();
         $data['jadwal_kuliah'] = JadwalKuliah::with(['kelas', 'dosen', 'waktuKuliah', 'ruang'])
             ->whereIn('matkul_id', $data['available_matakuliah']->pluck('id'))
@@ -414,6 +418,12 @@ class KRSController extends Controller
     {
         $krs = KRS::with(['mahasiswa.programStudi.fakultas', 'mahasiswa.tahunAkademikRegistrasi', 'tahunAkademik', 'dosenPA', 'details.mataKuliah', 'details.kelas', 'details.dosen'])
             ->where('code', $code)->firstOrFail();
+
+        if (!$krs->mahasiswa) {
+            return redirect()
+                ->route((Auth::user()?->prefix ?? '') . 'akademik.krs-render')
+                ->with('error', 'KRS ini tidak dapat dicetak karena data mahasiswa sudah tidak ditemukan.');
+        }
 
         $kaprodi = Jabatan::with('dosen')
             ->where('name', 'Ketua Program Studi')
