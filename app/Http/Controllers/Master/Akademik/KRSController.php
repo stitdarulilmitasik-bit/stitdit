@@ -440,50 +440,59 @@ class KRSController extends Controller
             ->orderBy('sort_order')
             ->first();
 
-        // Logo KRS: gunakan path Laravel agar mematuhi open_basedir pada ByetHost.
-        // storage_path() akan menunjuk ke direktori aplikasi yang diizinkan hosting.
+        $webs = WebSetting::first();
+
+        // Logo KRS harus dibaca dari storage aplikasi, bukan URL HTTP.
+        // Ini aman untuk Dompdf (remote access dimatikan) dan tidak melanggar
+        // open_basedir ByetHost karena path dibangun oleh Laravel.
         $logoDataUri = null;
-        $logoFileCandidates = array_values(array_unique(array_filter([
-            storage_path('app/public/images/logo/logo-vert1.png'),
-            base_path('storage/app/public/images/logo/logo-vert1.png'),
+        $logoNames = array_values(array_unique(array_filter([
+            $webs?->getRawOriginal('school_logo_vert'),
+            'logo-vert1.png',
+            'logo-vert.png',
         ])));
 
-        foreach ($logoFileCandidates as $candidate) {
-            // Jangan memeriksa /htdocs secara hard-code karena ByetHost
-            // menerapkan open_basedir ke /home/.../htdocs.
-            if (!is_file($candidate) || !is_readable($candidate)) {
+        foreach ($logoNames as $logoName) {
+            $logoName = basename((string) $logoName);
+            if ($logoName === '') {
                 continue;
             }
 
-            try {
-                $logoBytes = file_get_contents($candidate);
+            $candidates = array_values(array_unique(array_filter([
+                \Illuminate\Support\Facades\Storage::disk('public')->path('images/logo/' . $logoName),
+                storage_path('app/public/images/logo/' . $logoName),
+            ])));
 
-                if ($logoBytes === false || $logoBytes === '') {
+            foreach ($candidates as $candidate) {
+                if (!is_file($candidate) || !is_readable($candidate)) {
                     continue;
                 }
 
-                $mime = 'image/png';
-                if (function_exists('finfo_open')) {
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    if ($finfo) {
-                        $detectedMime = finfo_file($finfo, $candidate);
-                        finfo_close($finfo);
-                        if ($detectedMime) {
-                            $mime = $detectedMime;
+                try {
+                    $logoBytes = file_get_contents($candidate);
+                    if ($logoBytes === false || $logoBytes === '') {
+                        continue;
+                    }
+
+                    $mime = 'image/png';
+                    if (function_exists('finfo_open')) {
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        if ($finfo) {
+                            $detectedMime = finfo_file($finfo, $candidate);
+                            finfo_close($finfo);
+                            if ($detectedMime) {
+                                $mime = $detectedMime;
+                            }
                         }
                     }
-                } elseif (function_exists('mime_content_type')) {
-                    $mime = mime_content_type($candidate) ?: 'image/png';
-                }
 
-                $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-                break;
-            } catch (\Throwable $e) {
-                // Coba lokasi Laravel berikutnya.
+                    $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                    break 2;
+                } catch (\Throwable $e) {
+                    // Coba nama/path logo berikutnya.
+                }
             }
         }
-
-        $webs = WebSetting::first();
 
         $data = [
             'krs' => $krs,
