@@ -27,6 +27,7 @@ Route::group(['prefix' => 'dosen', 'middleware' => ['checkUser:Dosen Aktif', 'do
     Route::post('/akademik/kehadiran',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'simpanKehadiran'])->name('akademik.kehadiran.store');
 
     Route::get('/akademik/krs-operasional',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'krs'])->name('akademik.krs-operasional');
+    Route::get('/akademik/krs-operasional/{code}/preview',[App\Http\Controllers\Master\Akademik\KRSController::class, 'previewKRS'])->name('akademik.krs.preview');
     Route::post('/akademik/krs-operasional/{code}/approve',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'approveKrs'])->name('akademik.krs-operasional.approve');
     Route::post('/akademik/krs-operasional/{code}/reject',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'rejectKrs'])->name('akademik.krs-operasional.reject');
 });
