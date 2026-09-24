@@ -280,7 +280,7 @@
         ?? $dosenWali?->number_nidn
         ?? '-';
 
-    $logo = $logoPath ?? null;
+    $logo = $logoDataUri ?? null;
 
     $tahunAkademikRaw = (string) ($krs->tahunAkademik->name ?? '');
     if (preg_match('/(\d{4}\s*\/\s*\d{4})/', $tahunAkademikRaw, $matches)) {
@@ -294,8 +294,8 @@
     <table class="kop-table">
         <tr>
             <td class="kop-logo">
-                @if (!empty($logoPath))
-                    <img src="{{ $logoPath }}" alt="Logo STIT Darul Ilmi" width="68" height="68" style="display:block;margin:0 auto;">
+                @if (!empty($logoDataUri))
+                    <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi" width="68" height="68" style="display:block;margin:0 auto;">
                 @endif
             </td>
             <td class="kop-text">
