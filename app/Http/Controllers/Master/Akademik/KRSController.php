@@ -431,6 +431,40 @@ class KRSController extends Controller
                 ->first();
         }
 
+        // Embedding logo sebagai data URI membuat PDF mandiri dan tidak
+        // bergantung pada URL, storage symlink, atau document root hosting.
+        $logoDataUri = null;
+        $logoCandidates = [
+            public_path('images/branding/logo-vert.png'),
+            public_path('logo.png'),
+            public_path('images/logo/logo-vert.png'),
+            storage_path('app/public/images/logo/logo-vert.png'),
+            storage_path('app/public/images/default/logo-vertical.png'),
+        ];
+
+        foreach ($logoCandidates as $logoFile) {
+            if (!is_file($logoFile) || !is_readable($logoFile)) {
+                continue;
+            }
+
+            $logoBytes = @file_get_contents($logoFile);
+            if ($logoBytes === false || $logoBytes === '') {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo($logoFile, PATHINFO_EXTENSION));
+            $mime = match ($extension) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'svg' => 'image/svg+xml',
+                default => 'image/png',
+            };
+
+            $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+            break;
+        }
+
         $data = [
             'krs' => $krs,
             'webs' => WebSetting::first(),
@@ -441,6 +475,7 @@ class KRSController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->first()?->dosen,
+            'logoDataUri' => $logoDataUri,
         ];
 
         // Dompdf di hosting perlu izin membaca file lokal di public/.
