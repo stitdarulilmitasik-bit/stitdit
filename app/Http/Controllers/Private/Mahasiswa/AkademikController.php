@@ -211,12 +211,7 @@ class AkademikController extends Controller
             }
         }
 
-        $dosenPa = $khs->mahasiswa->krs()
-            ->where('taka_id', $khs->taka_id)
-            ->with('dosenPA')
-            ->latest('id')
-            ->first()?->dosenPA;
-
+        $dosenPa = null;
         $kaprodi = $khs->mahasiswa->programStudi->kaprodi ?? null;
 
         $html = view('master.akademik.khs-print', [
