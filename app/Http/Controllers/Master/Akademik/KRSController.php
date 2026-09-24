@@ -443,7 +443,14 @@ class KRSController extends Controller
                 ->first()?->dosen,
         ];
 
+        // Dompdf di hosting perlu izin membaca file lokal di public/.
+        // Logo KRS menggunakan path file lokal (bukan URL/storage symlink).
         return PDF::loadView('master.akademik.krs-print', $data)
+            ->setOption([
+                'chroot' => public_path(),
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ])
             ->setPaper('a4', 'portrait')
             ->download('KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code) . '.pdf');
     }
