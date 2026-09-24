@@ -10,7 +10,7 @@
     .kop { border-bottom: 3px solid #111; padding-bottom: 6px; margin-bottom: 12px; }
     .kop-table { width: 100%; border-collapse: collapse; }
     .kop-logo { width: 95px; text-align: center; vertical-align: middle; }
-    .kop-logo img { width: 78px; height: 78px; object-fit: contain; }
+    .kop-logo img { width: 102px; height: 102px; object-fit: contain; }
     .kop-text { text-align: center; vertical-align: middle; line-height: 1.22; }
     .kop-text .a { font-size: 13pt; font-weight: bold; }
     .kop-text .b { font-size: 16pt; font-weight: bold; }
