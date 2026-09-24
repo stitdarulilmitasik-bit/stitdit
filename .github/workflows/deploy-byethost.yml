@@ -62,8 +62,16 @@ jobs:
           test -f composer.lock
           test -d vendor
 
-      - name: Clear Laravel cache
-        run: php artisan optimize:clear
+      - name: Clear Laravel cache before build
+        run: |
+          php artisan optimize:clear
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan event:clear
+          rm -f bootstrap/cache/*.php
+
+      - name: Discover Laravel packages
 
       - name: Discover Laravel packages
         run: |
