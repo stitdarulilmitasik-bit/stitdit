@@ -201,37 +201,27 @@ class AkademikController extends Controller
         $dosenPa = null;
         $kaprodi = $khs->mahasiswa->programStudi->kaprodi ?? null;
 
-        $html = view('master.akademik.khs-print', [
+        $pdf = Pdf::loadView('master.akademik.khs-print', [
             'khs' => $khs,
             'webs' => WebSetting::first(),
             'nilai_semester' => $khs->nilaiSemester,
             'dosen_pa' => $dosenPa,
             'kaprodi' => $kaprodi,
             'logoDataUri' => $logoDataUri,
-        ])->render();
-
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-        $pdf->SetCreator('STIT Darul Ilmi Tasikmalaya');
-        $pdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
-        $pdf->SetTitle('KHS - ' . ($user->name ?? $user->numb_nim ?? 'Mahasiswa') . ' - Semester ' . $khs->semester);
-        $pdf->SetSubject('Kartu Hasil Studi');
-        $pdf->SetMargins(10, 10, 10);
-        $pdf->SetAutoPageBreak(true, 12);
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-        $pdf->SetFont('helvetica', '', 8);
-        $pdf->AddPage('P', 'A4');
-        $pdf->writeHTML($html, true, false, true, false, '');
+        ])->setPaper('a4', 'portrait')->setOptions([
+            'defaultFont' => 'Helvetica',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'dpi' => 96,
+            'enable_font_subsetting' => true,
+        ]);
 
         $filename = 'KHS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->numb_nim ?? $user->name ?? 'mahasiswa') . '-Semester-' . $khs->semester . '.pdf';
-        $pdfContent = $pdf->Output($filename, 'S');
 
-        return response($pdfContent, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Content-Length' => strlen($pdfContent),
-        ]);
+        return $pdf->download($filename);
     }
+
 
     public function storeKrs(Request $request){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $v=$request->validate(['mata_kuliah_id'=>['required','integer','exists:mata_kuliahs,id'],'kelas_id'=>['nullable','integer','exists:kelas,id'],'dosen_pembimbing_id'=>['required','integer','exists:dosens,id']]); $s=$this->getCurrentSemester(); if(!$s)return back()->with('error','Tahun akademik aktif belum tersedia.'); $c=MataKuliah::findOrFail($v['mata_kuliah_id']); if((int)$c->prodi_id!==(int)$u->prodi_id)return back()->with('error','Mata kuliah bukan bagian dari program studi Anda.'); $k=KRS::firstOrCreate(['mahasiswa_id'=>$u->id,'taka_id'=>$s->id,'semester'=>(int)($u->semester??1)],['code'=>'KRS-'.$u->id.'-'.now()->format('YmdHis'),'status'=>'Draft','total_sks'=>0,'max_sks'=>24,'ipk_sebelumnya'=>0]); $k->resetIfEmpty(); $k->refresh(); if(!$k->is_editable)return back()->with('error','KRS sudah diajukan/disetujui dan tidak dapat diubah.'); if($k->details()->where('matkul_id',$c->id)->whereIn('status',['Aktif','Mengulang'])->exists())return back()->with('error','Mata kuliah tersebut sudah ada di KRS.'); if(!$k->canAddMatakuliah((int)$c->sks))return back()->with('error','Batas maksimal SKS tidak mencukupi.'); // Jika mahasiswa tidak mengirim kelas_id dari form, gunakan kelas yang
         // sudah ditetapkan pada data mahasiswa.
