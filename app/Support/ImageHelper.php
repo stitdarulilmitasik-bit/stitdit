@@ -67,7 +67,8 @@ if (! function_exists('stit_storage_image_url')) {
 if (! function_exists('stit_profile_image_url')) {
     function stit_profile_image_url(?string $filename): string
     {
-        return stit_storage_image_url('images/profile', $filename, 'images/placeholders/profile-placeholder.svg');
+        $fallback = 'images/placeholders/profile-placeholder.svg';
+        return stit_storage_image_url('images/profile', $filename, $fallback);
     }
 }
 
