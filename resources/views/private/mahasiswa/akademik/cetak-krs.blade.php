@@ -39,17 +39,9 @@ th { background:#eee; }
     <table class="kop-table">
         <tr>
             <td class="logo">
-                @php
-                    $logoCandidates = [storage_path('app/public/images/logo/logo-vert.png'), storage_path('app/public/images/default/logo-vertical.png')];
-                    $logo = null;
-                    foreach ($logoCandidates as $candidate) {
-                        if (is_file($candidate)) {
-                            $mime = mime_content_type($candidate) ?: 'image/png';
-                            $logo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($candidate));
-                            break;
-                        }
-                    }
-                @endphp
+                @if(!empty($logoDataUri))
+                    <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">
+                @endif
                 @if($logo)<img src="{{ $logo }}" alt="Logo STIT Darul Ilmi">@endif
             </td>
             <td class="kop-text">
