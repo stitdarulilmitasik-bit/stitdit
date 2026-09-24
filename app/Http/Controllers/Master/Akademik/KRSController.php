@@ -435,11 +435,9 @@ class KRSController extends Controller
         // bergantung pada URL, storage symlink, atau document root hosting.
         $logoDataUri = null;
         $logoCandidates = [
-            public_path('images/branding/logo-vert.png'),
-            public_path('logo.png'),
-            public_path('images/logo/logo-vert.png'),
             storage_path('app/public/images/logo/logo-vert.png'),
             storage_path('app/public/images/default/logo-vertical.png'),
+            storage_path('app/public/images/logo/logo-hori.png'),
         ];
 
         foreach ($logoCandidates as $logoFile) {
