@@ -129,6 +129,16 @@
     // Untuk halaman backend tanpa prefix, gunakan guard web-admin sebagai default.
     $spref = $spref ?? 'web-admin.';
 
+    // Maintenance Composer dan beberapa halaman backend tidak selalu menerima $webs.
+    // Ambil pengaturan web sebagai fallback agar logo/layout tetap dapat dirender.
+    if (! isset($webs) || ! $webs) {
+        try {
+            $webs = \App\Models\Pengaturan\WebSetting::query()->first();
+        } catch (\Throwable $e) {
+            $webs = null;
+        }
+    }
+
     /*
      * Gunakan identitas dari guard yang memang memiliki prefix halaman.
      * Ini mencegah variabel $user dari child view/loop menimpa identitas
