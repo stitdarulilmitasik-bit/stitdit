@@ -111,6 +111,12 @@
                             <i class="fas fa-route me-2"></i>Clear Route Cache
                         </button>
                     </form>
+                    <form method="POST" action="{{ route('web-admin.maintenance.clear-views') }}" onsubmit="return confirm('Jalankan php artisan view:clear sekarang?');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-success">
+                            <i class="fas fa-file-code me-2"></i>Clear View Cache
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
