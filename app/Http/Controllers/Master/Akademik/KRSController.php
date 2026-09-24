@@ -468,7 +468,7 @@ class KRSController extends Controller
 
                 $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
                 break;
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // Lanjutkan ke asset logo cadangan yang juga terlacak di repository.
             }
         }
