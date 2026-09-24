@@ -98,12 +98,20 @@
                     <h5 class="mb-1"><i class="fas fa-tools me-2"></i>Maintenance Sistem</h5>
                     <p class="text-muted mb-0">Bersihkan cache Laravel langsung dari dashboard tanpa Terminal.</p>
                 </div>
-                <form method="POST" action="{{ route('web-admin.maintenance.clear-cache') }}" onsubmit="return confirm('Bersihkan cache Laravel sekarang?');">
-                    @csrf
-                    <button type="submit" class="btn btn-warning">
-                        <i class="fas fa-broom me-2"></i>Bersihkan Cache Laravel
-                    </button>
-                </form>
+                <div class="d-flex flex-wrap gap-2">
+                    <form method="POST" action="{{ route('web-admin.maintenance.clear-cache') }}" onsubmit="return confirm('Bersihkan cache dan optimasi Laravel sekarang?');">
+                        @csrf
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-broom me-2"></i>Bersihkan Cache Laravel
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('web-admin.maintenance.clear-routes') }}" onsubmit="return confirm('Jalankan php artisan route:clear sekarang?');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-route me-2"></i>Clear Route Cache
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
