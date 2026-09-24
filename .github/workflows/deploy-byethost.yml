@@ -33,12 +33,15 @@ jobs:
       - name: Validate composer.json
         run: composer validate --no-check-publish --no-check-lock
 
-      - name: Install and synchronize PHP dependencies
+      - name: Install PHP dependencies from lock file
         run: |
-          composer update --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
       - name: Verify Composer dependencies
-        run: composer validate --no-check-publish --no-check-lock
+        run: |
+          composer validate --no-check-publish
+          test -f composer.lock
+          test -d vendor
 
       - name: Clear Laravel cache
         run: php artisan optimize:clear
@@ -61,10 +64,11 @@ jobs:
           node-version: '20'
           cache: npm
 
+      - name: Install frontend dependencies
+        run: npm ci --prefer-offline
+
       - name: Build frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
       - name: Prepare Laravel writable directories
         run: |
