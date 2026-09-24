@@ -65,7 +65,6 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 <div class="container"><div class="kop-surat">
 <div class="kop-logo">
 @if(!empty($logoDataUri))<img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">@endif
-@if($logoBase64)<img src="{{ $logoBase64 }}" alt="Logo STIT Darul Ilmi">@endif
 </div>
 <div class="kop-text">
 <h3>SEKOLAH TINGGI ILMU TARBIYAH</h3>
