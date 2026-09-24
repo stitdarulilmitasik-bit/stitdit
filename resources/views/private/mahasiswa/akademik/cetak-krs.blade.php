@@ -12,7 +12,7 @@ body { font-family: Arial, sans-serif; color:#111; font-size:12px; margin:0; }
 .kop-table { width:100%; border-collapse:collapse; }
 .kop-table td { border:0; padding:0; }
 .logo { width:105px; text-align:center; vertical-align:middle; }
-.logo img { width:82px; height:82px; object-fit:contain; }
+.logo img { width:107px; height:107px; object-fit:contain; }
 .kop-text { text-align:center; line-height:1.3; }
 .kop-text .line1 { font-size:15px; font-weight:bold; }
 .kop-text .line2 { font-size:18px; font-weight:bold; }
