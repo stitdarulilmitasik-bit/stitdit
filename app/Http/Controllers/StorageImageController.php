@@ -16,6 +16,7 @@ class StorageImageController extends Controller
         $path = ltrim(str_replace('\\', '/', $path), '/');
 
         abort_if($path === '' || str_contains($path, '..'), 404);
+        abort_unless(str_starts_with($path, 'images/'), 404);
 
         $disk = Storage::disk('public');
 
