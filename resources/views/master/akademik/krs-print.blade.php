@@ -295,7 +295,7 @@
         <tr>
             <td class="kop-logo">
                 @if (!empty($logoDataUri))
-                    <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">
+                    <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi" width="68" height="68" style="display:block;margin:0 auto;">
                 @endif
             </td>
             <td class="kop-text">
