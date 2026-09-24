@@ -435,7 +435,7 @@
                         <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
                             <span class="avatar avatar-sm overflow-hidden position-relative">
                                 @if ($user && $user->photo)
-                                    <img src="{{ stit_profile_image_url($user->photo) }}"
+                                    <img src="{{ $user->photo }}"
                                          alt="{{ $user->name }}"
                                          class="w-100 h-100"
                                          style="object-fit: cover; display: block;"
