@@ -85,12 +85,12 @@ class KRS extends Model
     // RELATIONSHIP METHODS
     public function mahasiswa()
     {
-        return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
+        return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id')->withTrashed();
     }
 
     public function tahunAkademik()
     {
-        return $this->belongsTo(TahunAkademik::class, 'taka_id');
+        return $this->belongsTo(TahunAkademik::class, 'taka_id')->withTrashed();
     }
 
     public function dosenPA()
