@@ -13,6 +13,7 @@
         </div>
         <div class="ms-auto">
             <a href="{{ route('mahasiswa.akademik.krs-cetak') }}" class="btn btn-primary" target="_blank">🖨 Cetak KRS</a>
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewKrsPdfModal">📄 Preview PDF</button>
             @if(($krsHeader->is_editable ?? false))
                 <a href="#tambahKrsModal" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#tambahKrsModal">✎ Edit KRS</a>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahKrsModal">＋ Tambah Mata Kuliah</button>
@@ -156,3 +157,17 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 @endsection
+<div class="modal fade" id="previewKrsPdfModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preview PDF KRS</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body p-2">
+                <iframe src="{{ route('mahasiswa.akademik.krs-cetak') }}?preview=1" title="Preview PDF KRS" style="width:100%;height:75vh;border:1px solid #dee2e6;border-radius:8px;" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
