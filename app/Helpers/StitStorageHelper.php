@@ -109,7 +109,7 @@ if (! function_exists('stit_gallery_image_url')) {
                 if (Storage::disk('public')->exists($path)) {
                     return Storage::disk('public')->url($path);
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // Continue to public asset fallback.
             }
 
