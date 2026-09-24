@@ -14,6 +14,26 @@ class MaintenanceController extends Controller
      * Jalankan pembersihan cache Laravel dari dashboard web-admin.
      * Hanya akun Web Administrator (type/raw_type = 0) yang diizinkan.
      */
+    public function clearViews(): RedirectResponse
+    {
+        $user = Auth::guard('web')->user();
+
+        abort_unless($user && (int) $user->raw_type === 0, 403);
+
+        try {
+            Artisan::call('view:clear');
+
+            return back()
+                ->with('maintenance_success', 'Compiled view Laravel berhasil dibersihkan (php artisan view:clear).')
+                ->with('maintenance_output', trim(Artisan::output()));
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()
+                ->with('maintenance_error', 'Compiled view Laravel gagal dibersihkan: ' . $e->getMessage());
+        }
+    }
+
     public function clearRoutes(): RedirectResponse
     {
         $user = Auth::guard('web')->user();
