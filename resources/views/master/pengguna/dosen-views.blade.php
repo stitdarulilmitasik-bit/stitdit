@@ -86,7 +86,7 @@
                                 <h3 class="card-title">Profile Details</h3>
                                 <div class="row align-items-center mb-4">
                                     <div class="col-auto">
-                                        <img src="{{ $dosen == null ? stit_profile_image_url(null) : $dosen->photo }}" alt="Foto profil" class="avatars" id="preview-image">
+                                        <img src="{{ $dosen == null ? stit_profile_image_url(null) : stit_profile_image_url($dosen->photo) }}" alt="Foto profil" class="avatars" id="preview-image">
                                     </div>
                                     <div class="col-auto">
                                         <input type="file" class="form-control" name="photo" id="photo-input" accept="image/*">
