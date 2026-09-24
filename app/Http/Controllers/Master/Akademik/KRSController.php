@@ -444,6 +444,7 @@ class KRSController extends Controller
         // symlink storage, /media, atau kemampuan Dompdf mengakses URL remote.
         $webs = WebSetting::first();
         $logoDataUri = null;
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
         $logoCandidates = [];
 
         // 1. Gunakan nama file logo yang tersimpan pada pengaturan website.
