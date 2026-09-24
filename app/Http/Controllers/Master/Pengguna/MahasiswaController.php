@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 // Use Models
 use App\Models\Mahasiswa;
 use App\Models\Akademik\ProgramStudi;
@@ -54,7 +54,7 @@ class MahasiswaController extends Controller
                 'webs' => WebSetting::first(),
             ];
 
-            $pdf = PDF::loadView('master.pengguna.mahasiswa-pdf', $data)
+            $pdf = Pdf::loadView('master.pengguna.mahasiswa-pdf', $data)
                 ->setPaper('a4', 'landscape');
 
             return $pdf->download('daftar-mahasiswa-' . now()->format('Y-m-d') . '.pdf');
