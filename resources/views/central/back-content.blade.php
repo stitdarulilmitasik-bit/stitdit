@@ -60,6 +60,56 @@
     </div>
 </div>
 
+@if(session('maintenance_success'))
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div><i class="fas fa-check-circle me-2"></i></div>
+                <div>
+                    <strong>{{ session('maintenance_success') }}</strong>
+                    @if(session('maintenance_output'))
+                        <div class="small mt-1"><code>{{ session('maintenance_output') }}</code></div>
+                    @endif
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+        </div>
+    </div>
+</div>
+@elseif(session('maintenance_error'))
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>{{ session('maintenance_error') }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+        </div>
+    </div>
+</div>
+@endif
+
+@if($user && (int) $user->raw_type === 0)
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h5 class="mb-1"><i class="fas fa-tools me-2"></i>Maintenance Sistem</h5>
+                    <p class="text-muted mb-0">Bersihkan cache Laravel langsung dari dashboard tanpa Terminal.</p>
+                </div>
+                <form method="POST" action="{{ route('web-admin.maintenance.clear-cache') }}" onsubmit="return confirm('Bersihkan cache Laravel sekarang?');">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-broom me-2"></i>Bersihkan Cache Laravel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="row mb-4">
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card stat-card bg-primary text-white h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><h6 class="mb-1">Total Mahasiswa Aktif</h6><h2 class="mb-0">{{ number_format($totalStudents) }}</h2></div><div class="stat-icon bg-white bg-opacity-25"><i class="fas fa-users fa-2x"></i></div></div><div class="mt-3 small">Data mahasiswa aktif</div></div></div>
