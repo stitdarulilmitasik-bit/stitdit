@@ -102,14 +102,11 @@ class AkademikController extends Controller
                 ->whereIn('status', ['Aktif', 'Mengulang'])->get()
             : collect();
 
-        // Embed logo directly from Laravel's public disk. This avoids the
-        // hosting document-root/symlink differences that can make the logo
-        // disappear in Dompdf on the server while still working locally.
+        // Embed logo directly from Laravel's public disk so TCPDF does not
+        // depend on the hosting document root, URL, or storage symlink.
         $logoDataUri = null;
         foreach ([
-            'images/logo/logo-vert.png',
             'images/logo/logo-hori.png',
-            'images/logo/logo_hori.png',
             'images/logo/logo_hori.png',
             'images/default/logo-vertical.png',
             'images/default/logo-horizontal.png',
@@ -144,7 +141,7 @@ class AkademikController extends Controller
         ])->render();
 
         // TCPDF tidak membutuhkan URL publik atau storage symlink untuk logo.
-        // Logo sudah ditanam sebagai data URI oleh controller sebelum HTML dirender.
+        // Logo sudah ditanam sebagai data URI sebelum HTML dirender.
         $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
         $pdf->SetCreator('STIT Darul Ilmi Tasikmalaya');
         $pdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
