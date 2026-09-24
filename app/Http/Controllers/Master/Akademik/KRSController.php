@@ -440,94 +440,36 @@ class KRSController extends Controller
             ->orderBy('sort_order')
             ->first();
 
-        // Logo kop harus selalu ditanam sebagai data URI. Jangan mengandalkan
-        // symlink storage, /media, atau kemampuan Dompdf mengakses URL remote.
-        $webs = WebSetting::first();
+        // Logo KRS: ambil langsung dari storage aplikasi dan tanam sebagai Base64.
+        // Lokasi utama pada hosting ByetHost:
+        // /htdocs/storage/app/public/images/logo/logo-vert1.png
         $logoDataUri = null;
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
-        $logoCandidates = [];
+        $logoPath = storage_path('app/public/images/logo/logo-vert1.png');
 
-        // 1. Gunakan nama file logo yang tersimpan pada pengaturan website.
-        $configuredLogo = $webs?->getRawOriginal('school_logo_vert');
-        if ($configuredLogo) {
-            $logoCandidates[] = ltrim((string) $configuredLogo, '/');
-        }
-
-        // 2. Nama file standar pada deployment lama/baru.
-        $logoCandidates = array_values(array_unique(array_merge($logoCandidates, [
-            'logo-vert1.png',
-            'logo-vert.png',
+        // Fallback hanya untuk deployment dengan base path berbeda.
+        $logoPaths = array_values(array_unique(array_filter([
+            $logoPath,
+            base_path('storage/app/public/images/logo/logo-vert1.png'),
+            '/htdocs/storage/app/public/images/logo/logo-vert1.png',
         ])));
 
-        foreach ($logoCandidates as $filename) {
-            $filename = basename($filename);
-            $paths = [
-                'images/logo/' . $filename,
-                'images/logo/logo-vert1.png',
-                'images/logo/logo-vert.png',
-            ];
-
-            foreach (array_values(array_unique($paths)) as $logoPath) {
-                try {
-                    if (!$disk->exists($logoPath)) {
-                        continue;
-                    }
-
-                    $logoBytes = $disk->get($logoPath);
-                    if ($logoBytes !== '') {
-                        $mime = $disk->mimeType($logoPath) ?: 'image/png';
-                        $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-                        break 2;
-                    }
-                } catch (\Throwable $e) {
-                    // Lanjutkan ke sumber logo berikutnya.
-                }
+        foreach ($logoPaths as $candidate) {
+            if (!is_file($candidate) || !is_readable($candidate)) {
+                continue;
             }
-        }
 
-        // 3. Fallback filesystem langsung, termasuk struktur ByetHost:
-        // /htdocs/storage/app/public/images/logo/logo-vert1.png
-        if (!$logoDataUri) {
-            $filesystemBases = array_values(array_unique(array_filter([
-                storage_path('app/public'),
-                base_path('storage/app/public'),
-                dirname(base_path()) . '/storage/app/public',
-                '/htdocs/storage/app/public',
-                $_SERVER['DOCUMENT_ROOT'] ?? null,
-            ])));
-
-            foreach ($filesystemBases as $base) {
-                foreach ($logoCandidates as $filename) {
-                    $candidate = rtrim($base, '/\\') . '/images/logo/' . basename($filename);
-                    if (!is_file($candidate) || !is_readable($candidate)) {
-                        continue;
-                    }
-
-                    try {
-                        $logoBytes = file_get_contents($candidate);
-                        if ($logoBytes !== false && $logoBytes !== '') {
-                            $mime = mime_content_type($candidate) ?: 'image/png';
-                            $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-                            break 2;
-                        }
-                    } catch (\Throwable $e) {
-                        // Lanjutkan ke lokasi logo berikutnya.
-                    }
-                }
-            }
-        }
-
-        // 4. Fallback terakhir: URL logo dari WebSetting diambil oleh Laravel,
-        // kemudian hasilnya tetap ditanam sebagai data URI untuk Dompdf.
-        if (!$logoDataUri && $webs?->school_logo_vert) {
             try {
-                $response = Http::withoutVerifying()->timeout(10)->get($webs->school_logo_vert);
-                if ($response->successful() && $response->body() !== '') {
-                    $mime = $response->header('Content-Type') ?: 'image/png';
-                    $logoDataUri = 'data:' . strtok($mime, ';') . ';base64,' . base64_encode($response->body());
+                $logoBytes = file_get_contents($candidate);
+                if ($logoBytes !== false && $logoBytes !== '') {
+                    $mime = function_exists('mime_content_type')
+                        ? (mime_content_type($candidate) ?: 'image/png')
+                        : 'image/png';
+
+                    $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                    break;
                 }
             } catch (\Throwable $e) {
-                // PDF tetap dapat dibuat tanpa logo bila server benar-benar tidak memiliki asetnya.
+                // Coba lokasi fallback berikutnya.
             }
         }
 
