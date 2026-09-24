@@ -201,11 +201,11 @@
                 <div class="card-body">
                     <div class="info-item">
                         <div class="info-label">Mahasiswa</div>
-                        <div class="info-value">{{ $krs->mahasiswa->name }}</div>
+                        <div class="info-value">{{ $mahasiswa->name ?? $mahasiswa->numb_nim ?? '-' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">NIM</div>
-                        <div class="info-value">{{ $krs->mahasiswa->nim }}</div>
+                        <div class="info-value">{{ $mahasiswa->nim ?? $mahasiswa->numb_nim ?? '-' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Program Studi</div>
