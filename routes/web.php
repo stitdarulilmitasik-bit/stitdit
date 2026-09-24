@@ -3,6 +3,7 @@
 use Rap2hpoutre\FastExcel\FastExcel;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/media/{path}', [App\Http\Controllers\StorageImageController::class, 'show'])->where('path', '.*')->name('media.image');
 Route::get('/', [App\Http\Controllers\CmsHomeController::class, 'index'])->name('root.home-index');
 // PUBLICATION ROUTES
 Route::get('/pengumuman', [App\Http\Controllers\RootController::class, 'renderPengumuman'])->name('root.pengumuman-index');
