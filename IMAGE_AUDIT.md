@@ -19,11 +19,13 @@
 
 ## Asset resmi yang dipertahankan
 
-- `public/images/branding/logo-hori.png`
-- `public/images/branding/logo-vert.png`
-- `public/images/placeholders/news-placeholder.svg`
-- `public/images/placeholders/profile-placeholder.svg`
-- asset logo/foto yang sudah tersimpan pada `storage/app/public/images/`
+- `storage/app/public/images/logo/logo-hori.png`
+- `storage/app/public/images/logo/logo-vert.png`
+- `storage/app/public/images/default/logo-horizontal.png`
+- `storage/app/public/images/default/logo-vertical.png`
+- `storage/app/public/images/placeholders/news-placeholder.svg`
+- `storage/app/public/images/placeholders/profile-placeholder.svg`
+- asset foto upload pada subdirektori `storage/app/public/images/`
 
 ## Storage
 
