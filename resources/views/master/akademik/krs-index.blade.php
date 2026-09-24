@@ -64,7 +64,12 @@
 <table class="table table-hover" id="krsTable">
 <thead><tr><th class="text-center"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th><th>Mahasiswa</th><th>Tahun Akademik</th><th class="text-center">Semester</th><th class="text-center">Total SKS</th><th class="text-center">Status</th><th>Tanggal Dibuat</th><th class="text-center">Aksi</th></tr></thead>
 <tbody>
-@foreach($krs_list as $krs)
+@forelse($krs_list as $krs)
+@php
+    $mahasiswa = $krs->mahasiswa;
+    $tahunAkademik = $krs->tahunAkademik;
+    $status = $krs->status ?? 'Draft';
+@endphp
 <tr>
 <td class="text-center" data-label="Pilih"><input type="checkbox" class="krs-checkbox" value="{{ $krs->code }}"></td>
 <td data-label="Mahasiswa"><div class="d-flex flex-column"><strong>{{ $krs->mahasiswa->name }}</strong><small class="text-muted">{{ $krs->mahasiswa->numb_nim }}</small></div></td>
@@ -86,7 +91,11 @@ $statusLabels=['Draft'=>'Draft','Diajukan'=>'Diajukan','Disetujui'=>'Disetujui',
 @if(in_array($krs->status,['Draft','Ditolak']))<button class="btn btn-sm btn-danger" onclick="deleteKRS('{{ $krs->code }}')" title="Hapus"><i class="fas fa-trash"></i></button>@endif
 </div></td>
 </tr>
-@endforeach
+@empty
+<tr>
+<td colspan="8" class="text-center py-4 text-muted">Belum ada data KRS.</td>
+</tr>
+@endforelse
 </tbody>
 </table>
 </div>
