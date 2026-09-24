@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Private\Mahasiswa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Pengaturan\WebSetting;
 use App\Models\Akademik\KRS;
@@ -67,7 +68,85 @@ class AkademikController extends Controller
         return view('private.mahasiswa.akademik.krs',['webs'=>$webs,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Rencana Studi (KRS)','academy'=>$webs?$webs->school_apps.' by '.$webs->school_name:'SIAKAD','currentSemester'=>$currentSemester,'krs'=>$details,'krsHeader'=>$krsHeader,'availableCourses'=>$availableCourses,'availableClasses'=>$availableClasses,'courseClasses'=>$courseClasses,'availableDosenPembimbing'=>$availableDosenPembimbing,'user'=>$user]);
     }
 
-    public function cetakKrs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $s=$this->getCurrentSemester(); $h=$s?KRS::where('mahasiswa_id',$user->id)->where('taka_id',$s->id)->with(['dosenPA','mahasiswa.programStudi.fakultas','tahunAkademik'])->first():null; if($h && !$h->dosenPA){ $fallback=Jabatan::with('dosen')->where('is_active',true)->whereIn('name',['Dosen Pembimbing Akademik','Dosen Pembimbing'])->where(function($q)use($user){$q->whereNull('prodi_id')->orWhere('prodi_id',$user->prodi_id);})->whereNotNull('dosen_id')->orderBy('sort_order')->first(); if($fallback?->dosen){$h->setRelation('dosenPA',$fallback->dosen);} } $d=$h?$h->details()->with(['mataKuliah','kelas','dosen'])->whereIn('status',['Aktif','Mengulang'])->get():collect(); return PDF::loadView('private.mahasiswa.akademik.cetak-krs',['webs'=>WebSetting::first(),'mahasiswa'=>$user,'currentSemester'=>$s,'krsHeader'=>$h,'krs'=>$d])->setPaper('a4','portrait')->download('KRS-'.preg_replace('/[^A-Za-z0-9_-]+/','-',$user->name??$user->numb_nim??'mahasiswa').'.pdf'); }
+    public function cetakKrs()
+    {
+        $user = Auth::guard('mahasiswa')->user();
+        abort_unless($user, 403);
+
+        $s = $this->getCurrentSemester();
+        $h = $s
+            ? KRS::where('mahasiswa_id', $user->id)
+                ->where('taka_id', $s->id)
+                ->with(['dosenPA', 'mahasiswa.programStudi.fakultas', 'tahunAkademik'])
+                ->first()
+            : null;
+
+        if ($h && !$h->dosenPA) {
+            $fallback = Jabatan::with('dosen')
+                ->where('is_active', true)
+                ->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])
+                ->where(function ($q) use ($user) {
+                    $q->whereNull('prodi_id')->orWhere('prodi_id', $user->prodi_id);
+                })
+                ->whereNotNull('dosen_id')
+                ->orderBy('sort_order')
+                ->first();
+
+            if ($fallback?->dosen) {
+                $h->setRelation('dosenPA', $fallback->dosen);
+            }
+        }
+
+        $d = $h
+            ? $h->details()->with(['mataKuliah', 'kelas', 'dosen'])
+                ->whereIn('status', ['Aktif', 'Mengulang'])->get()
+            : collect();
+
+        // Embed logo directly from Laravel's public disk. This avoids the
+        // hosting document-root/symlink differences that can make the logo
+        // disappear in Dompdf on the server while still working locally.
+        $logoDataUri = null;
+        foreach ([
+            'images/logo/logo-vert.png',
+            'images/logo/logo-hori.png',
+            'images/default/logo-vertical.png',
+            'images/default/logo-horizontal.png',
+        ] as $logoPath) {
+            $disk = Storage::disk('public');
+
+            if (!$disk->exists($logoPath)) {
+                continue;
+            }
+
+            try {
+                $bytes = $disk->get($logoPath);
+                if ($bytes === '') {
+                    continue;
+                }
+
+                $mime = $disk->mimeType($logoPath) ?: 'image/png';
+                $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($bytes);
+                break;
+            } catch (\\Throwable $e) {
+                continue;
+            }
+        }
+
+        return PDF::loadView('private.mahasiswa.akademik.cetak-krs', [
+            'webs' => WebSetting::first(),
+            'mahasiswa' => $user,
+            'currentSemester' => $s,
+            'krsHeader' => $h,
+            'krs' => $d,
+            'logoDataUri' => $logoDataUri,
+        ])
+            ->setOption([
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->download('KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->name ?? $user->numb_nim ?? 'mahasiswa') . '.pdf');
+    }
 
     public function khs(){ $user=Auth::guard('mahasiswa')->user(); abort_unless($user,403); $w=WebSetting::first(); return view('private.mahasiswa.akademik.khs',['webs'=>$w,'user'=>$user,'spref'=>$user->prefix,'menus'=>'Akademik','pages'=>'Kartu Hasil Studi (KHS)','academy'=>$w?$w->school_apps.' by '.$w->school_name:'SIAKAD','khsList'=>\App\Models\Akademik\KHS::with(['tahunAkademik','nilaiSemester.mataKuliah'])->where('mahasiswa_id',$user->id)->orderBy('semester')->get()]); }
 
