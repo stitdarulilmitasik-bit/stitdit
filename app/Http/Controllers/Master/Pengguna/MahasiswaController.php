@@ -241,8 +241,8 @@ class MahasiswaController extends Controller
             // Handle photo upload
             if ($request->hasFile('photo')) {
                 // Delete old photo
-                if ($mahasiswa->photo && $mahasiswa->photo !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . $mahasiswa->photo);
+                if ($mahasiswa->getRawOriginal('photo') && $mahasiswa->getRawOriginal('photo') !== 'default.jpg') {
+                    Storage::disk('public')->delete('images/profile/' . $mahasiswa->getRawOriginal('photo'));
                 }
             
                 // Save new photo
