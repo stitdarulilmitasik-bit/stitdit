@@ -18,12 +18,11 @@ class PublicInfoController extends Controller
             'visi-misi' => [
                 'title' => 'Visi & Misi',
                 'heading' => 'Visi & Misi',
-                'vision' => 'Menjadi perguruan tinggi yang unggul, berintegritas, adaptif terhadap perkembangan ilmu pengetahuan dan teknologi, serta berkontribusi bagi masyarakat.',
+                'vision' => 'Terwujudnya STIT Darul Ilmi Tasikmalaya yang unggul dalam menghasilkan tenaga profesional yang berkarakter Islami serta mampu mengimplementasikan nilai-nilai Islam dalam kehidupan masyarakat.',
                 'missions' => [
-                    'Menyelenggarakan pendidikan tinggi yang bermutu dan relevan dengan kebutuhan masyarakat.',
-                    'Mengembangkan penelitian dan pengabdian kepada masyarakat secara berkelanjutan.',
-                    'Membangun tata kelola perguruan tinggi yang transparan, akuntabel, dan berorientasi pada mutu.',
-                    'Mendorong pengembangan karakter, kompetensi, dan profesionalitas sivitas akademika.',
+                    'Menyelenggarakan kegiatan pembelajaran yang unggul dan berkualitas dalam bidang Ilmu Tarbiyah.',
+                    'Mengembangkan Ilmu Tarbiyah melalui pengkajian dan penelitian yang bermanfaat bagi pengembangan dan pemberdayaan masyarakat.',
+                    'Memberikan kontribusi terhadap peningkatan kualitas karakter bangsa.',
                 ],
             ],
             'struktur-organisasi' => [
