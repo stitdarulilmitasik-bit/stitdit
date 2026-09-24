@@ -416,7 +416,7 @@ class KRSController extends Controller
         }
     }
 
-    public function printKRS($code)
+    public function printKRS($code, bool $stream = false)
     {
         $krs = KRS::with([
             'mahasiswa.programStudi.fakultas',
@@ -486,7 +486,27 @@ class KRSController extends Controller
             $krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code
         ) . '.pdf';
 
-        return $pdf->download($filename);
+        return $stream ? $pdf->stream($filename) : $pdf->download($filename);
+    }
+
+    public function previewKRS($code)
+    {
+        $user = Auth::user();
+        abort_unless($user, 403);
+
+        if (($user->prefix ?? '') === 'dosen') {
+            $dosen = Dosen::where('user_id', $user->id)->first()
+                ?? Dosen::where('id', $user->id)->first();
+
+            abort_unless(
+                $dosen && KrsDetail::where('dosen_id', $dosen->id)
+                    ->whereHas('krs', fn ($q) => $q->where('code', $code))
+                    ->exists(),
+                403
+            );
+        }
+
+        return $this->printKRS($code, true);
     }
 
     public function detailKRS($code)
