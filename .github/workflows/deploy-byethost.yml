@@ -88,7 +88,7 @@ jobs:
           rsync -a public/ deploy/
           rm -rf deploy/public
 
-          php -r '$p="deploy/index.php"; $s=file_get_contents($p); $s=str_replace("__DIR__.'/../storage", "__DIR__.'/storage", $s); $s=str_replace("__DIR__.'/../vendor", "__DIR__.'/vendor", $s); $s=str_replace("__DIR__.'/../bootstrap", "__DIR__.'/bootstrap", $s); file_put_contents($p,$s);'
+          php -r "\$p='deploy/index.php'; \$s=file_get_contents(\$p); \$s=str_replace(\"__DIR__.'/../storage\", \"__DIR__.'/storage\", \$s); \$s=str_replace(\"__DIR__.'/../vendor\", \"__DIR__.'/vendor\", \$s); \$s=str_replace(\"__DIR__.'/../bootstrap\", \"__DIR__.'/bootstrap\", \$s); file_put_contents(\$p, \$s);"
 
           test -f deploy/index.php
           test -f deploy/.htaccess
