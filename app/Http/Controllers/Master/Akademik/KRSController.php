@@ -442,60 +442,34 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Logo KRS harus dibaca dari storage aplikasi, bukan URL HTTP.
-        // Ini aman untuk Dompdf (remote access dimatikan) dan tidak melanggar
-        // open_basedir ByetHost karena path dibangun oleh Laravel.
+        // Logo KRS menggunakan asset yang memang tersimpan dan terlacak di GitHub.
+        // Jangan bergantung pada app/public atau URL HTTP karena lokasi tersebut
+        // tidak menjadi sumber asset KRS pada repository produksi.
         $logoDataUri = null;
-        $logoNames = array_values(array_unique(array_filter([
-            $webs?->getRawOriginal('school_logo_vert'),
-            'logo-vert1.png',
-            'logo-vert.png',
-        ])));
+        $logoCandidates = [
+            storage_path('app/public/images/logo/logo-vert1.png'),
+            storage_path('app/public/images/logo/logo-vert.png'),
+        ];
 
-        foreach ($logoNames as $logoName) {
-            $logoName = basename((string) $logoName);
-            if ($logoName === '') {
+        foreach ($logoCandidates as $candidate) {
+            if (!is_file($candidate) || !is_readable($candidate)) {
                 continue;
             }
 
-            $candidates = array_values(array_unique(array_filter([
-                // Lokasi baru yang dipakai hosting: app/public/images/default/
-                base_path('app/public/images/default/' . $logoName),
-                // Fallback standar Laravel.
-                \Illuminate\Support\Facades\Storage::disk('public')->path('images/logo/' . $logoName),
-                storage_path('app/public/images/logo/' . $logoName),
-                public_path('images/default/' . $logoName),
-                public_path('images/logo/' . $logoName),
-            ])));
-
-            foreach ($candidates as $candidate) {
-                if (!is_file($candidate) || !is_readable($candidate)) {
+            try {
+                $logoBytes = file_get_contents($candidate);
+                if ($logoBytes === false || $logoBytes === '') {
                     continue;
                 }
 
-                try {
-                    $logoBytes = file_get_contents($candidate);
-                    if ($logoBytes === false || $logoBytes === '') {
-                        continue;
-                    }
+                $mime = function_exists('mime_content_type')
+                    ? (mime_content_type($candidate) ?: 'image/png')
+                    : 'image/png';
 
-                    $mime = 'image/png';
-                    if (function_exists('finfo_open')) {
-                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                        if ($finfo) {
-                            $detectedMime = finfo_file($finfo, $candidate);
-                            finfo_close($finfo);
-                            if ($detectedMime) {
-                                $mime = $detectedMime;
-                            }
-                        }
-                    }
-
-                    $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
-                    break 2;
-                } catch (\Throwable $e) {
-                    // Coba nama/path logo berikutnya.
-                }
+                $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
+                break;
+            } catch (\\Throwable $e) {
+                // Lanjutkan ke asset logo cadangan yang juga terlacak di repository.
             }
         }
 
