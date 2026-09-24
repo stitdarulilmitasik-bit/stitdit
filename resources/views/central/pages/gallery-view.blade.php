@@ -177,7 +177,7 @@
 
 @section('content')
     <!-- Hero Section -->
-    <section class="hero-section text-center text-white" style="background-image: url('{{ ($galeri->photo ? stit_gallery_image_url($galeri->photo) : asset('images/placeholders/news-placeholder.svg')) }}');">
+    <section class="hero-section text-center text-white" style="background-image: url('{{ ($galeri->photo ? stit_gallery_image_url($galeri->photo) : stit_image_url(null)) }}');">
         <div class="container hero-content">
             <div class="gallery-category mb-3">{{ $galeri->kategori->name ?? 'Umum' }}</div>
             <h1 class="display-4 fw-bold mb-3">{{ $galeri->name ?? 'Detail Galeri' }}</h1>
