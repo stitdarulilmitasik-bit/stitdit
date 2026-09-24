@@ -479,7 +479,7 @@ class KRSController extends Controller
                         $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($logoBytes);
                         break 2;
                     }
-                } catch (\\Throwable $e) {
+                } catch (\Throwable $e) {
                     // Lanjutkan ke sumber logo berikutnya.
                 }
             }
@@ -526,7 +526,7 @@ class KRSController extends Controller
                     $mime = $response->header('Content-Type') ?: 'image/png';
                     $logoDataUri = 'data:' . strtok($mime, ';') . ';base64,' . base64_encode($response->body());
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // PDF tetap dapat dibuat tanpa logo bila server benar-benar tidak memiliki asetnya.
             }
         }
