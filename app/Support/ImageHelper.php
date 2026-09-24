@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Storage;
 if (! function_exists('stit_image_url')) {
     /**
      * Resolve all application images from storage/app/public/images.
-     * The public web URL is exposed only through /storage after storage:link.
+     * The public web URL is served through the Laravel /media endpoint; no storage symlink is required.
      */
     function stit_image_url(?string $path, string $fallback = 'images/placeholders/news-placeholder.svg'): string
     {
@@ -36,17 +36,17 @@ if (! function_exists('stit_image_url')) {
         }
 
         if (Storage::disk('public')->exists($path)) {
-        return asset('storage/' . $path);
+        return url('/media/' . ltrim($path, '/'));
         }
 
         // Do not fall back to public/images. All application images are stored
-        // in storage/app/public/images and exposed through /storage.
+        // in storage/app/public/images and exposed through the Laravel /media endpoint.
         $fallback = str_replace('public/', '', ltrim($fallback, '/'));
         if (str_starts_with($fallback, 'storage/')) {
             $fallback = substr($fallback, 8);
         }
         return Storage::disk('public')->exists($fallback)
-            ? asset('storage/' . $fallback)
+            ? url('/media/' . ltrim($fallback, '/'))
             : url('/media/images/placeholders/news-placeholder.svg');
     }
 }
