@@ -98,7 +98,7 @@
                 <div class="col-lg d-none d-lg-flex align-items-center justify-content-center">
                     <div class="text-center w-100">
                         <img
-                            src="{{ asset('storage/images/logo/logo-vert.png') }}"
+                            src="{{ stit_storage_image_url('images/logo', 'logo-vert.png', 'images/logo/logo-vert.png') }}"
                             class="img-fluid d-block mx-auto"
                             style="max-width: 360px; max-height: 460px; width: auto; height: auto; object-fit: contain;"
                             alt="Logo STIT Darul Ilmi"
