@@ -21,7 +21,7 @@ use App\Models\Dosen;
 use App\Models\Pengaturan\WebSetting;
 // Use Plugins
 use Alert;
-use PDF;
+use TCPDF;
 
 class KRSController extends Controller
 {
@@ -478,16 +478,32 @@ class KRSController extends Controller
             'logoDataUri' => $logoDataUri,
         ];
 
-        // Dompdf di hosting perlu izin membaca file lokal di public/.
-        // Logo KRS menggunakan path file lokal (bukan URL/storage symlink).
-        return PDF::loadView('master.akademik.krs-print', $data)
-            ->setOption([
-                'chroot' => public_path(),
-                'isRemoteEnabled' => true,
-                'isHtml5ParserEnabled' => true,
-            ])
-            ->setPaper('a4', 'portrait')
-            ->download('KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code) . '.pdf');
+        $html = view('master.akademik.krs-print', $data)->render();
+
+        // TCPDF menerima HTML hasil Blade dan menanam logo yang sudah
+        // disediakan sebagai data URI, sehingga tidak bergantung pada URL,
+        // document root, atau storage symlink hosting.
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+        $pdf->SetCreator('STIT Darul Ilmi Tasikmalaya');
+        $pdf->SetAuthor('STIT Darul Ilmi Tasikmalaya');
+        $pdf->SetTitle('KRS - ' . ($krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code));
+        $pdf->SetSubject('Kartu Rencana Studi');
+        $pdf->SetMargins(15, 10, 15);
+        $pdf->SetAutoPageBreak(true, 15);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->AddPage('P', 'A4');
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        $filename = 'KRS-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $krs->mahasiswa->name ?? $krs->mahasiswa->numb_nim ?? $krs->code) . '.pdf';
+        $pdfContent = $pdf->Output($filename, 'S');
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length' => strlen($pdfContent),
+        ]);
     }
 
     public function detailKRS($code)
