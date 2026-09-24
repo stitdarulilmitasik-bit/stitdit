@@ -20,7 +20,7 @@ Route::group(['prefix' => 'web-admin', 'middleware' => ['checkUser:web'], 'as' =
     Route::post('/akademik/kehadiran', [App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'webAdminSimpanKehadiran'])->name('akademik.kehadiran.store');
 
     // MAINTENANCE: bersihkan cache Laravel tanpa Terminal. Hanya type=0 yang diizinkan di controller.
-    Route::post('/maintenance/clear-cache', [App\\Http\\Controllers\\Private\\User\\MaintenanceController::class, 'clearCache'])->name('maintenance.clear-cache');
+    Route::post('/maintenance/clear-cache', [App\Http\Controllers\Private\User\MaintenanceController::class, 'clearCache'])->name('maintenance.clear-cache');
 
     // MASTER AUTHORITY
     require __DIR__.'/../master-core.php';
