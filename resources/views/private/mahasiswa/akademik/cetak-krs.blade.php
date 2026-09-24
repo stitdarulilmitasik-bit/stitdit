@@ -42,7 +42,6 @@ th { background:#eee; }
                 @if(!empty($logoDataUri))
                     <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">
                 @endif
-                @if($logo)<img src="{{ $logo }}" alt="Logo STIT Darul Ilmi">@endif
             </td>
             <td class="kop-text">
                 <div class="line1">SEKOLAH TINGGI ILMU TARBIYAH</div>
