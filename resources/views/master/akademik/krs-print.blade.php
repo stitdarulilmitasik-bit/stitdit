@@ -64,22 +64,9 @@
     $dosenWali = $krs->dosenPA ?? null; if (!$dosenWali) { $fallbackJabatan = \App\Models\Jabatan::with('dosen')->where('is_active', true)->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])->where(function ($q) use ($krs) { $q->whereNull('prodi_id')->orWhere('prodi_id', $krs->mahasiswa->prodi_id); })->whereNotNull('dosen_id')->orderBy('sort_order')->first(); $dosenWali = $fallbackJabatan?->dosen; }
     $dosenNidn = $dosenWali?->nidn ?? $dosenWali?->nidn_number ?? $dosenWali?->numb_nidn ?? $dosenWali?->number_nidn ?? '-';
 
-    $logoPath = null;
-    // Gunakan file logo langsung di public/. Controller mengatur chroot
-    // Dompdf ke public_path() agar file lokal dapat dibaca saat render PDF.
-    $logoCandidates = [
-        public_path('images/branding/logo-vert.png'),
-        public_path('logo.png'),
-        public_path('images/logo/logo-vert.png'),
-        public_path('images/logo/logo-hori.png'),
-    ];
-
-    foreach ($logoCandidates as $candidate) {
-        if (is_file($candidate) && is_readable($candidate)) {
-            $logoPath = $candidate;
-            break;
-        }
-    }
+    // Logo sudah disiapkan controller sebagai data URI agar Dompdf
+    // tidak perlu mengakses file/URL eksternal saat membuat PDF.
+    $logo = $logoDataUri ?? null;
 @endphp
 
 <div class="watermark">{{ strtoupper($krs->status) }}</div>
@@ -88,8 +75,10 @@
     <table class="kop-table">
         <tr>
             <td class="kop-logo">
-                @if($logoPath)
-                    <img src="{{ $logoPath }}" alt="Logo STIT Darul Ilmi" width="82" height="82">
+                @if($logo)
+                    <img src="{{ $logo }}" alt="Logo STIT Darul Ilmi" width="82" height="82">
+                @else
+                    <div class="logo-fallback">STIT<br><span>DARUL ILMI</span></div>
                 @endif
             </td>
             <td class="kop-text">
