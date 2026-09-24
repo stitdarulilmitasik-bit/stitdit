@@ -64,21 +64,19 @@
     $dosenWali = $krs->dosenPA ?? null; if (!$dosenWali) { $fallbackJabatan = \App\Models\Jabatan::with('dosen')->where('is_active', true)->whereIn('name', ['Dosen Pembimbing Akademik', 'Dosen Pembimbing'])->where(function ($q) use ($krs) { $q->whereNull('prodi_id')->orWhere('prodi_id', $krs->mahasiswa->prodi_id); })->whereNotNull('dosen_id')->orderBy('sort_order')->first(); $dosenWali = $fallbackJabatan?->dosen; }
     $dosenNidn = $dosenWali?->nidn ?? $dosenWali?->nidn_number ?? $dosenWali?->numb_nidn ?? $dosenWali?->number_nidn ?? '-';
 
-    $logo = null;
-    // Dompdf tidak selalu dapat membaca URL/storage symlink di hosting.
-    // Gunakan file logo langsung dari public agar logo pasti ikut ter-embed
-    // ke PDF sebagai base64, lalu sediakan beberapa fallback path.
+    $logoPath = null;
+    // Gunakan file logo langsung di public/. Controller mengatur chroot
+    // Dompdf ke public_path() agar file lokal dapat dibaca saat render PDF.
     $logoCandidates = [
         public_path('images/branding/logo-vert.png'),
         public_path('logo.png'),
-        public_path('storage/images/logo/logo-vert.png'),
-        storage_path('app/public/images/logo/logo-vert.png'),
-        storage_path('app/public/images/default/logo-vertical.png'),
+        public_path('images/logo/logo-vert.png'),
+        public_path('images/logo/logo-hori.png'),
     ];
+
     foreach ($logoCandidates as $candidate) {
-        if (is_file($candidate)) {
-            $mime = mime_content_type($candidate) ?: 'image/png';
-            $logo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($candidate));
+        if (is_file($candidate) && is_readable($candidate)) {
+            $logoPath = $candidate;
             break;
         }
     }
@@ -91,7 +89,7 @@
         <tr>
             <td class="kop-logo">
                 @if($logo)
-                    <img src="{{ $logo }}" alt="Logo STIT Darul Ilmi">
+                    <img src="{{ $logoPath }}" alt="Logo STIT Darul Ilmi">
                 @endif
             </td>
             <td class="kop-text">
