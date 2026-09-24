@@ -30,15 +30,15 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Validate Composer files
-        run: composer validate --no-check-publish
+      - name: Validate composer.json
+        run: composer validate --no-check-publish --no-check-lock
 
-      - name: Install PHP dependencies
+      - name: Install and synchronize PHP dependencies
         run: |
-          # composer.lock in the repository can lag behind composer.json.
-          # Resolve the current production dependency set so deployment does not
-          # fail with "Required package ... is not present in the lock file".
           composer update --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+
+      - name: Verify Composer lock file
+        run: composer validate --no-check-publish
 
       - name: Clear Laravel cache
         run: php artisan optimize:clear
@@ -75,7 +75,6 @@ jobs:
           rm -rf deploy
           mkdir -p deploy
 
-          # Copy the Laravel application while excluding local/dev files.
           rsync -a \
             --exclude='.git/' \
             --exclude='.github/' \
@@ -86,17 +85,11 @@ jobs:
             --exclude='deploy/' \
             ./ deploy/
 
-          # ByetHost serves /htdocs as the document root. Move the contents
-          # of Laravel's public directory to that root.
           rsync -a public/ deploy/
           rm -rf deploy/public
 
-          # The copied public/index.php normally expects ../vendor and
-          # ../bootstrap. Because public/ is flattened into /htdocs, rewrite
-          # those paths for the new document root.
           php -r '$p="deploy/index.php"; $s=file_get_contents($p); $s=str_replace("__DIR__.'/../storage", "__DIR__.'/storage", $s); $s=str_replace("__DIR__.'/../vendor", "__DIR__.'/vendor", $s); $s=str_replace("__DIR__.'/../bootstrap", "__DIR__.'/bootstrap", $s); file_put_contents($p,$s);'
 
-          # Fail the build if the deployment package is incomplete.
           test -f deploy/index.php
           test -f deploy/.htaccess
           test -f deploy/vendor/autoload.php
