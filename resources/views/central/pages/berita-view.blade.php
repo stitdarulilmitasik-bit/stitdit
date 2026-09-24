@@ -103,7 +103,7 @@
 @php
     // helper fallback for images
     function news_fallback($w=1200,$h=675,$text='Gambar Berita'){
-        return asset('images/placeholders/news-placeholder.svg');
+        return stit_image_url(null);
     }
     $wordCount = str_word_count(strip_tags($berita->content ?? ''));
     $readingTime = max(1, ceil($wordCount / 200));
