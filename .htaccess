@@ -1,6 +1,12 @@
-
-
 RewriteEngine On
 
-RewriteRule ^storage/(.*)$ /storage/app/public/$1 [END]
-RewriteRule (.*) /public/$1 [L]
+# Arahkan root domain ke Laravel public/index.php
+RewriteRule ^$ public/index.php [L]
+
+# File/folder yang memang ada di /htdocs jangan diubah
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Semua request lainnya masuk ke Laravel
+RewriteRule ^(.*)$ public/$1 [L]
