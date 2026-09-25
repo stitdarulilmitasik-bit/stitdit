@@ -1,9 +1,5 @@
 RewriteEngine On
 
-# Laravel public storage
-# Melayani /storage/* langsung dari storage/app/public/*
-RewriteRule ^storage/(.*)$ storage/app/public/$1 [L]
-
 # Arahkan root domain ke Laravel public/index.php
 RewriteRule ^$ public/index.php [L]
 
