@@ -25,6 +25,7 @@ Route::group(['prefix' => 'web-admin', 'middleware' => ['checkUser:web'], 'as' =
 
     // MAINTENANCE: bersihkan cache Laravel tanpa Terminal. Hanya type=0 yang diizinkan di controller.
     Route::post('/maintenance/clear-cache', [App\Http\Controllers\Private\User\MaintenanceController::class, 'clearCache'])->name('maintenance.clear-cache');
+    Route::post('/maintenance/storage-link', [App\Http\Controllers\Private\User\MaintenanceController::class, 'storageLink'])->name('maintenance.storage-link');
     Route::post('/maintenance/clear-routes', [App\Http\Controllers\Private\User\MaintenanceController::class, 'clearRoutes'])->name('maintenance.clear-routes');
     Route::post('/maintenance/clear-views', [App\Http\Controllers\Private\User\MaintenanceController::class, 'clearViews'])->name('maintenance.clear-views');
 
