@@ -7,7 +7,9 @@
     .global-attendance th,.global-attendance td { padding:5px 6px !important; vertical-align:middle; line-height:1.2; }
     .global-attendance .c-no{width:45px}.global-attendance .c-course{width:220px}.global-attendance .c-code{width:90px}
     .global-attendance .c-nim{width:120px}.global-attendance .c-name{width:210px}
-    .global-attendance .c-meeting{width:40px}.global-attendance .c-summary{width:100px}
+    .global-attendance .c-meeting{width:48px}.global-attendance .c-summary{width:82px}
+    .global-attendance .c-selected{width:105px;background:rgba(32,107,196,.06)}
+    .attendance-save-bar{position:sticky;bottom:0;z-index:10;background:var(--tblr-bg-surface,#fff);border-top:1px solid var(--tblr-border-color,#ddd);padding:10px;}
     .global-attendance .student-name{white-space:normal;overflow-wrap:anywhere}
 </style>
 <div class="container-xl py-3">
@@ -87,7 +89,11 @@
             <h3 class="card-title mb-0">{{ $mataKuliahId ? 'Report Kehadiran Mata Kuliah' : 'Report Global Kehadiran' }}</h3>
         </div>
         <div class="global-attendance-wrap">
-            <table class="table table-bordered table-vcenter global-attendance mb-0">
+            <form method="POST" action="{{ route('web-admin.akademik.kehadiran.store') }}">
+                @csrf
+                <input type="hidden" name="semester" value="{{ $semester }}">
+                <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
+                <table class="table table-bordered table-vcenter global-attendance mb-0">
                 <thead>
                     <tr>
                         <th class="c-no text-center">No.</th>
@@ -95,14 +101,12 @@
                         <th class="c-code text-center">Kode</th>
                         <th class="c-nim">NIM</th>
                         <th class="c-name">Nama Mahasiswa</th>
-                        @for($i=1;$i<=16;$i++)<th class="c-meeting text-center">P{{ $i }}</th>@endfor
+                        @for($i=1;$i<=16;$i++)<th class="c-meeting text-center {{ (int)$pertemuan === $i ? 'c-selected' : '' }}">P{{ $i }}</th>@endfor
                         <th class="c-summary text-center">Hadir</th>
                         <th class="c-summary text-center">Izin</th>
                         <th class="c-summary text-center">Sakit</th>
                         <th class="c-summary text-center">Alpa</th>
                         <th class="c-summary text-center">% Hadir</th>
-                        <th style="width:190px;">Status P{{ $pertemuan }}</th>
-                        <th style="width:90px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,8 +128,14 @@
                         <td class="student-name"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
                         @for($i=1;$i<=16;$i++)
                             @php $a=$att[$i]??null; @endphp
-                            <td class="text-center">
-                                @if(($a->status??'')==='Hadir')<span class="text-success fw-bold">✓</span>
+                            <td class="text-center {{ (int)$pertemuan === $i ? 'c-selected' : '' }}">
+                                @if((int)$pertemuan === $i)
+                                    <select name="status[{{ $n->id }}]" class="form-select form-select-sm" aria-label="Status {{ $n->mahasiswa->name ?? 'mahasiswa' }} P{{ $i }}" required>
+                                        @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
+                                            <option value="{{ $status }}" {{ (($a->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
+                                        @endforeach
+                                    </select>
+                                @elseif(($a->status??'')==='Hadir')<span class="text-success fw-bold">✓</span>
                                 @elseif(($a->status??'')==='Izin')<span class="text-warning fw-semibold">I</span>
                                 @elseif(($a->status??'')==='Sakit')<span class="text-info fw-semibold">S</span>
                                 @elseif(($a->status??'')==='Alpa')<span class="text-danger fw-semibold">A</span>
@@ -134,34 +144,20 @@
                         @endfor
                         <td class="text-center">{{ $hadir }}</td><td class="text-center">{{ $izin }}</td><td class="text-center">{{ $sakit }}</td><td class="text-center">{{ $alpa }}</td>
                         <td class="text-center"><strong>{{ number_format($persentase,2) }}%</strong></td>
-                        <td style="width:190px;">
-                            @php $currentAttendance = $att[(int)$pertemuan] ?? null; @endphp
-                            <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" required>
-                                <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
-                                @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
-                                    <option value="{{ $status }}" {{ (($currentAttendance->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td style="width:90px;">
-                            <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route('web-admin.akademik.kehadiran.store') }}">
-                                @csrf
-                                <input type="hidden" name="nilai_id" value="{{ $n->id }}">
-                                <input type="hidden" name="semester" value="{{ $n->semester }}">
-                                <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
-                                <input type="hidden" name="redirect_semester" value="{{ $semester }}">
-                                <input type="hidden" name="redirect_pertemuan" value="{{ $pertemuan }}">
-                                <button class="btn btn-sm btn-primary w-100" title="Simpan kehadiran">
-                                    <i class="fas fa-save me-1"></i>Simpan
-                                </button>
-                            </form>
-                        </td>
+
                     </tr>
                 @empty
-                    <tr><td colspan="28" class="text-center py-4 text-muted">Belum ada data kehadiran.</td></tr>
+                    <tr><td colspan="26" class="text-center py-4 text-muted">Belum ada data kehadiran.</td></tr>
                 @endforelse
                 </tbody>
-            </table>
+                </table>
+                <div class="attendance-save-bar d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                    <span class="text-muted small">Semester {{ $semester }} · Pertemuan {{ $pertemuan }} · Status pada kolom P{{ $pertemuan }} dapat diedit.</span>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Simpan Kehadiran P{{ $pertemuan }}
+                    </button>
+                </div>
+            </form>
         </div>
         <div class="card-footer">{{ $nilai->links() }}</div>
     </div>
