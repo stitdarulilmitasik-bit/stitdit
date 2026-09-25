@@ -8,7 +8,7 @@
                         <div class="text-center mb-4">
                             <!-- BEGIN NAVBAR LOGO -->
                             <a href="." aria-label="Tabler" class="navbar-brand navbar-brand-autodark">
-                                <img src="{{ $webs->school_logo_hori }}" style="height: 64px; width:200px;" alt="Logo STIT Darul Ilmi">
+                                <img src="{{ stit_storage_image_url('images/logo', 'logo-hori.png', 'images/logo/logo-hori.png') }}" style="height: 64px; width:auto; max-width:260px; object-fit:contain;" alt="Logo STIT Darul Ilmi">
                             </a>
                             <!-- END NAVBAR LOGO -->
                         </div>
