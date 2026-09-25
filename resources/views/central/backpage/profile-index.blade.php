@@ -82,7 +82,13 @@
   <!-- Main -->
   <section class="d-flex flex-column">
     <div class="header-card">
-      <img src="{{ $user?->photo ?? '' }}" class="avatar-profile" id="preview-image" alt="Avatar-profile">
+      @php
+  $profilePhoto = $user?->photo;
+  $profilePhotoUrl = $profilePhoto && $profilePhoto !== 'default.jpg'
+      ? '/storage/images/profile/' . $profilePhoto
+      : '/storage/images/profile/default.jpg';
+@endphp
+<img src="{{ $profilePhotoUrl }}" class="avatar-profile" id="preview-image" alt="Avatar-profile">
       <div>
         <h2>Profile Settings</h2>
         <div class="upload-hint">Update your personal information, contacts, and more.</div>
