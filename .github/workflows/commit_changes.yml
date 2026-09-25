@@ -55,7 +55,47 @@ jobs:
           echo "=========================================="
 
       # ============================================================
-      # 3. Deploy langsung ke /htdocs
+      # 3. Siapkan public/storage untuk shared hosting
+      #
+      # ByetHost/OpenResty tidak mengandalkan .htaccess untuk
+      # membuat symlink Laravel. Karena itu storage/app/public
+      # disalin ke public/storage sebelum FTP incremental.
+      #
+      # Dengan cara ini URL /storage/... menjadi file fisik di
+      # /htdocs/public/storage/... dan tidak membutuhkan rewrite.
+      # ============================================================
+      - name: Prepare public storage
+        shell: bash
+        run: |
+          set -e
+
+          echo "Menyiapkan public/storage..."
+
+          mkdir -p public/storage
+
+          # Sinkronkan seluruh public disk Laravel ke public/storage.
+          # File generated ini hanya untuk deployment dan tidak mengubah
+          # source storage/app/public di repository.
+          cp -a storage/app/public/. public/storage/
+
+          echo "Public storage siap."
+          echo "Isi utama public/storage:"
+          find public/storage -maxdepth 2 -type f | head -50 || true
+
+      # ============================================================
+      # 4. Deploy langsung ke /htdocs
+      #
+      # IMPORTANT:
+      # - Tidak menggunakan deploy/
+      # - Tidak menggunakan dangerous-clean-slate
+      # - Tidak menghapus seluruh server
+      # - FTP Deploy Action menggunakan state untuk mengetahui
+      #   file yang berubah
+      # ============================================================
+      # ============================================================
+      # Deploy langsung ke /htdocs
+      # ============================================================
+
       #
       # IMPORTANT:
       # - Tidak menggunakan deploy/
@@ -101,7 +141,7 @@ jobs:
             **/.ftp-deploy-sync-state.json
 
       # ============================================================
-      # 4. Informasi hasil deployment
+      # 5. Informasi hasil deployment
       # ============================================================
       - name: Deployment completed
         shell: bash
