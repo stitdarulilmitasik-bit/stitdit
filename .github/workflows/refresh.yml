@@ -1,4 +1,4 @@
-name: Refresh Composer Autoload - ByetHost
+name: Refresh Laravel Autoload Only - ByetHost
 
 on:
   workflow_dispatch:
@@ -19,39 +19,40 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Generate Composer autoload
+      - name: Install dependencies for autoload generation
         run: |
           set -e
 
-          echo "Generating Composer autoload..."
-
-          composer dump-autoload \
+          composer install \
             --no-dev \
-            --optimize \
-            --no-interaction
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-scripts
 
-          test -f vendor/autoload.php
-          test -d vendor/composer
-
-          echo "Autoload generated successfully."
-
-      - name: Prepare ONLY autoload files
+      - name: Prepare ONLY Composer autoload
         run: |
           set -e
 
           rm -rf deploy
           mkdir -p deploy/vendor/composer
 
-          cp vendor/autoload.php \
-             deploy/vendor/autoload.php
+          cp vendor/autoload.php deploy/vendor/autoload.php
+          cp vendor/composer/*.php deploy/vendor/composer/
 
-          cp vendor/composer/*.php \
-             deploy/vendor/composer/
+          echo "========================================"
+          echo "FILES TO DEPLOY"
+          echo "========================================"
 
-          echo "Prepared files:"
-          find deploy/vendor -type f | sort
+          find deploy -type f | sort
 
-      - name: Upload ONLY autoload to existing htdocs
+          echo ""
+          echo "No Laravel source will be deployed."
+          echo "No app directory will be deployed."
+          echo "No docker_backup will be deployed."
+          echo "No full vendor will be deployed."
+
+      - name: Upload ONLY autoload to htdocs
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.BYETHOST_FTP_SERVER }}
@@ -60,33 +61,50 @@ jobs:
           protocol: ftp
           port: ${{ secrets.BYETHOST_FTP_PORT }}
 
-          # FTP account Anda sudah berada di /htdocs
-          server-dir: ./
+          # FTP ROOT berisi htdocs/
+          # Laravel berada di FTP ROOT/htdocs/
+          server-dir: ./htdocs/
 
-          # Hanya package kecil yang dibuat di atas
+          # Hanya folder deploy yang berisi vendor/autoload.php
           local-dir: ./deploy/
 
-          # JANGAN menghapus source yang sudah ada
           dangerous-clean-slate: false
-
           log-level: standard
 
           exclude: |
             **/.git*
             **/.github/**
+            **/app/**
+            **/bootstrap/**
+            **/config/**
+            **/database/**
+            **/public/**
+            **/resources/**
+            **/routes/**
+            **/storage/**
+            **/.env
+            **/vendor/laravel/**
+            **/vendor/coderflex/**
+            **/vendor/livewire/**
+            **/vendor/barryvdh/**
+            **/vendor/phpoffice/**
+            **/vendor/maatwebsite/**
+            **/vendor/guzzlehttp/**
+            **/vendor/symfony/**
+            **/vendor/psr/**
+            **/vendor/doctrine/**
+            **/vendor/monolog/**
+            **/vendor/*
 
-      - name: Deployment summary
+      - name: Verify package
         run: |
-          echo "=========================================="
-          echo "AUTOLOAD REFRESH SELESAI"
-          echo "=========================================="
+          echo "========================================"
+          echo "AUTOLOAD-ONLY DEPLOYMENT FINISHED"
+          echo "========================================"
           echo ""
-          echo "Server source TIDAK diubah."
-          echo "Vendor package TIDAK di-upload ulang."
+          echo "Target:"
+          echo "FTP ROOT/htdocs/vendor/"
           echo ""
-          echo "Yang diperbarui:"
-          echo "/htdocs/vendor/autoload.php"
-          echo "/htdocs/vendor/composer/*.php"
-          echo ""
-          echo "Server .env TIDAK diubah."
-          echo "=========================================="
+          echo "Source Laravel tidak di-upload."
+          echo "docker_backup tidak di-upload."
+          echo "Full vendor tidak di-upload."
