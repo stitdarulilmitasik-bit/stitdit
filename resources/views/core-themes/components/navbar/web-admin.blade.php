@@ -79,7 +79,7 @@
         <a class="dropdown-item {{ Route::is($spref . 'akademik.krs-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'akademik.krs-render') }}">KRS (Kartu Rencana Studi)</a>
         <a class="dropdown-item {{ Route::is($spref . 'akademik.nilai-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'akademik.nilai-render') }}">Nilai Mahasiswa</a>
         <a class="dropdown-item {{ Route::is($spref . 'akademik.khs-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'akademik.khs-render') }}">KHS (Kartu Hasil Studi)</a>
-        <a class="dropdown-item {{ Route::is($spref . 'akademik.kehadiran*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'akademik.kehadiran') }}">Kehadiran Mahasiswa</a>
+        <a class="dropdown-item {{ Route::is($spref . 'akademik.kehadiran*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'akademik.kehadiran') }}">Input Kehadiran Mahasiswa</a>
     </div>
 </li>
 <li class="nav-item dropdown">
