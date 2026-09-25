@@ -1,0 +1,112 @@
+name: Refresh Composer Autoload - ByetHost
+
+on:
+  workflow_dispatch:
+
+jobs:
+  refresh-autoload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, bcmath, intl, pdo_mysql, gd, zip, curl, fileinfo
+          tools: composer:v2
+          coverage: none
+
+      - name: Build Composer autoload only
+        shell: bash
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "BUILD COMPOSER AUTOLOAD"
+          echo "=========================================="
+
+          rm -rf temp-vendor deploy
+          mkdir -p temp-vendor deploy/vendor
+
+          composer install \
+            --no-dev \
+            --no-scripts \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader \
+            --working-dir=.
+
+          echo ""
+          echo "Composer autoload generated."
+
+          test -f vendor/autoload.php
+          test -d vendor/composer
+
+          echo "vendor/autoload.php: OK"
+          echo "vendor/composer: OK"
+
+          # Hanya ambil autoload utama dan Composer metadata.
+          cp vendor/autoload.php deploy/vendor/autoload.php
+
+          cp -a vendor/composer deploy/vendor/
+
+          echo ""
+          echo "Files prepared for upload:"
+          echo "deploy/vendor/autoload.php"
+          echo "deploy/vendor/composer/*"
+
+          echo ""
+          echo "Full vendor will NOT be uploaded."
+
+      - name: Verify autoload package references
+        shell: bash
+        run: |
+          set -e
+
+          echo "Checking generated autoload..."
+
+          test -f deploy/vendor/autoload.php
+          test -f deploy/vendor/composer/autoload_real.php
+          test -f deploy/vendor/composer/autoload_psr4.php
+          test -f deploy/vendor/composer/autoload_classmap.php
+          test -f deploy/vendor/composer/autoload_files.php
+          test -f deploy/vendor/composer/autoload_static.php
+
+          echo ""
+          echo "Composer autoload files verified."
+
+      - name: Deploy ONLY Composer autoload
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.BYETHOST_FTP_SERVER }}
+          username: ${{ secrets.BYETHOST_FTP_USERNAME }}
+          password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
+          protocol: ftp
+          port: ${{ secrets.BYETHOST_FTP_PORT }}
+
+          local-dir: ./deploy/
+          server-dir: ./
+
+          dangerous-clean-slate: false
+          log-level: standard
+
+      - name: Finished
+        shell: bash
+        run: |
+          echo "=========================================="
+          echo "AUTOLOAD REFRESH COMPLETED"
+          echo "=========================================="
+          echo ""
+          echo "Updated:"
+          echo "/htdocs/vendor/autoload.php"
+          echo "/htdocs/vendor/composer/*"
+          echo ""
+          echo "NOT uploaded:"
+          echo "Laravel source"
+          echo "Application vendor packages"
+          echo ".env"
+          echo "storage"
+          echo "=========================================="
