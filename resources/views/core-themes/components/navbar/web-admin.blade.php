@@ -128,6 +128,51 @@
         <a class="dropdown-item {{ Route::is($spref . 'infrastruktur.inventaris-barang-*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'infrastruktur.inventaris-barang-render') }}">Inventaris Barang</a>
     </div>
 </li>
+<li class="nav-item dropdown">
+    <a class="nav-link {{ Route::is($spref . 'maintenance.*', request()->path()) ? 'active' : '' }} dropdown-toggle" href="#navbar-maintenance" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false">
+        <span class="nav-link-icon d-md-none d-lg-inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-tool">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.3 -3.3a6 6 0 0 1 -7.5 7.5l-6.6 6.6a2 2 0 0 1 -2.8 -2.8l6.6 -6.6a6 6 0 0 1 7.5 -7.5z"/>
+            </svg>
+        </span>
+        <span class="nav-link-title"> Maintenance Sistem </span>
+    </a>
+    <div class="dropdown-menu">
+        @if ($layoutUser && (int) ($layoutUser->raw_type ?? -1) === 0)
+            <a class="dropdown-item {{ Route::is($spref . 'maintenance.composer*', request()->path()) ? 'active' : '' }}" href="{{ route($spref . 'maintenance.composer') }}">
+                Terminal Composer
+            </a>
+            <a class="dropdown-item" href="{{ url('/backup.php') }}" target="_blank" rel="noopener">
+                <i class="fas fa-database me-1"></i> Backup Website
+            </a>
+        @endif
+        <form method="POST" action="{{ route($spref . 'maintenance.clear-cache') }}" class="m-0">
+            @csrf
+            <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start" onclick="return confirm('Bersihkan cache Laravel sekarang?');">
+                Bersihkan Cache Laravel
+            </button>
+        </form>
+        <form method="POST" action="{{ route($spref . 'maintenance.clear-routes') }}" class="m-0">
+            @csrf
+            <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start" onclick="return confirm('Bersihkan route cache Laravel sekarang?');">
+                Bersihkan Route Cache
+            </button>
+        </form>
+        <form method="POST" action="{{ route($spref . 'maintenance.clear-views') }}" class="m-0">
+            @csrf
+            <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start" onclick="return confirm('Bersihkan compiled view Laravel sekarang?');">
+                Bersihkan View Cache
+            </button>
+        </form>
+        <form method="POST" action="{{ route($spref . 'maintenance.storage-link') }}" class="m-0">
+            @csrf
+            <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start" onclick="return confirm('Siapkan public storage mirror sekarang?');">
+                Sinkronkan Storage Publik
+            </button>
+        </form>
+    </div>
+</li>
 <li class="nav-item">
     <span class="nav-link"><span class="nav-link-title"> Pengaturan </span></span>
 </li>
