@@ -20,28 +20,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Prepare deployment package
-        shell: bash
-        run: |
-          set -e
-
-          rm -rf deploy
-          mkdir -p deploy
-
-          # Copy the Laravel application, but NEVER deploy vendor.
-          rsync -a             --exclude='.git/'             --exclude='.github/'             --exclude='vendor/'             --exclude='node_modules/'             --exclude='.env'             --exclude='storage/logs/*'             --exclude='storage/framework/cache/*'             --exclude='storage/framework/sessions/*'             --exclude='storage/framework/views/*'             ./ deploy/
-
-          # Ensure runtime directories exist without replacing server data.
-          mkdir -p deploy/storage/app
-          mkdir -p deploy/storage/framework/cache
-          mkdir -p deploy/storage/framework/sessions
-          mkdir -p deploy/storage/framework/views
-          mkdir -p deploy/storage/logs
-
-          echo "Deployment package prepared."
-          echo "vendor is intentionally excluded."
-          test ! -d deploy/vendor
-
       - name: Deploy source to ByetHost via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
@@ -50,7 +28,7 @@ jobs:
           password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
           protocol: ftp
           port: ${{ secrets.BYETHOST_FTP_PORT }}
-          local-dir: ./deploy/
+          local-dir: ./
           server-dir: ./
           exclude: |
             **/.git*
@@ -62,6 +40,8 @@ jobs:
             **/storage/framework/cache/**
             **/storage/framework/sessions/**
             **/storage/framework/views/**
+            **/deploy/**
+            deploy/**
           dangerous-clean-slate: false
           log-level: standard
 
@@ -70,6 +50,7 @@ jobs:
         run: |
           echo "========================================"
           echo "ByetHost deployment completed."
+          echo "Source uploaded directly; no deploy staging folder."
           echo "Composer was NOT executed."
           echo "vendor was NOT uploaded."
           echo "server .env was NOT uploaded."
