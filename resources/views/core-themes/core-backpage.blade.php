@@ -181,7 +181,25 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="navbar-nav flex-row order-md-last">
+            <div class="navbar-nav flex-row order-md-last align-items-center gap-2">
+                <a href="{{ route('root.home-index') }}" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1" aria-label="Buka Homepage">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12l-1 0a1 1 0 0 1 -.7 -1.7l7.3 -7.3l7.3 7.3a1 1 0 0 1 -.7 1.7h-1.2v6a2 2 0 0 1 -2 2h-2v-5h-4v5h-2a2 2 0 0 1 -2 -2v-6z"/>
+                    </svg>
+                    <span class="d-none d-xl-inline">Homepage</span>
+                </a>
+
+                @if($layoutUser)
+                    <a href="{{ route($spref . 'handle-logout') }}" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" aria-label="Keluar dari Web Admin">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M14 8v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h6a2 2 0 0 0 2 -2v-4"/>
+                            <path d="M8 12h13l-3 -3"/>
+                            <path d="M18 15l3 -3"/>
+                        </svg>
+                        <span class="d-none d-xl-inline">Logout</span>
+                    </a>
+                @endif
+
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Buka menu pengguna">
                         <span class="avatar avatar-sm p-0 overflow-hidden profile-navbar-avatar"><img src="{{ $layoutUser ? $layoutUser->photo : stit_profile_image_url(null) }}" alt="{{ $layoutUser?->name ?? 'Pengguna' }}" class="w-100 h-100" style="object-fit:cover;display:block;" loading="eager" onerror="this.onerror=null;this.src='{{ stit_profile_image_url(null) }}';"></span>
