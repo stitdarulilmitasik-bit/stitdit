@@ -126,6 +126,7 @@ class RootController extends Controller
                 // Hapus foto lama
                 if ($user->photo && $user->photo !== 'default.jpg') {
                     Storage::disk('public')->delete('images/profile/' . $user->photo);
+                    File::delete(storage_path('images/profile/' . $user->photo));
                 }
             
                 // Kompres dan simpan foto profil
@@ -143,8 +144,17 @@ class RootController extends Controller
                 }
                 
                 // Simpan dengan kualitas tinggi (90%)
-                Storage::disk('public')->put('images/profile/' . $photoName, $image->toJpeg(90));
-                
+                $jpeg = $image->toJpeg(90);
+
+                // Penyimpanan utama Laravel: storage/app/public/images/profile
+                Storage::disk('public')->put('images/profile/' . $photoName, $jpeg);
+
+                // Mirror publik ByetHost: /htdocs/storage/images/profile
+                // Diperlukan karena document root ByetHost menggunakan /htdocs.
+                $publicProfileDir = storage_path('images/profile');
+                File::ensureDirectoryExists($publicProfileDir);
+                File::put($publicProfileDir . '/' . $photoName, $jpeg);
+
                 $data['photo'] = $photoName;
             }
 
