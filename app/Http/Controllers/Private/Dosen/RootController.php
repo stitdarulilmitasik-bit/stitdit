@@ -99,8 +99,14 @@ class RootController extends Controller
             $data = $validator->validated();
 
             if ($request->hasFile('photo')) {
-                if ($user->photo && $user->photo !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . $user->photo);
+                // Gunakan nilai mentah dari kolom photo. Accessor $user->photo
+                // sudah mengubahnya menjadi URL sehingga tidak aman dipakai
+                // sebagai nama file saat menghapus foto lama.
+                $oldPhoto = $user->getRawOriginal('photo');
+
+                if ($oldPhoto && $oldPhoto !== 'default.jpg') {
+                    $oldPhoto = basename(ltrim($oldPhoto, '/'));
+                    Storage::disk('public')->delete('images/profile/' . $oldPhoto);
                 }
 
                 $photoName = time() . '-' . $user->code . '-' . uniqid() . '-' . uniqid() . '.jpg';
