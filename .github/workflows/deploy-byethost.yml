@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Deploy source to ByetHost via FTP
+      - name: Sync committed changes to ByetHost
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.BYETHOST_FTP_SERVER }}
@@ -49,10 +49,10 @@ jobs:
         shell: bash
         run: |
           echo "========================================"
-          echo "ByetHost deployment completed."
-          echo "Source uploaded directly; no deploy staging folder."
-          echo "Composer was NOT executed."
-          echo "vendor was NOT uploaded."
-          echo "server .env was NOT uploaded."
-          echo "server storage runtime data was preserved."
+          echo "ByetHost incremental sync completed."
+          echo "Only files changed since the previous FTP sync are transferred."
+          echo "Target: ./htdocs/"
+          echo "No deploy staging folder is used."
+          echo "vendor and .env are excluded."
+          echo "Laravel runtime storage is preserved."
           echo "========================================"
