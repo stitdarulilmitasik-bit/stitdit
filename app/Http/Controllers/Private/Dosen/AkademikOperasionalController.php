@@ -307,6 +307,7 @@ class AkademikOperasionalController extends Controller
     {
         $webs = WebSetting::first();
         $semester = max(1, min(8, (int) $request->input('semester', 1)));
+        $pertemuan = max(1, min(16, (int) $request->input('pertemuan', 1)));
         $mahasiswaId = $request->input('mahasiswa_id');
         $mataKuliahId = $request->input('mata_kuliah_id');
 
@@ -359,6 +360,7 @@ class AkademikOperasionalController extends Controller
             'pages' => 'Report Global Kehadiran',
             'academy' => $webs ? $webs->school_apps . ' by ' . $webs->school_name : 'SIAKAD',
             'semester' => $semester,
+            'pertemuan' => $pertemuan,
             'nilai' => $nilai,
             'mahasiswaOptions' => $mahasiswaOptions,
             'mataKuliahOptions' => $mataKuliahOptions,
