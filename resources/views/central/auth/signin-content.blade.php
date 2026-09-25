@@ -8,7 +8,7 @@
                         <div class="text-center mb-4">
                             <!-- BEGIN NAVBAR LOGO -->
                             <a href="." aria-label="Tabler" class="navbar-brand navbar-brand-autodark">
-                                <img src="{{ stit_storage_image_url('images/logo', 'logo-hori.png', 'images/logo/logo-hori.png') }}" style="height: 64px; width:auto; max-width:260px; object-fit:contain;" alt="Logo STIT Darul Ilmi">
+                                <img src="/storage/images/logo/logo-hori.png" style="height: 64px; width:auto; max-width:260px; object-fit:contain;" alt="Logo STIT Darul Ilmi">
                             </a>
                             <!-- END NAVBAR LOGO -->
                         </div>
@@ -98,7 +98,7 @@
                 <div class="col-lg d-none d-lg-flex align-items-center justify-content-center">
                     <div class="text-center w-100">
                         <img
-                            src="{{ stit_storage_image_url('images/logo', 'logo-vert.png', 'images/logo/logo-vert.png') }}"
+                            src="/storage/images/logo/logo-vert.png"
                             class="img-fluid d-block mx-auto"
                             style="max-width: 360px; max-height: 460px; width: auto; height: auto; object-fit: contain;"
                             alt="Logo STIT Darul Ilmi"
