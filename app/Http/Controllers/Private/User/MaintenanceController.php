@@ -55,6 +55,26 @@ class MaintenanceController extends Controller
         }
     }
 
+    public function storageLink(): RedirectResponse
+    {
+        $user = Auth::guard('web')->user();
+
+        abort_unless($user && (int) $user->raw_type === 0, 403);
+
+        try {
+            Artisan::call('storage:link');
+
+            return back()
+                ->with('maintenance_success', 'Storage link berhasil dibuat/diperiksa (php artisan storage:link).')
+                ->with('maintenance_output', trim(Artisan::output()));
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()
+                ->with('maintenance_error', 'Storage link gagal dibuat: ' . $e->getMessage());
+        }
+    }
+
     public function clearCache(): RedirectResponse
     {
         $user = Auth::guard('web')->user();
