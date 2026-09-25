@@ -123,38 +123,43 @@ class RootController extends Controller
 
             // Handle photo upload
             if ($request->hasFile('photo')) {
-                // Hapus foto lama
-                if ($user->photo && $user->photo !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . $user->photo);
-                    File::delete(storage_path('images/profile/' . $user->photo));
+                /*
+                 * Gunakan nama file yang stabil berdasarkan kode user.
+                 * Setiap upload berikutnya akan menimpa file yang sama,
+                 * sehingga URL avatar tidak pernah berubah.
+                 */
+                $safeCode = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) ($user->code ?: $user->id));
+                $photoName = $safeCode . '.jpg';
+
+                // Ambil nilai kolom photo asli, bukan accessor getPhotoAttribute()
+                // yang mengubahnya menjadi URL.
+                $oldPhoto = $user->getRawOriginal('photo');
+
+                if ($oldPhoto && $oldPhoto !== 'default.jpg') {
+                    Storage::disk('public')->delete('images/profile/' . basename($oldPhoto));
+                    File::delete(storage_path('images/profile/' . basename($oldPhoto)));
+                    File::delete(storage_path('images/' . basename($oldPhoto)));
                 }
-            
-                // Kompres dan simpan foto profil
-                $photoName = time() . '-' . $user->code . '-' . uniqid() . '.jpg';
-                
-                // Buat instance ImageManager dengan driver GD
+
+                // Kompres dan simpan foto profil.
                 $manager = new ImageManager(new Driver());
-                
-                // Baca dan kompres gambar
                 $image = $manager->read($request->photo->getRealPath());
-                
-                // Resize dengan ukuran yang lebih besar untuk foto profil
+
                 if ($image->height() > 1200) {
-                    $image->scaleDown(height: 1200); 
+                    $image->scaleDown(height: 1200);
                 }
-                
-                // Simpan dengan kualitas tinggi (90%)
+
                 $jpeg = $image->toJpeg(90);
 
-                // Penyimpanan utama Laravel: storage/app/public/images/profile
+                // Penyimpanan utama Laravel.
                 Storage::disk('public')->put('images/profile/' . $photoName, $jpeg);
 
-                // Mirror publik ByetHost: /htdocs/storage/images/profile
-                // Diperlukan karena document root ByetHost menggunakan /htdocs.
+                // Mirror publik ByetHost: /htdocs/storage/images/profile.
                 $publicProfileDir = storage_path('images/profile');
                 File::ensureDirectoryExists($publicProfileDir);
                 File::put($publicProfileDir . '/' . $photoName, $jpeg);
 
+                // Pastikan nama yang disimpan di database selalu konsisten.
                 $data['photo'] = $photoName;
             }
 
