@@ -452,55 +452,50 @@ class AkademikOperasionalController extends Controller
         $request->validate([
             'semester' => 'required|integer|min:1|max:8',
             'pertemuan' => 'required|integer|min:1|max:16',
-            'status' => 'required|array|min:1',
-            'status.*' => 'required|in:Hadir,Izin,Sakit,Alpa',
+            'mahasiswa_id' => 'required|integer|exists:mahasiswas,id',
+            'mata_kuliah_id' => 'required|integer|exists:mata_kuliahs,id',
+            'status' => 'required|in:Hadir,Izin,Sakit,Alpa',
             'catatan' => 'nullable|string|max:1000',
         ]);
 
         $semester = (int) $request->semester;
         $pertemuan = (int) $request->pertemuan;
-        $saved = 0;
 
-        foreach ($request->input('status', []) as $nilaiId => $status) {
-            $nilai = Nilai::with('mahasiswa')
-                ->whereKey((int) $nilaiId)
-                ->where('semester', $semester)
-                ->first();
+        $nilai = Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
+            ->where('semester', $semester)
+            ->where('mahasiswa_id', (int) $request->mahasiswa_id)
+            ->where('matkul_id', (int) $request->mata_kuliah_id)
+            ->firstOrFail();
 
-            if (!$nilai) {
-                continue;
-            }
+        $attendance = KehadiranMahasiswa::updateOrCreate(
+            ['nilai_id' => $nilai->id, 'pertemuan' => $pertemuan],
+            [
+                'code' => 'ABS-' . date('YmdHis') . '-' . Str::random(6),
+                'semester' => $nilai->semester,
+                'status' => $request->status,
+                'catatan' => $request->catatan,
+                'updated_by' => Auth::guard('web')->id(),
+            ]
+        );
 
-            $attendance = KehadiranMahasiswa::updateOrCreate(
-                ['nilai_id' => $nilai->id, 'pertemuan' => $pertemuan],
-                [
-                    'code' => 'ABS-' . date('YmdHis') . '-' . Str::random(6),
-                    'semester' => $nilai->semester,
-                    'status' => $status,
-                    'catatan' => $request->catatan,
-                    'updated_by' => Auth::guard('web')->id(),
-                ]
-            );
-
-            if (!$attendance->created_by) {
-                $attendance->update(['created_by' => Auth::guard('web')->id()]);
-            }
-
-            $totalPertemuan = $nilai->kehadiranMahasiswa()->count();
-            $jumlahHadir = $nilai->kehadiranMahasiswa()->where('status', 'Hadir')->count();
-            $nilai->kehadiran = $totalPertemuan > 0
-                ? round(($jumlahHadir / $totalPertemuan) * 100, 2)
-                : 0;
-            $nilai->bobot_kehadiran = 15;
-            $nilai->save();
-
-            $saved++;
+        if (!$attendance->created_by) {
+            $attendance->update(['created_by' => Auth::guard('web')->id()]);
         }
+
+        $totalPertemuan = $nilai->kehadiranMahasiswa()->count();
+        $jumlahHadir = $nilai->kehadiranMahasiswa()->where('status', 'Hadir')->count();
+        $nilai->kehadiran = $totalPertemuan > 0
+            ? round(($jumlahHadir / $totalPertemuan) * 100, 2)
+            : 0;
+        $nilai->bobot_kehadiran = 15;
+        $nilai->save();
 
         return redirect()->route('web-admin.akademik.kehadiran', [
             'semester' => $semester,
             'pertemuan' => $pertemuan,
-        ])->with('success', $saved . ' data kehadiran pertemuan ' . $pertemuan . ' berhasil disimpan.');
+            'mahasiswa_id' => $request->mahasiswa_id,
+            'mata_kuliah_id' => $request->mata_kuliah_id,
+        ])->with('success', 'Kehadiran berhasil disimpan.');
     }
 
     public function updateNilai(Request $request, $code)

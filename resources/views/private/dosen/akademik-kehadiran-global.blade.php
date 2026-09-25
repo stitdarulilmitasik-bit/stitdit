@@ -34,55 +34,32 @@
         </div>
     </div>
 
-    <div class="card mb-3">
+    <form method="POST" action="{{ route('web-admin.akademik.kehadiran.store') }}" class="card mb-3">
+        @csrf
+        <input type="hidden" name="semester" value="{{ $semester }}">
+        <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
+        <div class="card-header"><h3 class="card-title mb-0">Input Kehadiran</h3></div>
         <div class="card-body">
-            <div class="row align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Semester</label>
-                    <select id="filter-semester" class="form-select">
-                        @for($i=1;$i<=8;$i++)
-                            <option value="{{ $i }}" {{ (int)$semester === $i ? 'selected' : '' }}>Semester {{ $i }}</option>
-                        @endfor
-                    </select>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2"><label class="form-label">Semester</label>
+                    <select id="filter-semester" class="form-select">@for($i=1;$i<=8;$i++)<option value="{{ $i }}" {{ (int)$semester === $i ? 'selected' : '' }}>Semester {{ $i }}</option>@endfor</select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Pertemuan</label>
-                    <select id="filter-pertemuan" class="form-select">
-                        @for($i=1;$i<=16;$i++)
-                            <option value="{{ $i }}" {{ (int)$pertemuan === $i ? 'selected' : '' }}>Pertemuan {{ $i }}</option>
-                        @endfor
-                    </select>
+                <div class="col-md-2"><label class="form-label">Pertemuan</label>
+                    <select id="filter-pertemuan" class="form-select">@for($i=1;$i<=16;$i++)<option value="{{ $i }}" {{ (int)$pertemuan === $i ? 'selected' : '' }}>Pertemuan {{ $i }}</option>@endfor</select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Mahasiswa</label>
-                    <select id="filter-mahasiswa" class="form-select">
-                        <option value="">Semua Mahasiswa</option>
-                        @foreach($mahasiswaOptions as $m)
-                            <option value="{{ $m->id }}" {{ (string)$mahasiswaId === (string)$m->id ? 'selected' : '' }}>
-                                {{ $m->numb_nim ?? '-' }} - {{ $m->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="col-md-3"><label class="form-label">Mahasiswa</label>
+                    <select name="mahasiswa_id" id="filter-mahasiswa" class="form-select" required><option value="">Pilih Mahasiswa</option>@foreach($mahasiswaOptions as $m)<option value="{{ $m->id }}" {{ (string)$mahasiswaId === (string)$m->id ? 'selected' : '' }}>{{ $m->numb_nim ?? '-' }} - {{ $m->name }}</option>@endforeach</select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Mata Kuliah</label>
-                    <select id="filter-mata-kuliah" class="form-select">
-                        <option value="">Semua Mata Kuliah</option>
-                        @foreach($mataKuliahOptions as $mk)
-                            <option value="{{ $mk->id }}" {{ (string)$mataKuliahId === (string)$mk->id ? 'selected' : '' }}>
-                                {{ $mk->code ?? '-' }} - {{ $mk->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="col-md-3"><label class="form-label">Mata Kuliah</label>
+                    <select name="mata_kuliah_id" id="filter-mata-kuliah" class="form-select" required><option value="">Pilih Mata Kuliah</option>@foreach($mataKuliahOptions as $mk)<option value="{{ $mk->id }}" {{ (string)$mataKuliahId === (string)$mk->id ? 'selected' : '' }}>{{ $mk->code ?? '-' }} - {{ $mk->name }}</option>@endforeach</select>
                 </div>
-                <div class="col-md-3">
-                    <div class="alert alert-info mb-0 py-2">
-                        Report global seluruh mata kuliah.
-                    </div>
+                <div class="col-md-1"><label class="form-label">Kehadiran</label>
+                    <select name="status" class="form-select" required><option value="">Pilih</option>@foreach(['Hadir','Izin','Sakit','Alpa'] as $status)<option value="{{ $status }}">{{ $status }}</option>@endforeach</select>
                 </div>
+                <div class="col-md-1"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Simpan</button></div>
             </div>
         </div>
-    </div>
+    </form>
 
     <div class="card">
         <div class="card-header">
@@ -101,48 +78,16 @@
                         <th class="c-code text-center">Kode</th>
                         <th class="c-nim">NIM</th>
                         <th class="c-name">Nama Mahasiswa</th>
-                        @for($i=1;$i<=16;$i++)<th class="c-meeting text-center {{ (int)$pertemuan === $i ? 'c-selected' : '' }}">P{{ $i }}</th>@endfor
-                        <th class="c-summary text-center">Hadir</th>
-                        <th class="c-summary text-center">Izin</th>
-                        <th class="c-summary text-center">Sakit</th>
-                        <th class="c-summary text-center">Alpa</th>
-                        <th class="c-summary text-center">% Hadir</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @forelse($nilai as $index => $n)
-                    @php
-                        $att=$n->kehadiranMahasiswa->keyBy('pertemuan');
-                        $hadir=$att->where('status','Hadir')->count();
-                        $izin=$att->where('status','Izin')->count();
-                        $sakit=$att->where('status','Sakit')->count();
-                        $alpa=$att->where('status','Alpa')->count();
-                        $total=$att->count();
-                        $persentase=$total>0 ? round(($hadir/$total)*100,2) : 0;
-                    @endphp
-                    <tr>
-                        <td class="text-center">{{ $nilai->firstItem()+$index }}</td>
-                        <td><strong>{{ $n->mataKuliah->name ?? '-' }}</strong></td>
-                        <td class="text-center">{{ $n->mataKuliah->code ?? '-' }}</td>
-                        <td><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
-                        <td class="student-name"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
                         @for($i=1;$i<=16;$i++)
                             @php $a=$att[$i]??null; @endphp
-                            <td class="text-center {{ (int)$pertemuan === $i ? 'c-selected' : '' }}">
-                                @if((int)$pertemuan === $i)
-                                    <select name="status[{{ $n->id }}]" class="form-select form-select-sm" aria-label="Status {{ $n->mahasiswa->name ?? 'mahasiswa' }} P{{ $i }}" required>
-                                        @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
-                                            <option value="{{ $status }}" {{ (($a->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
-                                        @endforeach
-                                    </select>
-                                @elseif(($a->status??'')==='Hadir')<span class="text-success fw-bold">✓</span>
+                            <td class="text-center">
+                                @if(($a->status??'')==='Hadir')<span class="text-success fw-bold">✓</span>
                                 @elseif(($a->status??'')==='Izin')<span class="text-warning fw-semibold">I</span>
                                 @elseif(($a->status??'')==='Sakit')<span class="text-info fw-semibold">S</span>
                                 @elseif(($a->status??'')==='Alpa')<span class="text-danger fw-semibold">A</span>
                                 @else<span class="text-muted">—</span>@endif
                             </td>
                         @endfor
-                        <td class="text-center">{{ $hadir }}</td><td class="text-center">{{ $izin }}</td><td class="text-center">{{ $sakit }}</td><td class="text-center">{{ $alpa }}</td>
                         <td class="text-center"><strong>{{ number_format($persentase,2) }}%</strong></td>
 
                     </tr>
@@ -151,12 +96,6 @@
                 @endforelse
                 </tbody>
                 </table>
-                <div class="attendance-save-bar d-flex justify-content-between align-items-center gap-2 flex-wrap">
-                    <span class="text-muted small">Semester {{ $semester }} · Pertemuan {{ $pertemuan }} · Status pada kolom P{{ $pertemuan }} dapat diedit.</span>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Simpan Kehadiran P{{ $pertemuan }}
-                    </button>
-                </div>
             </form>
         </div>
         <div class="card-footer">{{ $nilai->links() }}</div>
