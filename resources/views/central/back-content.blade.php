@@ -105,6 +105,12 @@
                             <i class="fas fa-broom me-2"></i>Bersihkan Cache Laravel
                         </button>
                     </form>
+                    <form method="POST" action="{{ route('web-admin.maintenance.storage-link') }}" onsubmit="return confirm('Jalankan php artisan storage:link sekarang?');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-info">
+                            <i class="fas fa-link me-2"></i>Storage Link
+                        </button>
+                    </form>
                     <form method="POST" action="{{ route('web-admin.maintenance.clear-routes') }}" onsubmit="return confirm('Jalankan php artisan route:clear sekarang?');">
                         @csrf
                         <button type="submit" class="btn btn-outline-primary">
