@@ -2,85 +2,36 @@
 
 @section('content')
 <style>
-    /* Tabel kehadiran dibuat fixed-width agar 16 kolom pertemuan + kontrol
-       tidak saling menimpa pada layar sempit. Wrapper tetap horizontal-scroll. */
-    .attendance-table-wrap {
-        width: 100%;
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-    }
-    .attendance-table {
-        width: 1480px;
-        min-width: 1480px;
-        table-layout: fixed;
-        margin-bottom: 0;
-    }
-    .attendance-table th,
-    .attendance-table td {
-        box-sizing: border-box;
-        vertical-align: middle;
-        padding: 5px 6px !important;
-        line-height: 1.2;
-    }
-    .attendance-table .col-no { width: 48px; }
-    .attendance-table .col-nim { width: 120px; }
-    .attendance-table .col-name { width: 210px; }
-    .attendance-table .col-meeting { width: 42px; }
-    .attendance-table .col-rekap { width: 105px; }
-    .attendance-table .col-status { width: 185px; }
-    .attendance-table .col-action { width: 95px; }
-
-    .attendance-table .student-name {
-        white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: break-word;
-    }
-    .attendance-table .status-cell,
-    .attendance-table .action-cell,
-    .attendance-table .rekap-cell {
-        white-space: normal;
-    }
-    .attendance-table .status-cell .form-select {
-        width: 100%;
-        min-width: 0;
-    }
-    .attendance-table .action-cell form {
-        margin: 0;
-    }
-    .attendance-table .action-cell .btn {
-        white-space: nowrap;
-        width: 100%;
-    }
-    .attendance-table .attendance-cell {
-        width: 42px;
-        min-width: 42px;
-        text-align: center;
-        white-space: nowrap;
-    }
-    .attendance-table thead th {
-        white-space: nowrap;
-    }
-    .attendance-table .course-row td {
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-    @media (max-width: 768px) {
-        .attendance-table {
-            width: 1480px;
-            min-width: 1480px;
-        }
-    }
+    .attendance-wrap { width:100%; overflow-x:auto; }
+    .attendance-table { min-width:1450px; table-layout:fixed; }
+    .attendance-table th,.attendance-table td { padding:5px 6px !important; vertical-align:middle; line-height:1.2; }
+    .attendance-table .c-no{width:45px}.attendance-table .c-course{width:220px}.attendance-table .c-code{width:90px}
+    .attendance-table .c-nim{width:120px}.attendance-table .c-name{width:210px}
+    .attendance-table .c-meeting{width:48px}.attendance-table .c-summary{width:82px}
+    .attendance-table .c-selected{width:105px;background:rgba(32,107,196,.06)}
+    .student-name{white-space:normal;overflow-wrap:anywhere}
 </style>
+
 <div class="container-xl py-3">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
             <h2 class="mb-1">Input Kehadiran Mahasiswa</h2>
-            <p class="text-muted mb-0">Catat kehadiran per mata kuliah dan pertemuan. Persentase hadir dihitung otomatis dan menjadi komponen 15% nilai akhir.</p>
+            <p class="text-muted mb-0">Input dan rekap kehadiran mahasiswa berdasarkan mata kuliah yang Anda ampu.</p>
         </div>
-        <a href="{{ route($spref . 'akademik.nilai-render') }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-1"></i> Kembali ke Nilai Mahasiswa
-        </a>
+        <div class="d-flex gap-2">
+            @if($mahasiswaId)
+                <a href="{{ route('dosen.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
+                   class="btn btn-danger" target="_blank">
+                    <i class="ti ti-file-type-pdf me-1"></i> Export PDF Mahasiswa
+                </a>
+            @endif
+            @if($mataKuliahId)
+                <a href="{{ route('dosen.akademik.kehadiran.mata-kuliah.pdf', ['mataKuliahId' => $mataKuliahId, 'semester' => $semester]) }}"
+                   class="btn btn-danger" target="_blank">
+                    <i class="ti ti-file-type-pdf me-1"></i> Export PDF Mata Kuliah
+                </a>
+            @endif
+        </div>
     </div>
 
     @if(session('success'))
@@ -93,182 +44,162 @@
         </div>
     @endif
 
-    <div class="card mb-3">
+    <form method="POST" action="{{ route('dosen.akademik.kehadiran.store') }}" class="card mb-3">
+        @csrf
+        <input type="hidden" name="semester" value="{{ $semester }}">
+        <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
+        <div class="card-header"><h3 class="card-title mb-0">Input Kehadiran Mahasiswa</h3></div>
         <div class="card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
                     <label class="form-label">Semester</label>
                     <select id="filter-semester" class="form-select">
-                        @for($i = 1; $i <= 8; $i++)
+                        @for($i=1;$i<=8;$i++)
                             <option value="{{ $i }}" {{ (int)$semester === $i ? 'selected' : '' }}>Semester {{ $i }}</option>
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Pertemuan</label>
                     <select id="filter-pertemuan" class="form-select">
-                        @for($i = 1; $i <= 16; $i++)
+                        @for($i=1;$i<=16;$i++)
                             <option value="{{ $i }}" {{ (int)$pertemuan === $i ? 'selected' : '' }}>Pertemuan {{ $i }}</option>
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <div class="alert alert-info mb-0 py-2">
-                        <strong>Bobot Kehadiran: 15%</strong><br>
-                        Hadir dihitung sebagai hadir. Izin, Sakit, dan Alpa tidak menambah persentase hadir.
-                        Persentase akan langsung tersimpan ke komponen <strong>Kehadiran</strong> pada Nilai Mahasiswa.
-                    </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mahasiswa</label>
+                    <select name="mahasiswa_id" id="filter-mahasiswa" class="form-select" required>
+                        <option value="">Pilih Mahasiswa</option>
+                        @foreach($mahasiswaOptions as $m)
+                            <option value="{{ $m->id }}" {{ (string)$mahasiswaId === (string)$m->id ? 'selected' : '' }}>
+                                {{ $m->numb_nim ?? '-' }} - {{ $m->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mata Kuliah</label>
+                    <select name="mata_kuliah_id" id="filter-mata-kuliah" class="form-select" required>
+                        <option value="">Pilih Mata Kuliah</option>
+                        @foreach($mataKuliahOptions as $mk)
+                            <option value="{{ $mk->id }}" {{ (string)$mataKuliahId === (string)$mk->id ? 'selected' : '' }}>
+                                {{ $mk->code ?? '-' }} - {{ $mk->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Kehadiran</label>
+                    <select name="status" class="form-select" required>
+                        <option value="">Pilih</option>
+                        @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
+                            <option value="{{ $status }}">{{ $status }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-1"></i>Simpan
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 
     <div class="card">
         <div class="card-header">
             <div>
-                <h3 class="card-title mb-1">Rekap Kehadiran Mahasiswa</h3>
-                <div class="text-muted small">Setiap kolom menunjukkan pertemuan 1–16. Tanda <strong>✓</strong> berarti Hadir. Untuk mengubah status, pilih Pertemuan Aktif lalu gunakan kolom Status dan Simpan.</div>
+                <h3 class="card-title mb-1">Report Kehadiran</h3>
+                <div class="text-muted small">Data dibatasi hanya pada mata kuliah yang tercatat diampu oleh Dosen yang sedang login.</div>
             </div>
         </div>
-        <div class="attendance-table-wrap">
-            <table class="table table-vcenter card-table align-middle attendance-table">
+        <div class="attendance-wrap">
+            <table class="table table-bordered table-vcenter attendance-table mb-0">
                 <thead>
                     <tr>
-                        <th class="col-no">No.</th>
-                        <th class="col-nim">NIM</th>
-                        <th class="col-name">Nama Mahasiswa</th>
-                        <th colspan="16" class="text-center bg-light">Pertemuan</th>
-                        <th class="col-rekap">Rekap</th>
-                        <th class="col-status">Status Pertemuan {{ $pertemuan }}</th>
-                        <th class="col-action">Aksi</th>
-                    </tr>
-                    <tr>
-                        <th colspan="3"></th>
-                        @for($i = 1; $i <= 16; $i++)
-                            <th class="text-center col-meeting">P{{ $i }}</th>
+                        <th class="c-no text-center">No.</th>
+                        <th class="c-course">Mata Kuliah</th>
+                        <th class="c-code text-center">Kode</th>
+                        <th class="c-nim">NIM</th>
+                        <th class="c-name">Nama Mahasiswa</th>
+                        @for($i=1;$i<=16;$i++)
+                            <th class="c-meeting text-center {{ (int)$pertemuan === $i ? 'c-selected' : '' }}">P{{ $i }}</th>
                         @endfor
-                        <th colspan="3"></th>
+                        <th class="c-summary text-center">Hadir</th>
+                        <th class="c-summary text-center">Izin</th>
+                        <th class="c-summary text-center">Sakit</th>
+                        <th class="c-summary text-center">Alpa</th>
+                        <th class="c-summary text-center">% Hadir</th>
                     </tr>
                 </thead>
                 <tbody>
-                @php
-                    // Kelompokkan berdasarkan ID mata kuliah dari relasi MataKuliah.
-                    // Ini mencegah parameter route menjadi null apabila ada record Nilai
-                    // lama yang mata_kuliah_id-nya tidak terisi tetapi relasinya masih tersedia.
-                    $groupedMataKuliah = $nilai->getCollection()
-                        ->filter(fn($item) => $item->mataKuliah && $item->mataKuliah->id)
-                        ->sortBy([
-                            [fn($item) => mb_strtolower($item->mataKuliah->name ?? ''), 'asc'],
-                            [fn($item) => mb_strtolower($item->mahasiswa->name ?? ''), 'asc'],
-                        ])
-                        ->groupBy(fn($item) => $item->mataKuliah->id);
-                    $nomor = $nilai->firstItem();
-                @endphp
-
-                @forelse($groupedMataKuliah as $mataKuliahId => $rows)
+                @forelse($nilai as $index => $n)
                     @php
-                        $mk = $rows->first()->mataKuliah;
+                        $att = $n->kehadiranMahasiswa->keyBy('pertemuan');
+                        $hadir = $att->where('status','Hadir')->count();
+                        $izin = $att->where('status','Izin')->count();
+                        $sakit = $att->where('status','Sakit')->count();
+                        $alpa = $att->where('status','Alpa')->count();
+                        $total = $att->count();
+                        $persentase = $total > 0 ? round(($hadir / $total) * 100, 2) : 0;
                     @endphp
-                    <tr class="table-light course-row">
-                        <td colspan="22" class="fw-bold">
-                            <i class="fas fa-book me-1"></i>
-                            {{ $mk->name ?? '-' }}
-                            @if($mk->code) <span class="text-muted fw-normal">({{ $mk->code }})</span> @endif
-                            <span class="text-muted fw-normal ms-2">{{ $rows->count() }} mahasiswa</span>
-                            <a href="{{ route('dosen.akademik.kehadiran.mata-kuliah.pdf', ['mataKuliahId' => $mataKuliahId, 'semester' => $semester]) }}"
-                               class="btn btn-sm btn-outline-danger float-end"
-                               target="_blank"
-                               title="Export seluruh mahasiswa {{ $mk->name ?? '' }}">
-                                <i class="fas fa-file-pdf me-1"></i> Export PDF Rekap
-                            </a>
-                        </td>
+                    <tr>
+                        <td class="text-center">{{ $nilai->firstItem() + $index }}</td>
+                        <td><strong>{{ $n->mataKuliah->name ?? '-' }}</strong></td>
+                        <td class="text-center">{{ $n->mataKuliah->code ?? '-' }}</td>
+                        <td><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
+                        <td class="student-name"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
+                        @for($i=1;$i<=16;$i++)
+                            @php $a = $att[$i] ?? null; @endphp
+                            <td class="text-center {{ (int)$pertemuan === $i ? 'c-selected' : '' }}">
+                                @if(($a->status ?? '') === 'Hadir')
+                                    <span class="text-success fw-bold">✓</span>
+                                @elseif(($a->status ?? '') === 'Izin')
+                                    <span class="text-warning fw-semibold">I</span>
+                                @elseif(($a->status ?? '') === 'Sakit')
+                                    <span class="text-info fw-semibold">S</span>
+                                @elseif(($a->status ?? '') === 'Alpa')
+                                    <span class="text-danger fw-semibold">A</span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                        @endfor
+                        <td class="text-center">{{ $hadir }}</td>
+                        <td class="text-center">{{ $izin }}</td>
+                        <td class="text-center">{{ $sakit }}</td>
+                        <td class="text-center">{{ $alpa }}</td>
+                        <td class="text-center"><strong>{{ number_format($persentase,2) }}%</strong></td>
                     </tr>
-
-                    @foreach($rows as $n)
-                        @php
-                            $existing = $n->kehadiranMahasiswa->keyBy('pertemuan');
-                            $totalPertemuan = $existing->count();
-                            $jumlahHadir = $existing->where('status', 'Hadir')->count();
-                            $persentase = $totalPertemuan > 0 ? round(($jumlahHadir / $totalPertemuan) * 100, 2) : 0;
-                            $currentAttendance = $existing[(int)$pertemuan] ?? null;
-                        @endphp
-                        <tr>
-                            <td class="text-center fw-semibold text-muted">{{ $nomor++ }}</td>
-                            <td class="fw-semibold">{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</td>
-                            <td class="fw-semibold student-name">{{ $n->mahasiswa->name ?? '-' }}</td>
-
-                            @for($i = 1; $i <= 16; $i++)
-                                @php $attendance = $existing[$i] ?? null; @endphp
-                                <td class="text-center attendance-cell">
-                                    @if(($attendance->status ?? '') === 'Hadir')
-                                        <span class="text-success fw-bold fs-4" title="Hadir">✓</span>
-                                    @elseif(($attendance->status ?? '') === 'Izin')
-                                        <span class="text-warning fw-semibold" title="Izin">I</span>
-                                    @elseif(($attendance->status ?? '') === 'Sakit')
-                                        <span class="text-info fw-semibold" title="Sakit">S</span>
-                                    @elseif(($attendance->status ?? '') === 'Alpa')
-                                        <span class="text-danger fw-semibold" title="Alpa">A</span>
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </td>
-                            @endfor
-
-                            <td class="rekap-cell">
-                                <div class="fw-semibold">{{ number_format($persentase, 2) }}%</div>
-                                <small class="text-muted">{{ $jumlahHadir }}/{{ $totalPertemuan }} hadir</small>
-                            </td>
-
-                            <td class="status-cell">
-                                <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" required>
-                                    <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
-                                    @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
-                                        <option value="{{ $status }}" {{ (($currentAttendance->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
-                                    @endforeach
-                                </select>
-                                <input type="hidden" name="pertemuan" value="{{ $pertemuan }}" form="attendance-form-{{ $n->id }}">
-                            </td>
-
-                            <td class="action-cell">
-                                <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route($spref . 'akademik.kehadiran.store') }}">
-                                    @csrf
-                                    <input type="hidden" name="nilai_id" value="{{ $n->id }}">
-                                    <input type="hidden" name="semester" value="{{ $n->semester }}">
-                                    <input type="hidden" name="redirect_semester" value="{{ $semester }}">
-                                    <input type="hidden" name="redirect_pertemuan" value="{{ $pertemuan }}">
-                                    <button class="btn btn-sm btn-primary" title="Simpan status pertemuan {{ $pertemuan }}">
-                                        <i class="fas fa-save me-1"></i>Simpan
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
                 @empty
-                    <tr><td colspan="22" class="text-center py-4 text-muted">Belum ada data mahasiswa pada semester ini.</td></tr>
+                    <tr><td colspan="26" class="text-center py-4 text-muted">Belum ada data kehadiran pada mata kuliah yang Anda ampu.</td></tr>
                 @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="card-footer">
-            {{ $nilai->links() }}
-        </div>
+        <div class="card-footer">{{ $nilai->links() }}</div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const semester = document.getElementById('filter-semester');
-    const pertemuan = document.getElementById('filter-pertemuan');
+function applyAttendanceFilters() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('semester', document.getElementById('filter-semester').value);
+    url.searchParams.set('pertemuan', document.getElementById('filter-pertemuan').value);
 
-    function reloadWithFilters() {
-        const url = new URL(window.location.href);
-        url.searchParams.set('semester', semester.value);
-        url.searchParams.set('pertemuan', pertemuan.value);
-        window.location.href = url.toString();
-    }
+    const mahasiswa = document.getElementById('filter-mahasiswa').value;
+    const mataKuliah = document.getElementById('filter-mata-kuliah').value;
 
-    semester?.addEventListener('change', reloadWithFilters);
-    pertemuan?.addEventListener('change', reloadWithFilters);
-});
+    mahasiswa ? url.searchParams.set('mahasiswa_id', mahasiswa) : url.searchParams.delete('mahasiswa_id');
+    mataKuliah ? url.searchParams.set('mata_kuliah_id', mataKuliah) : url.searchParams.delete('mata_kuliah_id');
+
+    window.location.href = url.toString();
+}
+
+document.getElementById('filter-semester')?.addEventListener('change', applyAttendanceFilters);
+document.getElementById('filter-pertemuan')?.addEventListener('change', applyAttendanceFilters);
+document.getElementById('filter-mahasiswa')?.addEventListener('change', applyAttendanceFilters);
+document.getElementById('filter-mata-kuliah')?.addEventListener('change', applyAttendanceFilters);
 </script>
 @endsection
