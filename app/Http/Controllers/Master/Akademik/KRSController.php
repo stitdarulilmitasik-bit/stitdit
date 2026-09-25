@@ -443,62 +443,42 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Embed the official STIT logo directly into the PDF HTML.
-        // On ByetHost/OpenResty, the public document root is /htdocs and the
-        // storage mirror is exposed at /storage. Dompdf cannot rely on a browser
-        // URL here, so load the logo bytes server-side and embed them as a data URI.
-        //
-        // Prefer logo-hori.png because this is the logo currently exposed and
-        // verified under /htdocs/storage/images/logo/. Keep logo-vert1.png as
-        // a fallback for older deployments.
+        // Embed logo-vert1.png directly into the PDF as a DATA URI.
+        // Dompdf must receive a complete data URI: data:image/png;base64,...
+        // Prioritize the file that exists in the Laravel public assets, then
+        // the ByetHost storage mirror as fallback.
         $logoDataUri = null;
         $logoSources = [
             [
-                'type' => 'file',
-                'path' => storage_path('images/logo/logo-hori.png'),
+                'path' => public_path('images/logo-vert1.png'),
                 'mime' => 'image/png',
             ],
             [
-                'type' => 'storage',
-                'path' => 'images/logo/logo-hori.png',
+                'path' => base_path('public/images/logo-vert1.png'),
                 'mime' => 'image/png',
             ],
             [
-                'type' => 'file',
-                'path' => public_path('images/logo/logo-vert1.png'),
+                'path' => storage_path('images/logo/logo-vert1.png'),
                 'mime' => 'image/png',
             ],
             [
-                'type' => 'file',
-                'path' => base_path('public/images/logo/logo-vert1.png'),
-                'mime' => 'image/png',
-            ],
-            [
-                'type' => 'storage',
-                'path' => 'images/logo/logo-vert1.png',
+                'path' => storage_path('app/public/images/logo/logo-vert1.png'),
                 'mime' => 'image/png',
             ],
         ];
 
         foreach ($logoSources as $source) {
             try {
-                if ($source['type'] === 'storage') {
-                    if (!Storage::disk('public')->exists($source['path'])) {
-                        continue;
-                    }
-                    $bytes = Storage::disk('public')->get($source['path']);
-                } else {
-                    if (!is_file($source['path']) || !is_readable($source['path'])) {
-                        continue;
-                    }
-                    $bytes = file_get_contents($source['path']);
+                if (!is_file($source['path']) || !is_readable($source['path'])) {
+                    continue;
                 }
 
+                $bytes = file_get_contents($source['path']);
                 if (is_string($bytes) && $bytes !== '') {
-                    $logoDataUri = $source['mime'] . ';base64,' . base64_encode($bytes);
+                    $logoDataUri = 'data:' . $source['mime'] . ';base64,' . base64_encode($bytes);
                     break;
                 }
-            } catch (\Throwable $e) {
+            } catch (\\Throwable $e) {
                 // Try the next known logo location.
             }
         }
