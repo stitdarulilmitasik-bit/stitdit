@@ -165,7 +165,7 @@
 
             <div class="navbar-brand navbar-brand-autodark">
                 <a href="{{ route('root.home-index') }}" aria-label="STIT Darul Ilmi Tasikmalaya">
-                    <img src="{{ $webs->school_logo_hori }}" style="height: 64px; width:200px; object-fit:contain;" alt="Logo STIT Darul Ilmi">
+                    <img src="/storage/images/logo/logo-hori.png?v={{ @filemtime(storage_path('images/logo/logo-hori.png')) }}" style="height: 64px; width:200px; object-fit:contain;" alt="Logo STIT Darul Ilmi" loading="eager" onerror="this.onerror=null;this.src='/storage/images/logo/logo-vert.png?v={{ @filemtime(storage_path('images/logo/logo-vert.png')) }}';">
                 </a>
             </div>
 
