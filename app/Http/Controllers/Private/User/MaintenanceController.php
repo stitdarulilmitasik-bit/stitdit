@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Throwable;
 
 class MaintenanceController extends Controller
@@ -62,16 +63,33 @@ class MaintenanceController extends Controller
         abort_unless($user && (int) $user->raw_type === 0, 403);
 
         try {
-            Artisan::call('storage:link');
+            /*
+             * ByetHost/OpenResty tidak selalu mengizinkan pembuatan symbolic link
+             * dan fungsi exec() dapat dinonaktifkan. Jangan memanggil
+             * php artisan storage:link di server tersebut.
+             *
+             * Struktur aplikasi kita memakai /htdocs sebagai document root,
+             * sehingga /storage/... harus tersedia secara fisik di:
+             * /htdocs/storage/...
+             *
+             * Sinkronkan isi storage/app/public ke storage sebagai public mirror.
+             */
+            $source = storage_path('app/public');
+            $target = storage_path();
+
+            File::ensureDirectoryExists($source);
+            File::ensureDirectoryExists($target);
+
+            File::copyDirectory($source, $target);
 
             return back()
-                ->with('maintenance_success', 'Storage link berhasil dibuat/diperiksa (php artisan storage:link).')
-                ->with('maintenance_output', trim(Artisan::output()));
+                ->with('maintenance_success', 'Storage publik berhasil disiapkan untuk ByetHost.')
+                ->with('maintenance_output', 'Public storage mirror: ' . $source . ' -> ' . $target);
         } catch (Throwable $e) {
             report($e);
 
             return back()
-                ->with('maintenance_error', 'Storage link gagal dibuat: ' . $e->getMessage());
+                ->with('maintenance_error', 'Storage publik gagal disiapkan: ' . $e->getMessage());
         }
     }
 
