@@ -47,39 +47,42 @@ if (! function_exists('stit_profile_image_url')) {
     /**
      * Resolve a user profile photo URL.
      *
-     * ByetHost uses /htdocs as the document root while this Laravel app
-     * keeps the uploaded files under /htdocs/storage. Therefore check both
-     * /storage/images/profile and /storage/images.
+     * Uploaded profile photos live on the public filesystem disk
+     * (storage/app/public). Shared hosting may not provide a public
+     * storage symlink, so prefer the application's /media endpoint when
+     * the file exists on the disk. The physical /storage mirror remains
+     * as a fallback for deployments that copy public assets there.
      */
     function stit_profile_image_url(?string $filename): string
     {
-        $filename = $filename ? basename(ltrim($filename, '/')) : '';
+        $filename = $filename ? ltrim($filename, '/') : '';
 
         if ($filename && filter_var($filename, FILTER_VALIDATE_URL)) {
             return $filename;
         }
 
         if ($filename) {
+            $basename = basename($filename);
             $candidates = [
-                'images/profile/' . $filename,
-                'images/' . $filename,
+                'images/profile/' . $basename,
+                'images/' . $basename,
             ];
 
             foreach ($candidates as $path) {
-                $diskExists = false;
-
                 try {
-                    $diskExists = Storage::disk('public')->exists($path);
-                } catch (\Throwable $e) {
+                    if (Storage::disk('public')->exists($path)) {
+                        return url('/media/' . ltrim($path, '/'));
+                    }
+                } catch (\\Throwable $e) {
                     // Continue with the physical ByetHost mirror.
-                }
-
-                if ($diskExists) {
-                    return '/storage/' . $path . '?v=' . @filemtime(storage_path($path));
                 }
 
                 if (is_file(storage_path($path))) {
                     return '/storage/' . $path . '?v=' . @filemtime(storage_path($path));
+                }
+
+                if (is_file(public_path($path))) {
+                    return asset($path) . '?v=' . @filemtime(public_path($path));
                 }
             }
         }
@@ -90,22 +93,27 @@ if (! function_exists('stit_profile_image_url')) {
             'images/default.jpg',
             'images/default.png',
         ] as $fallback) {
+            try {
+                if (Storage::disk('public')->exists($fallback)) {
+                    return url('/media/' . ltrim($fallback, '/'));
+                }
+            } catch (\\Throwable $e) {
+                // Continue to the next fallback.
+            }
+
             if (is_file(storage_path($fallback))) {
                 return '/storage/' . $fallback . '?v=' . @filemtime(storage_path($fallback));
             }
 
-            try {
-                if (Storage::disk('public')->exists($fallback)) {
-                    return Storage::disk('public')->url($fallback);
-                }
-            } catch (\Throwable $e) {
-                // Continue to the next fallback.
+            if (is_file(public_path($fallback))) {
+                return asset($fallback) . '?v=' . @filemtime(public_path($fallback));
             }
         }
 
         return asset('images/profile/default.png');
     }
 }
+
 if (! function_exists('stit_gallery_image_url')) {
     function stit_gallery_image_url(?string $filename): string
     {
