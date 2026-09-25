@@ -55,32 +55,24 @@ jobs:
           echo "=========================================="
 
       # ============================================================
-      # 3. Siapkan public/storage untuk shared hosting
+      # 3. Siapkan storage yang bisa diakses dari document root /htdocs
       #
-      # ByetHost/OpenResty tidak mengandalkan .htaccess untuk
-      # membuat symlink Laravel. Karena itu storage/app/public
-      # disalin ke public/storage sebelum FTP incremental.
-      #
-      # Dengan cara ini URL /storage/... menjadi file fisik di
-      # /htdocs/public/storage/... dan tidak membutuhkan rewrite.
+      # Document root ByetHost adalah /htdocs, bukan /htdocs/public.
+      # URL /storage/... harus tersedia sebagai file fisik di
+      # /htdocs/storage/... agar tidak bergantung pada symlink/rewrite.
       # ============================================================
-      - name: Prepare public storage
+      - name: Prepare storage assets for ByetHost document root
         shell: bash
         run: |
           set -e
 
-          echo "Menyiapkan public/storage..."
+          echo "Menyiapkan asset storage untuk /htdocs..."
 
-          mkdir -p public/storage
+          mkdir -p storage
+          cp -a storage/app/public/. storage/
 
-          # Sinkronkan seluruh public disk Laravel ke public/storage.
-          # File generated ini hanya untuk deployment dan tidak mengubah
-          # source storage/app/public di repository.
-          cp -a storage/app/public/. public/storage/
-
-          echo "Public storage siap."
-          echo "Isi utama public/storage:"
-          find public/storage -maxdepth 2 -type f | head -50 || true
+          test -f storage/images/logo/logo-hori.png
+          echo "Logo ditemukan: storage/images/logo/logo-hori.png"
 
       # ============================================================
       # 4. Deploy langsung ke /htdocs
