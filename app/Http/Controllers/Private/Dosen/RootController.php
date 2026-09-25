@@ -99,26 +99,38 @@ class RootController extends Controller
             $data = $validator->validated();
 
             if ($request->hasFile('photo')) {
-                // Gunakan nilai mentah dari kolom photo. Accessor $user->photo
-                // sudah mengubahnya menjadi URL sehingga tidak aman dipakai
-                // sebagai nama file saat menghapus foto lama.
+                /*
+                 * Simpan file upload secara langsung ke public disk.
+                 * Jangan memproses ulang gambar dengan GD/Intervention Image
+                 * di shared hosting karena ekstensi/limit memori server dapat
+                 * menyebabkan HTTP 500.
+                 */
                 $oldPhoto = $user->getRawOriginal('photo');
 
                 if ($oldPhoto && $oldPhoto !== 'default.jpg') {
                     $oldPhoto = basename(ltrim($oldPhoto, '/'));
-                    Storage::disk('public')->delete('images/profile/' . $oldPhoto);
+                    try {
+                        Storage::disk('public')->delete('images/profile/' . $oldPhoto);
+                    } catch (\\Throwable $e) {
+                        // Foto lama tidak boleh menggagalkan penyimpanan foto baru.
+                    }
                 }
 
-                $photoName = time() . '-' . $user->code . '-' . uniqid() . '-' . uniqid() . '.jpg';
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read($request->photo->getRealPath());
-                if ($image->height() > 1200) {
-                    $image->scaleDown(height: 1200);
+                $photoName = time() . '-' . $user->code . '-' . uniqid('', true) . '.' .
+                    strtolower($request->file('photo')->getClientOriginalExtension());
+
+                $stored = $request->file('photo')->storeAs(
+                    'images/profile',
+                    $photoName,
+                    'public'
+                );
+
+                if (!$stored || !Storage::disk('public')->exists($stored)) {
+                    throw new \\RuntimeException('Foto profil gagal disimpan ke storage.');
                 }
-                Storage::disk('public')->put('images/profile/' . $photoName, $image->toJpeg(90));
+
                 $data['photo'] = $photoName;
             }
-
             $user->update($data);
             return redirect()->back()->with('success', 'Profile updated successfully');
         } catch (\Exception $e) {
