@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (\\Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException $e, $request) {
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
             if ($request->expectsJson()) return response()->json(['message'=>'Halaman tidak ditemukan'], 404);
             return response()->view('errors.404', [], 404);
         });
