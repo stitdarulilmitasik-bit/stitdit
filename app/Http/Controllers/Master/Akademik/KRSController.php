@@ -478,7 +478,7 @@ class KRSController extends Controller
                     $logoDataUri = 'data:' . $source['mime'] . ';base64,' . base64_encode($bytes);
                     break;
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // Try the next known logo location.
             }
         }
