@@ -443,43 +443,50 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Embed logo-vert1.png directly into the PDF as a DATA URI.
-        // Dompdf must receive a complete data URI: data:image/png;base64,...
-        // Prioritize the file that exists in the Laravel public assets, then
-        // the ByetHost storage mirror as fallback.
+        // Logo resmi KRS harus di-embed sebagai DATA URI agar Dompdf tidak
+        // bergantung pada URL, symlink storage, OpenResty, atau akses remote.
+        // File repository memiliki dua lokasi asset logo-vert1.png, sehingga
+        // controller mencoba keduanya sebelum fallback ke mirror storage.
         $logoDataUri = null;
         $logoSources = [
-            [
-                'path' => public_path('images/logo-vert1.png'),
-                'mime' => 'image/png',
-            ],
-            [
-                'path' => base_path('public/images/logo-vert1.png'),
-                'mime' => 'image/png',
-            ],
-            [
-                'path' => storage_path('images/logo/logo-vert1.png'),
-                'mime' => 'image/png',
-            ],
-            [
-                'path' => storage_path('app/public/images/logo/logo-vert1.png'),
-                'mime' => 'image/png',
-            ],
+            public_path('images/logo-vert1.png'),
+            public_path('images/logo/logo-vert1.png'),
+            base_path('public/images/logo-vert1.png'),
+            base_path('public/images/logo/logo-vert1.png'),
+            storage_path('images/logo/logo-vert1.png'),
+            storage_path('app/public/images/logo/logo-vert1.png'),
         ];
 
-        foreach ($logoSources as $source) {
+        foreach ($logoSources as $logoPath) {
             try {
-                if (!is_file($source['path']) || !is_readable($source['path'])) {
+                if (!is_file($logoPath) || !is_readable($logoPath)) {
                     continue;
                 }
 
-                $bytes = file_get_contents($source['path']);
-                if (is_string($bytes) && $bytes !== '') {
-                    $logoDataUri = 'data:' . $source['mime'] . ';base64,' . base64_encode($bytes);
-                    break;
+                $logoBytes = file_get_contents($logoPath);
+                if (!is_string($logoBytes) || $logoBytes === '') {
+                    continue;
                 }
+
+                // Validasi bahwa file benar-benar PNG sebelum di-embed.
+                if (function_exists('finfo_open')) {
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mime = $finfo ? finfo_file($finfo, $logoPath) : null;
+                    if ($finfo) {
+                        finfo_close($finfo);
+                    }
+
+                    if ($mime !== 'image/png') {
+                        continue;
+                    }
+                } elseif (strncmp($logoBytes, "\x89PNG\r\n\x1a\n", 8) !== 0) {
+                    continue;
+                }
+
+                $logoDataUri = 'data:image/png;base64,' . base64_encode($logoBytes);
+                break;
             } catch (\Throwable $e) {
-                // Try the next known logo location.
+                // Coba lokasi logo berikutnya.
             }
         }
 
