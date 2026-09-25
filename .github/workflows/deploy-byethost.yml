@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Prepare only committed file changes
+      - name: Prepare changed files only
         id: changes
         shell: bash
         env:
@@ -39,12 +39,12 @@ jobs:
           git diff --name-status -M "${BEFORE_SHA}" "${AFTER_SHA}" > .commit-sync/changes.txt
 
           changed=0
-          deleted=0
 
           while IFS=$'\t' read -r status path old_path; do
             [ -z "${status:-}" ] && continue
 
-            # Never upload protected/server-only paths.
+            # Hanya file yang memang berubah pada commit ini.
+            # File hosting/server-only TIDAK disentuh.
             case "${path}" in
               .git/*|.github/*|vendor/*|.env|storage/logs/*|storage/framework/cache/*|storage/framework/sessions/*|storage/framework/views/*|deploy/*)
                 continue
@@ -52,60 +52,24 @@ jobs:
             esac
 
             case "${status}" in
-              A|M)
+              A|M|R*)
                 mkdir -p ".commit-sync/$(dirname "${path}")"
                 cp -- "${path}" ".commit-sync/${path}"
                 changed=$((changed + 1))
-                ;;
-              R*)
-                # Upload the new path and remove the old path on the server.
-                mkdir -p ".commit-sync/$(dirname "${path}")"
-                cp -- "${path}" ".commit-sync/${path}"
-                echo "DELETE	${old_path}" >> .commit-sync/deletions.txt
-                changed=$((changed + 1))
-                deleted=$((deleted + 1))
                 ;;
               D)
-                echo "DELETE	${path}" >> .commit-sync/deletions.txt
-                deleted=$((deleted + 1))
+                # PENTING:
+                # File yang dihapus dari GitHub TIDAK dihapus dari hosting.
+                echo "SKIP DELETE: ${path}"
                 ;;
             esac
           done < .commit-sync/changes.txt
 
           echo "changed=${changed}" >> "${GITHUB_OUTPUT}"
-          echo "deleted=${deleted}" >> "${GITHUB_OUTPUT}"
+          echo "Files prepared for upload: ${changed}"
 
-          echo "Files to upload: ${changed}"
-          echo "Files to delete: ${deleted}"
-
-      - name: Upload only changed files to ByetHost
+      - name: Upload changed files only (no remote sync)
         if: steps.changes.outputs.changed != '0'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.BYETHOST_FTP_SERVER }}
-          username: ${{ secrets.BYETHOST_FTP_USERNAME }}
-          password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
-          protocol: ftp
-          port: ${{ secrets.BYETHOST_FTP_PORT }}
-          local-dir: ./.commit-sync/
-          server-dir: ./htdocs/
-          exclude: |
-            changes.txt
-            deletions.txt
-            **/.git*
-            **/.github/**
-            **/vendor/**
-            **/.env
-            **/storage/logs/**
-            **/storage/framework/cache/**
-            **/storage/framework/sessions/**
-            **/storage/framework/views/**
-            **/deploy/**
-          dangerous-clean-slate: false
-          log-level: standard
-
-      - name: Delete removed files from ByetHost
-        if: steps.changes.outputs.deleted != '0'
         shell: bash
         env:
           FTP_SERVER: ${{ secrets.BYETHOST_FTP_SERVER }}
@@ -115,24 +79,32 @@ jobs:
         run: |
           set -euo pipefail
 
-          while IFS=$'\t' read -r action path; do
-            [ "${action:-}" = "DELETE" ] || continue
+          echo "Uploading ONLY files changed by this commit."
+          echo "Existing files/folders on /htdocs will NOT be deleted."
 
-            case "${path}" in
-              .git/*|.github/*|vendor/*|.env|storage/logs/*|storage/framework/cache/*|storage/framework/sessions/*|storage/framework/views/*|deploy/*)
-                continue
-                ;;
-            esac
+          while IFS= read -r file; do
+            [ -n "${file}" ] || continue
 
-            echo "Deleting: ${path}"
+            echo "Uploading: ${file}"
 
-            curl --fail --silent --show-error \
-              --ftp-method nocwd \
-              --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
-              --ftp-port "${FTP_PORT}" \
-              "ftp://${FTP_SERVER}/htdocs/${path}" \
-              -Q "DELE ${path}" || true
-          done < .commit-sync/deletions.txt
+            remote_dir="$(dirname "${file}")"
+
+            # Buat folder tujuan bila diperlukan.
+            if [ "${remote_dir}" != "." ]; then
+              curl --fail --silent --show-error \
+                --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
+                --ftp-port "${FTP_PORT}" \
+                --ftp-create-dirs \
+                --upload-file ".commit-sync/${file}" \
+                "ftp://${FTP_SERVER}/htdocs/${file}"
+            else
+              curl --fail --silent --show-error \
+                --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
+                --ftp-port "${FTP_PORT}" \
+                --upload-file ".commit-sync/${file}" \
+                "ftp://${FTP_SERVER}/htdocs/${file}"
+            fi
+          done < <(find .commit-sync -type f ! -name changes.txt -printf '%P\n' | sort)
 
       - name: Cleanup
         if: always()
@@ -143,10 +115,12 @@ jobs:
         shell: bash
         run: |
           echo "========================================"
-          echo "Commit-based ByetHost sync completed."
-          echo "Only files changed by this commit were prepared for upload."
+          echo "Incremental ByetHost upload completed."
+          echo "ONLY files changed by the latest commit were uploaded."
+          echo "NO remote synchronization was performed."
+          echo "NO remote files/folders were deleted."
           echo "Target: ./htdocs/"
-          echo "No server deploy/ folder is used."
           echo "vendor and .env are excluded."
           echo "Laravel runtime storage is preserved."
+          echo "Existing hosting folders are preserved."
           echo "========================================"
