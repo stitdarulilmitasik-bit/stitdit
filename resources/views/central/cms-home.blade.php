@@ -424,7 +424,7 @@ body.cms-front-page .page-body > .container-xl{
                             @if($hero?->image)
                                 <img src="{{ stit_image_url($hero->image) }}" alt="{{ $hero->title ?: $webs->school_name }}">
                             @else
-                                <img src="{{ $webs->school_logo_hori }}" alt="Logo {{ $webs->school_name }}">
+                                <img src="{{ stit_image_url('images/logo/logo-vert.png') }}" alt="Logo {{ $webs->school_name }}">
                             @endif
                         </div>
                     </div>
