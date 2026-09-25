@@ -19,66 +19,39 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Build Composer autoload only
-        shell: bash
+      - name: Generate Composer autoload
         run: |
           set -e
 
-          echo "=========================================="
-          echo "BUILD COMPOSER AUTOLOAD"
-          echo "=========================================="
+          echo "Generating Composer autoload..."
 
-          rm -rf temp-vendor deploy
-          mkdir -p temp-vendor deploy/vendor
-
-          composer install \
+          composer dump-autoload \
             --no-dev \
-            --no-scripts \
-            --no-interaction \
-            --prefer-dist \
-            --optimize-autoloader \
-            --working-dir=.
-
-          echo ""
-          echo "Composer autoload generated."
+            --optimize \
+            --no-interaction
 
           test -f vendor/autoload.php
           test -d vendor/composer
 
-          echo "vendor/autoload.php: OK"
-          echo "vendor/composer: OK"
+          echo "Autoload generated successfully."
 
-          # Hanya ambil autoload utama dan Composer metadata.
-          cp vendor/autoload.php deploy/vendor/autoload.php
-
-          cp -a vendor/composer deploy/vendor/
-
-          echo ""
-          echo "Files prepared for upload:"
-          echo "deploy/vendor/autoload.php"
-          echo "deploy/vendor/composer/*"
-
-          echo ""
-          echo "Full vendor will NOT be uploaded."
-
-      - name: Verify autoload package references
-        shell: bash
+      - name: Prepare ONLY autoload files
         run: |
           set -e
 
-          echo "Checking generated autoload..."
+          rm -rf deploy
+          mkdir -p deploy/vendor/composer
 
-          test -f deploy/vendor/autoload.php
-          test -f deploy/vendor/composer/autoload_real.php
-          test -f deploy/vendor/composer/autoload_psr4.php
-          test -f deploy/vendor/composer/autoload_classmap.php
-          test -f deploy/vendor/composer/autoload_files.php
-          test -f deploy/vendor/composer/autoload_static.php
+          cp vendor/autoload.php \
+             deploy/vendor/autoload.php
 
-          echo ""
-          echo "Composer autoload files verified."
+          cp vendor/composer/*.php \
+             deploy/vendor/composer/
 
-      - name: Deploy ONLY Composer autoload
+          echo "Prepared files:"
+          find deploy/vendor -type f | sort
+
+      - name: Upload ONLY autoload to existing htdocs
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.BYETHOST_FTP_SERVER }}
@@ -87,26 +60,33 @@ jobs:
           protocol: ftp
           port: ${{ secrets.BYETHOST_FTP_PORT }}
 
-          local-dir: ./deploy/
-          server-dir: ./htdocs
+          # FTP account Anda sudah berada di /htdocs
+          server-dir: ./
 
+          # Hanya package kecil yang dibuat di atas
+          local-dir: ./deploy/
+
+          # JANGAN menghapus source yang sudah ada
           dangerous-clean-slate: false
+
           log-level: standard
 
-      - name: Finished
-        shell: bash
+          exclude: |
+            **/.git*
+            **/.github/**
+
+      - name: Deployment summary
         run: |
           echo "=========================================="
-          echo "AUTOLOAD REFRESH COMPLETED"
+          echo "AUTOLOAD REFRESH SELESAI"
           echo "=========================================="
           echo ""
-          echo "Updated:"
-          echo "/htdocs/vendor/autoload.php"
-          echo "/htdocs/vendor/composer/*"
+          echo "Server source TIDAK diubah."
+          echo "Vendor package TIDAK di-upload ulang."
           echo ""
-          echo "NOT uploaded:"
-          echo "Laravel source"
-          echo "Application vendor packages"
-          echo ".env"
-          echo "storage"
+          echo "Yang diperbarui:"
+          echo "/htdocs/vendor/autoload.php"
+          echo "/htdocs/vendor/composer/*.php"
+          echo ""
+          echo "Server .env TIDAK diubah."
           echo "=========================================="
