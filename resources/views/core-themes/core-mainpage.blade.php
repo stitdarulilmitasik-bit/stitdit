@@ -228,7 +228,7 @@
                 <!-- BEGIN NAVBAR LOGO -->
                 <div class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                     <a href="." aria-label="Tabler">
-                        <img src="{{ asset('logo.png') }}" style="height: 40px; width: auto; object-fit: contain;" alt="Logo STIT Darul Ilmi" onerror="this.onerror=null;this.src='{{ asset('images/logo/logo-hori.png') }}';">
+                        <img src="{{ asset('storage/images/logo/logo-hori.png') }}" style="height: 40px; width: auto; object-fit: contain;" alt="Logo STIT Darul Ilmi" onerror="this.onerror=null;this.src='{{ asset('storage/images/logo/logo-hori.png') }}';">
                     </a>
                 </div>
                 <!-- END NAVBAR LOGO -->
