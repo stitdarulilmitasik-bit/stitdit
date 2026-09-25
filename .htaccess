@@ -3,6 +3,14 @@ RewriteEngine On
 # /htdocs/index.php adalah entry point Laravel untuk ByetHost.
 RewriteRule ^$ index.php [L]
 
+# backup.php berada langsung di /htdocs dan sengaja tidak disimpan di GitHub.
+# Biarkan server mengeksekusi file tersebut tanpa diteruskan ke Laravel.
+RewriteRule ^backup\.php$ - [L]
+
+# File fisik lain yang berada langsung di /htdocs tetap dilayani langsung.
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
 # Asset/file yang berada di folder /htdocs/public tetap dilayani langsung.
 RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
 RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
