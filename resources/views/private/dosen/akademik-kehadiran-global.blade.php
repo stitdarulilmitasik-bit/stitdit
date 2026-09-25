@@ -158,7 +158,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="26" class="text-center py-4 text-muted">Belum ada data kehadiran.</td></tr>
+                    <tr><td colspan="28" class="text-center py-4 text-muted">Belum ada data kehadiran.</td></tr>
                 @endforelse
                 </tbody>
             </table>
