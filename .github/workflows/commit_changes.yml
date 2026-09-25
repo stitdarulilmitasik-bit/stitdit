@@ -92,18 +92,6 @@ jobs:
       # - FTP Deploy Action menggunakan state untuk mengetahui
       #   file yang berubah
       # ============================================================
-      # ============================================================
-      # Deploy langsung ke /htdocs
-      # ============================================================
-
-      #
-      # IMPORTANT:
-      # - Tidak menggunakan deploy/
-      # - Tidak menggunakan dangerous-clean-slate
-      # - Tidak menghapus seluruh server
-      # - FTP Deploy Action menggunakan state untuk mengetahui
-      #   file yang berubah
-      # ============================================================
       - name: Deploy changed files to ByetHost
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
