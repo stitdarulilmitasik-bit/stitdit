@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,20 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Jangan biarkan URL maintenance POST-only menghasilkan halaman 405 saat dibuka sebagai GET.
-        // Ini juga melindungi server dari route cache lama yang masih menyimpan endpoint tersebut.
-        $exceptions->render(function (MethodNotAllowedHttpException $e, $request) {
-            if ($request->isMethod('GET') && (
-                $request->is('web-admin/maintenance/clear-cache') ||
-                str_contains($e->getMessage(), 'web-admin/maintenance/clear-cache')
-            )) {
-                return redirect('/');
-            }
-
-            return null;
-        });
-
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+        $exceptions->render(function (\\Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException $e, $request) {
             if ($request->expectsJson()) return response()->json(['message'=>'Halaman tidak ditemukan'], 404);
             return response()->view('errors.404', [], 404);
         });
