@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 // USE MODELS
 use App\Models\Pengaturan\WebSetting;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\File;
 
 class RootController extends Controller
 {
@@ -351,7 +350,7 @@ class RootController extends Controller
                 'name' => 'required|string|max:255',
                 'title_front' => 'nullable|string|max:50',
                 'title_behind' => 'nullable|string|max:50',
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:8192',
                 'bio_placebirth' => 'nullable|string|max:100',
                 'bio_datebirth' => 'nullable|date',
                 'bio_gender' => 'nullable|in:Laki-laki,Perempuan',
@@ -448,28 +447,48 @@ class RootController extends Controller
 
             // Handle photo upload
             if ($request->hasFile('photo')) {
-                // Delete old photo if exists
-                if ($user->photo && $user->photo !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . $user->photo);
+                /*
+                 * Samakan dengan mekanisme upload Web Admin:
+                 * - gunakan nama file asli
+                 * - jangan resize/encode ulang dengan GD/Intervention
+                 * - simpan ke public disk dan mirror fisik ByetHost
+                 * - database menyimpan nama file asli yang sama persis
+                 */
+                $uploadedFile = $request->file('photo');
+                $photoName = basename($uploadedFile->getClientOriginalName());
+
+                if ($photoName === '' || $photoName === '.' || $photoName === '..') {
+                    throw new \RuntimeException('Nama file foto tidak valid.');
                 }
 
-                // Kompres dan simpan foto profil
-                $photoName = time() . '-' . $user->code . '-' . uniqid() . '-' . uniqid() . '.jpg';
-                
-                // Buat instance ImageManager dengan driver GD
-                $manager = new ImageManager(new Driver());
-                
-                // Baca dan kompres gambar
-                $image = $manager->read($request->photo->getRealPath());
-                
-                // Resize dengan ukuran yang lebih besar untuk foto profil
-                if ($image->height() > 1200) {
-                    $image->scaleDown(height: 1200); 
+                $oldPhoto = $user->getRawOriginal('photo');
+
+                if ($oldPhoto && $oldPhoto !== 'default.jpg') {
+                    $oldName = basename($oldPhoto);
+                    try {
+                        Storage::disk('public')->delete('images/profile/' . $oldName);
+                    } catch (\Throwable $e) {
+                        // Foto lama tidak boleh menggagalkan upload baru.
+                    }
+                    File::delete(storage_path('images/profile/' . $oldName));
+                    File::delete(storage_path('images/' . $oldName));
                 }
-                
-                // Simpan dengan kualitas tinggi (90%)
-                Storage::disk('public')->put('images/profile/' . $photoName, $image->toJpeg(90));
-                
+
+                $fileContents = file_get_contents($uploadedFile->getRealPath());
+                if ($fileContents === false) {
+                    throw new \RuntimeException('File foto tidak dapat dibaca.');
+                }
+
+                Storage::disk('public')->put('images/profile/' . $photoName, $fileContents);
+
+                $publicProfileDir = storage_path('images/profile');
+                File::ensureDirectoryExists($publicProfileDir);
+                File::put($publicProfileDir . '/' . $photoName, $fileContents);
+
+                $publicImagesDir = storage_path('images');
+                File::ensureDirectoryExists($publicImagesDir);
+                File::put($publicImagesDir . '/' . $photoName, $fileContents);
+
                 $data['photo'] = $photoName;
             }
 
