@@ -15,7 +15,7 @@
 <div class="container-xl py-3">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
-            <h2 class="mb-1">Report Global Kehadiran</h2>
+            <h2 class="mb-1">Input Kehadiran Mahasiswa</h2>
             <p class="text-muted mb-0">Input dan rekap kehadiran mahasiswa per mata kuliah dan pertemuan.</p>
         </div>
         <div class="d-flex gap-2">
@@ -38,7 +38,7 @@
         @csrf
         <input type="hidden" name="semester" value="{{ $semester }}">
         <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
-        <div class="card-header"><h3 class="card-title mb-0">Report Global Kehadiran</h3></div>
+        <div class="card-header"><h3 class="card-title mb-0">Input Kehadiran Mahasiswa</h3></div>
         <div class="card-body">
             <div class="row g-2 align-items-end">
                 <div class="col-md-2">
@@ -99,7 +99,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title mb-0">{{ $mataKuliahId ? 'Report Kehadiran Mata Kuliah' : 'Report Global Kehadiran' }}</h3>
+            <h3 class="card-title mb-0">Report Kehadiran</h3>
         </div>
         <div class="global-attendance-wrap">
             <table class="table table-bordered table-vcenter global-attendance mb-0">
