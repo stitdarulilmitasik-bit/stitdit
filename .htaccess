@@ -1,12 +1,12 @@
 RewriteEngine On
 
-# Arahkan root domain ke Laravel public/index.php
-RewriteRule ^$ public/index.php [L]
+# /htdocs/index.php adalah entry point Laravel untuk ByetHost.
+RewriteRule ^$ index.php [L]
 
-# File/folder yang memang ada di /htdocs jangan diubah
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# Semua request lainnya masuk ke Laravel
+# Asset/file yang berada di folder /htdocs/public tetap dilayani langsung.
+RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
+RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
 RewriteRule ^(.*)$ public/$1 [L]
+
+# Semua route Laravel lainnya masuk melalui /htdocs/index.php.
+RewriteRule ^(.*)$ index.php [L]
