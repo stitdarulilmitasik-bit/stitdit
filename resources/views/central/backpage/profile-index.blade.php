@@ -83,10 +83,9 @@
   <section class="d-flex flex-column">
     <div class="header-card">
       @php
-  $profilePhoto = $user?->photo;
-  $profilePhotoUrl = $profilePhoto && $profilePhoto !== 'default.jpg'
-      ? '/storage/images/profile/' . $profilePhoto
-      : '/storage/images/profile/default.jpg';
+  // User::photo sudah mengembalikan URL publik melalui stit_profile_image_url().
+  // Jangan tambahkan /storage lagi agar URL tidak menjadi dobel.
+  $profilePhotoUrl = $user?->photo ?: asset('images/profile/default.png');
 @endphp
 <img src="{{ $profilePhotoUrl }}" class="avatar-profile" id="preview-image" alt="Avatar-profile">
       <div>
