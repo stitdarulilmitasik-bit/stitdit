@@ -1,0 +1,119 @@
+name: Deploy Laravel to ByetHost - Incremental
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+concurrency:
+  group: byethost-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Incremental FTP Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # ============================================================
+      # 1. Ambil repository
+      # ============================================================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      # ============================================================
+      # 2. Tampilkan commit yang akan dideploy
+      # ============================================================
+      - name: Show deployment information
+        shell: bash
+        run: |
+          echo "=========================================="
+          echo "BYETHOST INCREMENTAL DEPLOYMENT"
+          echo "=========================================="
+          echo "Commit : $GITHUB_SHA"
+          echo "Branch : $GITHUB_REF_NAME"
+          echo ""
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "Changed files in this commit:"
+            git diff --name-status "${{ github.event.before }}" "$GITHUB_SHA" || true
+          else
+            echo "Manual deployment requested."
+            git log -1 --oneline
+          fi
+
+          echo ""
+          echo "Deployment target: /htdocs"
+          echo "Mode: incremental"
+          echo "Composer: DISABLED"
+          echo "NPM: DISABLED"
+          echo "Vendor upload: DISABLED"
+          echo "=========================================="
+
+      # ============================================================
+      # 3. Deploy langsung ke /htdocs
+      #
+      # IMPORTANT:
+      # - Tidak menggunakan deploy/
+      # - Tidak menggunakan dangerous-clean-slate
+      # - Tidak menghapus seluruh server
+      # - FTP Deploy Action menggunakan state untuk mengetahui
+      #   file yang berubah
+      # ============================================================
+      - name: Deploy changed files to ByetHost
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          protocol: ftp
+
+          server: ${{ secrets.BYETHOST_FTP_SERVER }}
+          username: ${{ secrets.BYETHOST_FTP_USERNAME }}
+          password: ${{ secrets.BYETHOST_FTP_PASSWORD }}
+          port: ${{ secrets.BYETHOST_FTP_PORT }}
+
+          local-dir: ./
+          server-dir: /htdocs/
+
+          # Jangan melakukan clean slate.
+          # Server tidak akan dihapus dan dibangun ulang.
+          dangerous-clean-slate: false
+
+          # State digunakan untuk mengetahui perubahan
+          state-name: .ftp-deploy-sync-state.json
+
+          # File/folder yang tidak boleh dikirim
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            **/vendor/**
+            **/.env
+            **/.env.*
+            **/storage/logs/**
+            **/storage/framework/cache/**
+            **/storage/framework/sessions/**
+            **/storage/framework/views/**
+            **/bootstrap/cache/*.php
+            **/.ftp-deploy-sync-state.json
+
+      # ============================================================
+      # 4. Informasi hasil deployment
+      # ============================================================
+      - name: Deployment completed
+        shell: bash
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "DEPLOYMENT SELESAI"
+          echo "=========================================="
+          echo "Commit $GITHUB_SHA berhasil dikirim ke:"
+          echo "/htdocs"
+          echo ""
+          echo "Laravel vendor tidak di-upload."
+          echo ".env server tidak diubah."
+          echo "Server tidak di-reset."
+          echo "=========================================="
