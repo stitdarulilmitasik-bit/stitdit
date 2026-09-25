@@ -1,0 +1,126 @@
+name: Restore deleted ByetHost folders
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: byethost-restore
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Prepare only previously deleted folders
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf .restore-byethost
+          mkdir -p .restore-byethost
+
+          # ONLY folders that were recorded as removed by the old ByetHost
+          # synchronization workflow. Nothing else is included.
+          ALLOWED_PREFIXES=(
+            "app/"
+            "auth/"
+            "bootstrap/"
+            "config/"
+            "dashboard/"
+            "build/"
+            "storage/app/public/images/default/"
+            "storage/app/public/images/logo/"
+            "storage/app/public/images/placeholders/"
+            "storage/app/public/images/profile/"
+            "storage/app/public/images/website/"
+            "storage/framework/"
+          )
+
+          # The old deployment also explicitly removed this file.
+          if [ -f "storage/app/public/images/.editorconfig" ]; then
+            mkdir -p ".restore-byethost/storage/app/public/images"
+            cp "storage/app/public/images/.editorconfig"               ".restore-byethost/storage/app/public/images/.editorconfig"
+          fi
+
+          count=0
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+
+            allowed=false
+            for prefix in "${ALLOWED_PREFIXES[@]}"; do
+              case "$file" in
+                "${prefix}"*) allowed=true; break ;;
+              esac
+            done
+
+            [ "$allowed" = true ] || continue
+
+            mkdir -p ".restore-byethost/$(dirname "$file")"
+            cp -- "$file" ".restore-byethost/$file"
+            count=$((count + 1))
+          done < <(git ls-files)
+
+          echo "Files prepared for restore: $count"
+          echo "The restore package contains ONLY the explicitly listed deleted folders."
+
+          if [ "$count" -eq 0 ]; then
+            echo "No matching tracked files exist in main."
+            exit 0
+          fi
+
+          find .restore-byethost -type f -printf '%P\n' | sort
+
+      - name: Upload only restored files to ByetHost
+        shell: bash
+        env:
+          FTP_SERVER: ${{ secrets.BYETHOST_FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.BYETHOST_FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.BYETHOST_FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.BYETHOST_FTP_PORT }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -d ".restore-byethost" ]; then
+            echo "Restore package does not exist. Nothing to upload."
+            exit 0
+          fi
+
+          echo "========================================"
+          echo "RESTORE MODE"
+          echo "Target: /htdocs/"
+          echo "Only previously deleted folders are uploaded."
+          echo "NO FTP synchronization is used."
+          echo "NO existing remote files are deleted."
+          echo "NO .env or vendor files are uploaded."
+          echo "========================================"
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+
+            echo "RESTORE: $file"
+
+            curl --fail --silent --show-error               --user "${FTP_USERNAME}:${FTP_PASSWORD}"               --ftp-port "${FTP_PORT}"               --ftp-create-dirs               --upload-file ".restore-byethost/$file"               "ftp://${FTP_SERVER}/htdocs/$file"
+          done < <(find .restore-byethost -type f -printf '%P\n' | sort)
+
+      - name: Cleanup
+        if: always()
+        shell: bash
+        run: rm -rf .restore-byethost
+
+      - name: Restore summary
+        shell: bash
+        run: |
+          echo "========================================"
+          echo "ByetHost restore completed."
+          echo "Only files from the previously deleted folder allowlist were uploaded."
+          echo "Existing /htdocs files and folders were NOT deleted."
+          echo "No remote synchronization was performed."
+          echo "========================================"
