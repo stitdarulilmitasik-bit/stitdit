@@ -443,23 +443,40 @@ class KRSController extends Controller
 
         $webs = WebSetting::first();
 
-        // Embed the STIT logo directly into the PDF HTML. Dompdf on shared hosting
-        // can fail to resolve public URLs even when the same image is visible in a browser.
-        // Try the public asset first, then the existing public storage asset, without
-        // calling disk->path()/realpath() (which can trigger open_basedir restrictions).
+        // Embed the official STIT logo directly into the PDF HTML.
+        // On ByetHost/OpenResty, the public document root is /htdocs and the
+        // storage mirror is exposed at /storage. Dompdf cannot rely on a browser
+        // URL here, so load the logo bytes server-side and embed them as a data URI.
+        //
+        // Prefer logo-hori.png because this is the logo currently exposed and
+        // verified under /htdocs/storage/images/logo/. Keep logo-vert1.png as
+        // a fallback for older deployments.
         $logoDataUri = null;
         $logoSources = [
             [
                 'type' => 'file',
-                'path' => public_path('images/logo-vert1.png'),
+                'path' => storage_path('images/logo/logo-hori.png'),
+                'mime' => 'image/png',
+            ],
+            [
+                'type' => 'storage',
+                'path' => 'images/logo/logo-hori.png',
+                'mime' => 'image/png',
             ],
             [
                 'type' => 'file',
-                'path' => base_path('public/images/logo-vert1.png'),
+                'path' => public_path('images/logo/logo-vert1.png'),
+                'mime' => 'image/png',
+            ],
+            [
+                'type' => 'file',
+                'path' => base_path('public/images/logo/logo-vert1.png'),
+                'mime' => 'image/png',
             ],
             [
                 'type' => 'storage',
                 'path' => 'images/logo/logo-vert1.png',
+                'mime' => 'image/png',
             ],
         ];
 
@@ -478,11 +495,11 @@ class KRSController extends Controller
                 }
 
                 if (is_string($bytes) && $bytes !== '') {
-                    $logoDataUri = 'data:image/png;base64,' . base64_encode($bytes);
+                    $logoDataUri = $source['mime'] . ';base64,' . base64_encode($bytes);
                     break;
                 }
             } catch (\Throwable $e) {
-                // Try the next known asset location.
+                // Try the next known logo location.
             }
         }
 
