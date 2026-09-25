@@ -12,8 +12,7 @@ use App\Models\Pengaturan\WebSetting;
 use App\Models\Akademik\JadwalKuliah;
 use App\Models\Akademik\MataKuliah;
 use App\Models\Akademik\KRS;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\File;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class RootController extends Controller
@@ -37,7 +36,7 @@ class RootController extends Controller
                 'name' => 'required|string|max:255',
                 'title_front' => 'nullable|string|max:50',
                 'title_behind' => 'nullable|string|max:50',
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:8192',
                 'bio_placebirth' => 'nullable|string|max:100',
                 'bio_datebirth' => 'nullable|date',
                 'bio_gender' => 'nullable|in:Laki-laki,Perempuan',
@@ -100,34 +99,46 @@ class RootController extends Controller
 
             if ($request->hasFile('photo')) {
                 /*
-                 * Simpan file upload secara langsung ke public disk.
-                 * Jangan memproses ulang gambar dengan GD/Intervention Image
-                 * di shared hosting karena ekstensi/limit memori server dapat
-                 * menyebabkan HTTP 500.
+                 * Samakan dengan mekanisme upload Web Admin:
+                 * - gunakan nama file asli
+                 * - jangan resize/encode ulang dengan GD/Intervention
+                 * - simpan ke public disk dan mirror fisik ByetHost
+                 * - database menyimpan nama file asli yang sama persis
                  */
+                $uploadedFile = $request->file('photo');
+                $photoName = basename($uploadedFile->getClientOriginalName());
+
+                if ($photoName === '' || $photoName === '.' || $photoName === '..') {
+                    throw new \RuntimeException('Nama file foto tidak valid.');
+                }
+
                 $oldPhoto = $user->getRawOriginal('photo');
 
                 if ($oldPhoto && $oldPhoto !== 'default.jpg') {
-                    $oldPhoto = basename(ltrim($oldPhoto, '/'));
+                    $oldName = basename($oldPhoto);
                     try {
-                        Storage::disk('public')->delete('images/profile/' . $oldPhoto);
-                    } catch (\\Throwable $e) {
-                        // Foto lama tidak boleh menggagalkan penyimpanan foto baru.
+                        Storage::disk('public')->delete('images/profile/' . $oldName);
+                    } catch (\Throwable $e) {
+                        // Foto lama tidak boleh menggagalkan upload baru.
                     }
+                    File::delete(storage_path('images/profile/' . $oldName));
+                    File::delete(storage_path('images/' . $oldName));
                 }
 
-                $photoName = time() . '-' . $user->code . '-' . uniqid('', true) . '.' .
-                    strtolower($request->file('photo')->getClientOriginalExtension());
-
-                $stored = $request->file('photo')->storeAs(
-                    'images/profile',
-                    $photoName,
-                    'public'
-                );
-
-                if (!$stored || !Storage::disk('public')->exists($stored)) {
-                    throw new \\RuntimeException('Foto profil gagal disimpan ke storage.');
+                $fileContents = file_get_contents($uploadedFile->getRealPath());
+                if ($fileContents === false) {
+                    throw new \RuntimeException('File foto tidak dapat dibaca.');
                 }
+
+                Storage::disk('public')->put('images/profile/' . $photoName, $fileContents);
+
+                $publicProfileDir = storage_path('images/profile');
+                File::ensureDirectoryExists($publicProfileDir);
+                File::put($publicProfileDir . '/' . $photoName, $fileContents);
+
+                $publicImagesDir = storage_path('images');
+                File::ensureDirectoryExists($publicImagesDir);
+                File::put($publicImagesDir . '/' . $photoName, $fileContents);
 
                 $data['photo'] = $photoName;
             }
