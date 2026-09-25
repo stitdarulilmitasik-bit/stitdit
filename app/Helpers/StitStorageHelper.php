@@ -73,7 +73,7 @@ if (! function_exists('stit_profile_image_url')) {
                     if (Storage::disk('public')->exists($path)) {
                         return url('/media/' . ltrim($path, '/'));
                     }
-                } catch (\\Throwable $e) {
+                } catch (\Throwable $e) {
                     // Continue with the physical ByetHost mirror.
                 }
 
@@ -97,7 +97,7 @@ if (! function_exists('stit_profile_image_url')) {
                 if (Storage::disk('public')->exists($fallback)) {
                     return url('/media/' . ltrim($fallback, '/'));
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // Continue to the next fallback.
             }
 
