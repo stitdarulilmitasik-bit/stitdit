@@ -25,7 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Jangan biarkan URL maintenance POST-only menghasilkan halaman 405 saat dibuka sebagai GET.
         // Ini juga melindungi server dari route cache lama yang masih menyimpan endpoint tersebut.
         $exceptions->render(function (MethodNotAllowedHttpException $e, $request) {
-            if ($request->isMethod('GET') && $request->is('web-admin/maintenance/clear-cache')) {
+            if ($request->isMethod('GET') && (
+                $request->is('web-admin/maintenance/clear-cache') ||
+                str_contains($e->getMessage(), 'web-admin/maintenance/clear-cache')
+            )) {
                 return redirect('/');
             }
 
