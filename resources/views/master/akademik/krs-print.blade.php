@@ -24,22 +24,6 @@ $dosenNidn = $dosenWali?->nidn
 $tahunAkademik = $krs->tahunAkademik?->name ?? '-';
 @endphp
 
-@php
-// Logo resmi KRS: selalu embed logo-vert1.png sebagai DATA URI.
-// Ini sengaja dilakukan di view agar preview PDF tidak bergantung pada URL,
-// symlink storage, atau asset browser.
-$krsLogoDataUri = null;
-$krsLogoPath = public_path('images/logo-vert1.png');
-
-if (is_file($krsLogoPath) && is_readable($krsLogoPath)) {
-    $krsLogoBytes = file_get_contents($krsLogoPath);
-
-    if (is_string($krsLogoBytes) && $krsLogoBytes !== '') {
-        $krsLogoDataUri = 'data:image/png;base64,' . base64_encode($krsLogoBytes);
-    }
-}
-@endphp
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -80,7 +64,11 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 </div>
 <div class="container"><div class="kop-surat">
 <div class="kop-logo">
-@if(!empty($krsLogoDataUri))<img src="{{ $krsLogoDataUri }}" width="85" alt="Logo STIT Darul Ilmi">@elseif(!empty($logoDataUri))<img src="{{ $logoDataUri }}" width="85" alt="Logo STIT Darul Ilmi">@endif
+@if(!empty($logoDataUri))
+    <img src="{{ $logoDataUri }}" width="85" height="auto" alt="Logo STIT Darul Ilmi">
+@else
+    <span style="font-size:8pt;">Logo STIT Darul Ilmi</span>
+@endif
 </div>
 <div class="kop-text">
 <h3>SEKOLAH TINGGI ILMU TARBIYAH</h3>
@@ -95,7 +83,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 <p>Semester {{ $krs->semester }} Tahun Akademik {{ $tahunAkademik ?? '-' }}</p>
 </div>
 <table class="table-bio">
-<tr><td width="18%">Nama Mahasiswa</td><td width="2%">:</td><td width="30%" class="text-bold">{{ $krs->mahasiswa->name }}</td><td width="18%">Program Studi</td><td width="2%">:</td><td width="30%">{{ $krs->mahasiswa->programStudi->name ?? '-' }}</td></tr>
+<tr><td width="18%">Nama Mahasiswa</td><td width="2%">:</td><td width="30%" class="text-bold">{{ $krs->mahasiswa->name }}</td><td width="18%">Program Studi</td><td width="2%">:</td><td width="30%">{{ $krs->mahasiswa?->programStudi?->name ?? '-' }}</td></tr>
 <tr><td>NIM</td><td>:</td><td>{{ $nim }}</td><td>Tahun Masuk</td><td>:</td><td>{{ $tahunMasuk }}</td></tr>
 <tr><td>Semester</td><td>:</td><td>{{ $krs->semester }}</td><td>Dosen Wali</td><td>:</td><td>{{ $dosenWali->name ?? '-' }}</td></tr>
 <tr><td>Status KRS</td><td>:</td><td class="text-bold">{{ $krs->status }}</td><td>Total SKS</td><td>:</td><td>{{ $krs->total_sks }} SKS</td></tr>
