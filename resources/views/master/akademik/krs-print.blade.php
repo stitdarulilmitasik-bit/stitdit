@@ -24,6 +24,22 @@ $dosenNidn = $dosenWali?->nidn
 $tahunAkademik = $krs->tahunAkademik?->name ?? '-';
 @endphp
 
+@php
+// Logo resmi KRS: selalu embed logo-vert1.png sebagai DATA URI.
+// Ini sengaja dilakukan di view agar preview PDF tidak bergantung pada URL,
+// symlink storage, atau asset browser.
+$krsLogoDataUri = null;
+$krsLogoPath = public_path('images/logo-vert1.png');
+
+if (is_file($krsLogoPath) && is_readable($krsLogoPath)) {
+    $krsLogoBytes = file_get_contents($krsLogoPath);
+
+    if (is_string($krsLogoBytes) && $krsLogoBytes !== '') {
+        $krsLogoDataUri = 'data:image/png;base64,' . base64_encode($krsLogoBytes);
+    }
+}
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -64,7 +80,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 </div>
 <div class="container"><div class="kop-surat">
 <div class="kop-logo">
-@if(!empty($logoDataUri))<img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">@endif
+@if(!empty($krsLogoDataUri))<img src="{{ $krsLogoDataUri }}" width="85" alt="Logo STIT Darul Ilmi">@elseif(!empty($logoDataUri))<img src="{{ $logoDataUri }}" width="85" alt="Logo STIT Darul Ilmi">@endif
 </div>
 <div class="kop-text">
 <h3>SEKOLAH TINGGI ILMU TARBIYAH</h3>
