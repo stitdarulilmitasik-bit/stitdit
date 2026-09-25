@@ -14,7 +14,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
             <h2 class="mb-1">Report Global Kehadiran</h2>
-            <p class="text-muted mb-0">Rekap kehadiran seluruh mata kuliah pada semester yang dipilih.</p>
+            <p class="text-muted mb-0">Input dan rekap kehadiran mahasiswa per mata kuliah dan pertemuan.</p>
         </div>
         <div class="d-flex gap-2">
             @if($mahasiswaId)
@@ -43,7 +43,15 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label class="form-label">Pertemuan</label>
+                    <select id="filter-pertemuan" class="form-select">
+                        @for($i=1;$i<=16;$i++)
+                            <option value="{{ $i }}" {{ (int)$pertemuan === $i ? 'selected' : '' }}>Pertemuan {{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Mahasiswa</label>
                     <select id="filter-mahasiswa" class="form-select">
                         <option value="">Semua Mahasiswa</option>
@@ -93,6 +101,8 @@
                         <th class="c-summary text-center">Sakit</th>
                         <th class="c-summary text-center">Alpa</th>
                         <th class="c-summary text-center">% Hadir</th>
+                        <th style="width:190px;">Status P{{ $pertemuan }}</th>
+                        <th style="width:90px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,6 +134,28 @@
                         @endfor
                         <td class="text-center">{{ $hadir }}</td><td class="text-center">{{ $izin }}</td><td class="text-center">{{ $sakit }}</td><td class="text-center">{{ $alpa }}</td>
                         <td class="text-center"><strong>{{ number_format($persentase,2) }}%</strong></td>
+                        <td style="width:190px;">
+                            @php $currentAttendance = $att[(int)$pertemuan] ?? null; @endphp
+                            <select name="status" form="attendance-form-{{ $n->id }}" class="form-select form-select-sm" required>
+                                <option value="" {{ $currentAttendance ? '' : 'selected' }} disabled>Pilih status</option>
+                                @foreach(['Hadir','Izin','Sakit','Alpa'] as $status)
+                                    <option value="{{ $status }}" {{ (($currentAttendance->status ?? '') === $status) ? 'selected' : '' }}>{{ $status }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td style="width:90px;">
+                            <form id="attendance-form-{{ $n->id }}" method="POST" action="{{ route('web-admin.akademik.kehadiran.store') }}">
+                                @csrf
+                                <input type="hidden" name="nilai_id" value="{{ $n->id }}">
+                                <input type="hidden" name="semester" value="{{ $n->semester }}">
+                                <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
+                                <input type="hidden" name="redirect_semester" value="{{ $semester }}">
+                                <input type="hidden" name="redirect_pertemuan" value="{{ $pertemuan }}">
+                                <button class="btn btn-sm btn-primary w-100" title="Simpan kehadiran">
+                                    <i class="fas fa-save me-1"></i>Simpan
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="26" class="text-center py-4 text-muted">Belum ada data kehadiran.</td></tr>
@@ -138,6 +170,7 @@
 function applyFilters() {
     const url = new URL(window.location.href);
     url.searchParams.set('semester', document.getElementById('filter-semester').value);
+    url.searchParams.set('pertemuan', document.getElementById('filter-pertemuan').value);
     const mahasiswa = document.getElementById('filter-mahasiswa').value;
     const mataKuliah = document.getElementById('filter-mata-kuliah').value;
     mahasiswa ? url.searchParams.set('mahasiswa_id', mahasiswa) : url.searchParams.delete('mahasiswa_id');
@@ -145,6 +178,7 @@ function applyFilters() {
     window.location.href = url.toString();
 }
 document.getElementById('filter-semester')?.addEventListener('change', applyFilters);
+document.getElementById('filter-pertemuan')?.addEventListener('change', applyFilters);
 document.getElementById('filter-mahasiswa')?.addEventListener('change', applyFilters);
 document.getElementById('filter-mata-kuliah')?.addEventListener('change', applyFilters);
 </script>
