@@ -161,17 +161,51 @@ class AkademikOperasionalController extends Controller
     {
         $data = $this->base('Input Kehadiran Mahasiswa');
         $dosenId = $data['user']->id;
-        $semester = max(1, min(8, (int)$request->input('semester', 1)));
-        $pertemuan = max(1, min(16, (int)$request->input('pertemuan', 1)));
+        $semester = max(1, min(8, (int) $request->input('semester', 1)));
+        $pertemuan = max(1, min(16, (int) $request->input('pertemuan', 1)));
+        $mahasiswaId = $request->input('mahasiswa_id');
+        $mataKuliahId = $request->input('mata_kuliah_id');
+
+        // Pastikan data Nilai/KRS untuk mata kuliah yang diampu tersedia.
+        $this->syncNilaiDosen($dosenId);
+
+        // Dosen hanya boleh melihat mata kuliah yang tercatat sebagai dosen1/dosen2/dosen3.
+        $mataKuliahOptions = MataKuliah::where($this->mataKuliahDiampu($dosenId))
+            ->whereIn('id', Nilai::query()
+                ->select('matkul_id')
+                ->where('semester', $semester)
+                ->whereNotNull('matkul_id')
+                ->distinct())
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
+        // Daftar mahasiswa hanya berasal dari Nilai mata kuliah yang diampu dosen.
+        $mahasiswaOptions = \App\Models\Mahasiswa::query()
+            ->whereIn('id', Nilai::query()
+                ->select('mahasiswa_id')
+                ->where('semester', $semester)
+                ->whereNotNull('mahasiswa_id')
+                ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosenId))
+                ->when($mataKuliahId, fn ($q) => $q->where('matkul_id', $mataKuliahId))
+                ->distinct())
+            ->orderBy('name')
+            ->get(['id', 'name', 'numb_nim']);
 
         $data['semester'] = $semester;
         $data['pertemuan'] = $pertemuan;
-        $this->syncNilaiDosen($dosenId);
+        $data['mahasiswaId'] = $mahasiswaId;
+        $data['mataKuliahId'] = $mataKuliahId;
+        $data['mahasiswaOptions'] = $mahasiswaOptions;
+        $data['mataKuliahOptions'] = $mataKuliahOptions;
+
         $data['nilai'] = Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
             ->where('semester', $semester)
             ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosenId))
-            ->latest()
-            ->paginate(50)
+            ->when($mahasiswaId, fn ($q) => $q->where('mahasiswa_id', $mahasiswaId))
+            ->when($mataKuliahId, fn ($q) => $q->where('matkul_id', $mataKuliahId))
+            ->orderBy('matkul_id')
+            ->orderBy('mahasiswa_id')
+            ->paginate(100)
             ->withQueryString();
 
         return view('private.dosen.akademik-kehadiran', $data);
@@ -182,20 +216,28 @@ class AkademikOperasionalController extends Controller
         $dosen = $this->dosen();
 
         $request->validate([
-            'nilai_id' => 'required|integer|exists:nilais,id',
             'semester' => 'required|integer|min:1|max:8',
             'pertemuan' => 'required|integer|min:1|max:16',
+            'mahasiswa_id' => 'required|integer|exists:mahasiswas,id',
+            'mata_kuliah_id' => 'required|integer|exists:mata_kuliahs,id',
             'status' => 'required|in:Hadir,Izin,Sakit,Alpa',
             'catatan' => 'nullable|string|max:1000',
         ]);
 
-        $nilai = Nilai::whereKey($request->nilai_id)
-            ->where('semester', $request->semester)
+        $semester = (int) $request->semester;
+        $pertemuan = (int) $request->pertemuan;
+
+        // Validasi otorisasi dilakukan melalui relasi MataKuliah:
+        // Dosen hanya dapat menyimpan kehadiran untuk mata kuliah yang benar-benar diampunya.
+        $nilai = Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
+            ->where('semester', $semester)
+            ->where('mahasiswa_id', (int) $request->mahasiswa_id)
+            ->where('matkul_id', (int) $request->mata_kuliah_id)
             ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
             ->firstOrFail();
 
         $attendance = KehadiranMahasiswa::updateOrCreate(
-            ['nilai_id' => $nilai->id, 'pertemuan' => $request->pertemuan],
+            ['nilai_id' => $nilai->id, 'pertemuan' => $pertemuan],
             [
                 'code' => 'ABS-' . date('YmdHis') . '-' . Str::random(6),
                 'semester' => $nilai->semester,
@@ -209,9 +251,6 @@ class AkademikOperasionalController extends Controller
             $attendance->update(['created_by' => Auth::guard('dosen')->id()]);
         }
 
-        // Kehadiran dihitung kumulatif untuk mata kuliah/mahasiswa/semester.
-        // Hanya status Hadir yang dihitung sebagai kehadiran; Izin, Sakit, dan Alpa
-        // tidak menambah persentase hadir. Komponen kehadiran berbobot 15% dari nilai akhir.
         $totalPertemuan = $nilai->kehadiranMahasiswa()->count();
         $jumlahHadir = $nilai->kehadiranMahasiswa()->where('status', 'Hadir')->count();
         $persentaseKehadiran = $totalPertemuan > 0
@@ -223,8 +262,10 @@ class AkademikOperasionalController extends Controller
         $nilai->save();
 
         return redirect()->route('dosen.akademik.kehadiran', [
-            'semester' => $request->input('redirect_semester', $nilai->semester),
-            'pertemuan' => $request->input('redirect_pertemuan', $request->pertemuan),
+            'semester' => $semester,
+            'pertemuan' => $pertemuan,
+            'mahasiswa_id' => $request->mahasiswa_id,
+            'mata_kuliah_id' => $request->mata_kuliah_id,
         ])->with('success', 'Kehadiran ' . ($nilai->mahasiswa->name ?? 'mahasiswa') . ' berhasil disimpan.');
     }
 
