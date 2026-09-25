@@ -124,42 +124,54 @@ class RootController extends Controller
             // Handle photo upload
             if ($request->hasFile('photo')) {
                 /*
-                 * Gunakan nama file yang stabil berdasarkan kode user.
-                 * Setiap upload berikutnya akan menimpa file yang sama,
-                 * sehingga URL avatar tidak pernah berubah.
+                 * Pertahankan NAMA FILE ASLI yang dipilih pengguna.
+                 * Contoh: admin1.jpeg tetap menjadi admin1.jpeg.
+                 *
+                 * File disimpan ke dua lokasi karena ByetHost memakai
+                 * /htdocs sebagai document root:
+                 *   storage/app/public/images/profile/
+                 *   /htdocs/storage/images/profile/
+                 * dan juga mirror /htdocs/storage/images/ untuk kompatibilitas
+                 * dengan file profile lama yang sudah terlanjur berada di sana.
                  */
-                $safeCode = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) ($user->code ?: $user->id));
-                $photoName = $safeCode . '.jpg';
+                $uploadedFile = $request->file('photo');
+                $photoName = basename($uploadedFile->getClientOriginalName());
 
-                // Ambil nilai kolom photo asli, bukan accessor getPhotoAttribute()
-                // yang mengubahnya menjadi URL.
+                // Pastikan nama file tidak kosong dan tidak mengandung path.
+                if ($photoName === '' || $photoName === '.' || $photoName === '..') {
+                    throw new \RuntimeException('Nama file foto tidak valid.');
+                }
+
+                // Ambil nilai kolom photo asli, bukan accessor getPhotoAttribute().
                 $oldPhoto = $user->getRawOriginal('photo');
 
                 if ($oldPhoto && $oldPhoto !== 'default.jpg') {
-                    Storage::disk('public')->delete('images/profile/' . basename($oldPhoto));
-                    File::delete(storage_path('images/profile/' . basename($oldPhoto)));
-                    File::delete(storage_path('images/' . basename($oldPhoto)));
+                    $oldName = basename($oldPhoto);
+                    Storage::disk('public')->delete('images/profile/' . $oldName);
+                    File::delete(storage_path('images/profile/' . $oldName));
+                    File::delete(storage_path('images/' . $oldName));
                 }
 
-                // Kompres dan simpan foto profil.
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read($request->photo->getRealPath());
-
-                if ($image->height() > 1200) {
-                    $image->scaleDown(height: 1200);
+                // Simpan file ASLI tanpa mengganti nama dan tanpa mengubah ekstensi.
+                // Dengan demikian admin1.jpeg tetap admin1.jpeg.
+                $fileContents = file_get_contents($uploadedFile->getRealPath());
+                if ($fileContents === false) {
+                    throw new \RuntimeException('File foto tidak dapat dibaca.');
                 }
 
-                $jpeg = $image->toJpeg(90);
+                Storage::disk('public')->put('images/profile/' . $photoName, $fileContents);
 
-                // Penyimpanan utama Laravel.
-                Storage::disk('public')->put('images/profile/' . $photoName, $jpeg);
-
-                // Mirror publik ByetHost: /htdocs/storage/images/profile.
                 $publicProfileDir = storage_path('images/profile');
                 File::ensureDirectoryExists($publicProfileDir);
-                File::put($publicProfileDir . '/' . $photoName, $jpeg);
+                File::put($publicProfileDir . '/' . $photoName, $fileContents);
 
-                // Pastikan nama yang disimpan di database selalu konsisten.
+                // Mirror juga ke /htdocs/storage/images agar file lama di lokasi ini
+                // tetap dapat digunakan oleh helper avatar.
+                $publicImagesDir = storage_path('images');
+                File::ensureDirectoryExists($publicImagesDir);
+                File::put($publicImagesDir . '/' . $photoName, $fileContents);
+
+                // Pastikan database menyimpan nama file asli yang sama persis.
                 $data['photo'] = $photoName;
             }
 
