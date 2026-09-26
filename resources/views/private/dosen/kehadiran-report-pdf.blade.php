@@ -40,10 +40,7 @@ foreach ($logoCandidates as $candidate) {
 $groupCounts=$nilai->groupBy('matkul_id')->map->count();
 $groupSeen=[];
 @endphp
-<div class="kop"><table><tr>
-<td class="logo">@if($logo)<img src="{{ $logo }}" alt="Logo">@endif</td>
-<td class="koptext"><div class="a">SEKOLAH TINGGI ILMU TARBIYAH</div><div class="b">STIT DARUL ILMI TASIKMALAYA</div><div class="c">SK Menteri Agama RI No. 536 Tahun 2026</div><div class="d">Alamat : Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div></td>
-<td style="width:65px"></td></tr></table></div>
+@include('shared.pdf.kop-surat')
 <div class="title"><div class="title-main">REPORT KEHADIRAN MAHASISWA</div><div class="title-sub">Semester {{ $semester }}{{ $tahunAkademik ? ' | Tahun Akademik '.($tahunAkademik->name ?? $tahunAkademik->code ?? '') : '' }}</div></div>
 <table class="info"><tr><td class="label">Dosen</td><td>: {{ Auth::guard('dosen')->user()->name ?? '-' }}</td><td class="label">Jumlah Data</td><td>: {{ $nilai->count() }}</td></tr><tr><td class="label">Filter</td><td>: {{ $mataKuliahId ? 'Mata kuliah terpilih' : ($mahasiswaId ? 'Mahasiswa terpilih' : 'Semua mata kuliah yang diampu') }}</td><td class="label">Dicetak</td><td>: {{ now()->format('d-m-Y H:i') }}</td></tr></table>
 <table class="data"><thead><tr>
