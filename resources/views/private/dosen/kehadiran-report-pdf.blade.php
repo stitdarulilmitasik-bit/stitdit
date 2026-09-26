@@ -10,8 +10,8 @@
 .title{text-align:center;margin:3px 0 7px}.title-main{font-size:10pt;font-weight:bold;text-decoration:underline}.title-sub{font-size:7pt;margin-top:2px}
 .info{width:100%;border-collapse:collapse;margin-bottom:7px}.info td{padding:1px 3px}.label{font-weight:bold;width:90px}
 .data{width:100%;border-collapse:collapse;table-layout:fixed}.data th,.data td{border:1px solid #333;padding:2px 1.5px;vertical-align:middle;line-height:1.05}.data tr{page-break-inside:avoid}.data thead{display:table-header-group}.data th{background:#eee;text-align:center}.center{text-align:center}.student{word-wrap:break-word;overflow-wrap:break-word}.att{text-align:center;font-size:6pt}.pct{text-align:center;font-size:6pt}
-.footer{position:fixed;left:0;right:0;bottom:-5mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6pt;color:#555}.footer .page:after{content:"Halaman " counter(page) " dari " counter(pages)}
-.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+.footer{position:fixed;left:0;right:0;bottom:-5mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6pt;color:#555}.footer .page:after{content:"Halaman " counter(page) " dari " counter(page)}
+.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(page);}
 </style>
 </head>
 <body>
