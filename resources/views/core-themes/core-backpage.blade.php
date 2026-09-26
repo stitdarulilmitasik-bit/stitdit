@@ -246,7 +246,7 @@
                     <div class="col-12">
                         <div class="text-secondary">
                             Copyright &copy; {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}
-                            <span class="ms-1">{{ $layoutAcademy }}</span>. Seluruh hak cipta dilindungi.
+                            Siakad STIT Darul Ilmi. Seluruh hak cipta dilindungi.
                         </div>
                     </div>
                 </div>
