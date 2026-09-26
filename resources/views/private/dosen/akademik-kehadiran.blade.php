@@ -19,10 +19,14 @@
             <p class="text-muted mb-0">Input dan rekap kehadiran mahasiswa berdasarkan mata kuliah yang Anda ampu.</p>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('dosen.akademik.kehadiran.export-pdf', request()->query()) }}"
+               class="btn btn-danger" target="_blank">
+                <i class="ti ti-file-type-pdf me-1"></i> Export to PDF
+            </a>
             @if($mahasiswaId)
                 <a href="{{ route('dosen.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
-                   class="btn btn-danger" target="_blank">
-                    <i class="ti ti-file-type-pdf me-1"></i> Export PDF Mahasiswa
+                   class="btn btn-outline-danger" target="_blank">
+                    <i class="ti ti-user me-1"></i> PDF Mahasiswa
                 </a>
             @endif
             @if($mataKuliahId)
