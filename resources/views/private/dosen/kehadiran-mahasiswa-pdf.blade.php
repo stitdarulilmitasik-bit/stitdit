@@ -39,15 +39,26 @@
 </head>
 <body>
 @php
+    /*
+     * Dompdf pada hosting dapat gagal membaca URL /storage/... walaupun
+     * gambar tampil normal di browser. Gunakan data URI dan cek beberapa
+     * lokasi storage Laravel yang umum dipakai di ByetHost.
+     */
     $logo = null;
-    $logoCandidates = [
+    $logoCandidates = array_unique([
         storage_path('app/public/images/logo/logo-vert1.png'),
-    ];
+        base_path('storage/images/logo/logo-vert1.png'),
+        public_path('storage/images/logo/logo-vert1.png'),
+        public_path('images/logo/logo-vert1.png'),
+    ]);
+
     foreach ($logoCandidates as $candidate) {
-        if (is_file($candidate)) {
-            $mime = mime_content_type($candidate) ?: 'image/png';
-            $logo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($candidate));
-            break;
+        if (is_file($candidate) && is_readable($candidate)) {
+            $contents = file_get_contents($candidate);
+            if ($contents !== false && $contents !== '') {
+                $logo = 'data:image/png;base64,' . base64_encode($contents);
+                break;
+            }
         }
     }
 @endphp
