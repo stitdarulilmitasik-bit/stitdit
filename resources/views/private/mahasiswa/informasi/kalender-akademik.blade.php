@@ -140,9 +140,9 @@
                                 $isToday = $day->isSameDay($today);
                                 $daySchedules = $scheduleByDate->get($dateKey, collect());
                                 $dayEvents = $items->filter(function ($item) use ($day) {
-                                    $start = CarbonCarbon::parse($item->start_date)->startOfDay();
+                                    $start = \Carbon\Carbon::parse($item->start_date)->startOfDay();
                                     $end = $item->ended_date
-                                        ? CarbonCarbon::parse($item->ended_date)->endOfDay()
+                                        ? \Carbon\Carbon::parse($item->ended_date)->endOfDay()
                                         : $start->copy()->endOfDay();
                                     return $day->betweenIncluded($start, $end);
                                 });
@@ -156,8 +156,8 @@
                                         <div class="event-title">{{ $event->title ?? $event->name ?? 'Kegiatan Akademik' }}</div>
                                         @if($event->ended_date && $event->start_date != $event->ended_date)
                                             <div class="event-meta">
-                                                {{ CarbonCarbon::parse($event->start_date)->locale('id')->translatedFormat('d M') }}
-                                                – {{ CarbonCarbon::parse($event->ended_date)->locale('id')->translatedFormat('d M') }}
+                                                {{ \Carbon\Carbon::parse($event->start_date)->locale('id')->translatedFormat('d M') }}
+                                                – {{ \Carbon\Carbon::parse($event->ended_date)->locale('id')->translatedFormat('d M') }}
                                             </div>
                                         @endif
                                     </div>
@@ -167,8 +167,8 @@
                                     @php
                                         $courseName = $schedule->mataKuliah->name ?? $schedule->mataKuliah->nama ?? 'Mata Kuliah';
                                         $courseCode = $schedule->mataKuliah->code ?? $schedule->mataKuliah->kode_mk ?? '-';
-                                        $timeStart = $schedule->waktuKuliah?->time_start ? CarbonCarbon::parse($schedule->waktuKuliah->time_start)->format('H:i') : '-';
-                                        $timeEnd = $schedule->waktuKuliah?->time_ended ? CarbonCarbon::parse($schedule->waktuKuliah->time_ended)->format('H:i') : '-';
+                                        $timeStart = $schedule->waktuKuliah?->time_start ? \Carbon\Carbon::parse($schedule->waktuKuliah->time_start)->format('H:i') : '-';
+                                        $timeEnd = $schedule->waktuKuliah?->time_ended ? \Carbon\Carbon::parse($schedule->waktuKuliah->time_ended)->format('H:i') : '-';
                                         $lecturer = $schedule->dosen->nama_lengkap ?? $schedule->dosen->name ?? null;
                                         $room = $schedule->ruang->nama_ruang ?? $schedule->ruang->name ?? null;
                                     @endphp
