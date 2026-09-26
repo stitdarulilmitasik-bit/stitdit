@@ -27,26 +27,44 @@
     <div class="col-sm-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="subheader">Tagihan Aktif</div><div class="h2 mb-2">Rp {{ number_format($total_tagihan ?? 0,0,',','.') }}</div><div class="text-secondary">{{ count($tagihan_aktif ?? []) }} tagihan belum dibayar</div></div></div></div>
     <div class="col-sm-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="subheader">Kehadiran</div>@if($kehadiran_tersedia ?? false)<div class="h1 mb-2">{{ $kehadiran_bulan_ini }}%</div><div class="text-secondary">{{ $hadir }} hadir dari {{ $total_pertemuan }} pertemuan</div><div class="mt-2 small"><span class="text-success">{{ $hadir }} Hadir</span> · <span class="text-primary">{{ $izin }} Izin</span> · <span class="text-warning">{{ $sakit }} Sakit</span> · <span class="text-danger">{{ $alpha }} Alpa</span></div>@else<div class="h2 mb-2">Belum tersedia</div><div class="text-secondary">Data presensi akan tampil setelah dosen mengisi.</div>@endif</div></div></div>
 
-    <div class="col-lg-8"><div class="card h-100"><div class="card-header"><div><h3 class="card-title mb-1">Jadwal Kuliah</h3><div class="text-secondary small">Jadwal yang sudah dibuat untuk kelas Anda</div></div><div class="card-actions"><a href="{{ route('mahasiswa.akademik.jadwal') }}" class="btn btn-sm btn-outline-primary">Jadwal Lengkap</a></div></div><div class="card-body">
+    <div class="col-lg-8"><div class="card h-100"><div class="card-header"><div><h3 class="card-title mb-1">Jadwal Kuliah</h3><div class="text-secondary small">Jadwal kuliah Anda ditampilkan langsung di dashboard</div></div></div><div class="card-body">
         @if(!empty($jadwal_dashboard))
-            @foreach($jadwal_dashboard as $jadwal)
-                <div class="schedule-item">
-                    <div class="row align-items-center g-2">
-                        <div class="col">
-                            <div class="fw-bold">{{ $jadwal['mata_kuliah'] }}</div>
-                            <div class="text-secondary small mt-1">{{ $jadwal['kode'] }} · {{ $jadwal['bsks'] }} SKS · {{ $jadwal['dosen'] }}</div>
-                            <div class="text-secondary small">{{ $jadwal['hari'] }} · {{ $jadwal['tanggal'] }} · {{ $jadwal['ruang'] }} · {{ $jadwal['metode'] }}</div>
+            @php
+                $hariDashboard = [
+                    'Senin' => 'Senin', 'Selasa' => 'Selasa', 'Rabu' => 'Rabu',
+                    'Kamis' => 'Kamis', 'Jumat' => 'Jumat', 'Sabtu' => 'Sabtu', 'Minggu' => 'Minggu'
+                ];
+                $jadwalGrouped = collect($jadwal_dashboard)->groupBy('hari');
+            @endphp
+            @foreach($hariDashboard as $namaHari => $labelHari)
+                @php $jadwalHari = $jadwalGrouped->get($namaHari, collect()); @endphp
+                @if($jadwalHari->isNotEmpty())
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-2 rounded bg-blue-lt">
+                            <div class="fw-bold">{{ $labelHari }}</div>
+                            <span class="badge bg-blue-lt">{{ $jadwalHari->count() }} Mata Kuliah</span>
                         </div>
-                        <div class="col-auto text-end">
-                            <div class="fw-bold">{{ $jadwal['time_start'] }} - {{ $jadwal['time_ended'] }}</div>
-                            @php
-                                $statusClass = $jadwal['status'] === 'berlangsung' ? 'bg-green' : ($jadwal['status'] === 'akan_datang' ? 'bg-orange' : 'bg-secondary');
-                                $statusText = $jadwal['status'] === 'berlangsung' ? 'Sedang berlangsung' : ($jadwal['status'] === 'akan_datang' ? 'Akan datang' : 'Sudah dilaksanakan');
-                            @endphp
-                            <span class="badge {{ $statusClass }} text-white mt-1">{{ $statusText }}</span>
-                        </div>
+                        @foreach($jadwalHari as $jadwal)
+                            <div class="schedule-item">
+                                <div class="row align-items-center g-2">
+                                    <div class="col">
+                                        <div class="fw-bold">{{ $jadwal['mata_kuliah'] }}</div>
+                                        <div class="text-secondary small mt-1">{{ $jadwal['kode'] }} · {{ $jadwal['bsks'] }} SKS · {{ $jadwal['dosen'] }}</div>
+                                        <div class="text-secondary small">{{ $jadwal['tanggal'] }} · {{ $jadwal['ruang'] }} · {{ $jadwal['metode'] }}</div>
+                                    </div>
+                                    <div class="col-auto text-end">
+                                        <div class="fw-bold">{{ $jadwal['time_start'] }} - {{ $jadwal['time_ended'] }}</div>
+                                        @php
+                                            $statusClass = $jadwal['status'] === 'berlangsung' ? 'bg-green' : ($jadwal['status'] === 'akan_datang' ? 'bg-orange' : 'bg-secondary');
+                                            $statusText = $jadwal['status'] === 'berlangsung' ? 'Sedang berlangsung' : ($jadwal['status'] === 'akan_datang' ? 'Akan datang' : 'Sudah dilaksanakan');
+                                        @endphp
+                                        <span class="badge {{ $statusClass }} text-white mt-1">{{ $statusText }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                </div>
+                @endif
             @endforeach
         @else
             <div class="empty py-5"><div class="empty-icon">📅</div><p class="empty-title">Belum ada jadwal kuliah</p><p class="empty-subtitle text-secondary">Jadwal yang dibuat untuk kelas Anda akan tampil di sini.</p></div>
