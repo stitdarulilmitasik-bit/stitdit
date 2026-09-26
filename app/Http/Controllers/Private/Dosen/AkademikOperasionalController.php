@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DosenMahasiswaExport;
 
 class AkademikOperasionalController extends Controller
 {
@@ -155,6 +157,19 @@ class AkademikOperasionalController extends Controller
             ->paginate(30);
 
         return view('private.dosen.akademik-nilai', $data);
+    }
+
+    public function exportDaftarMahasiswa(Request $request)
+    {
+        $semester = $request->input('semester');
+        $kelasId = $request->input('kelas_id');
+        $prodiId = $request->input('prodi_id');
+        $search = trim((string) $request->input('search', ''));
+
+        return Excel::download(
+            new DosenMahasiswaExport($semester, $kelasId, $prodiId, $search),
+            'daftar-mahasiswa-dosen-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     public function daftarMahasiswa(Request $request)
