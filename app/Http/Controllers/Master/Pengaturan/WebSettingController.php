@@ -55,6 +55,7 @@ class WebSettingController extends Controller
     public function handleSettings(Request $request)
     {
         $this->ensureAdministrator();
+        $this->ensureWhatsAppColumns();
         try {
             // Validate the request
             $validator = Validator::make($request->all(), [
@@ -70,6 +71,9 @@ class WebSettingController extends Controller
                 // Contact
                 'school_email' => 'nullable|email|max:255',
                 'school_phone' => 'nullable|string|max:20',
+                'whatsapp_admin_website' => 'nullable|string|max:30',
+                'whatsapp_admin_keuangan' => 'nullable|string|max:30',
+                'whatsapp_admin_pmb' => 'nullable|string|max:30',
                 'school_address' => 'nullable|string',
                 'school_longitude' => 'nullable|string|max:20',
                 'school_latitude' => 'nullable|string|max:20',
@@ -180,6 +184,32 @@ class WebSettingController extends Controller
         } catch (\Exception $e) {
             Alert::error('Error', 'Failed to update web settings: ' . $e->getMessage());
             return redirect()->back()->withInput();
+        }
+    }
+
+    private function ensureWhatsAppColumns(): void
+    {
+        if (!Schema::hasTable('web_settings')) {
+            return;
+        }
+
+        $columns = [
+            'whatsapp_admin_website',
+            'whatsapp_admin_keuangan',
+            'whatsapp_admin_pmb',
+        ];
+
+        $missing = array_values(array_filter(
+            $columns,
+            fn (string $column) => !Schema::hasColumn('web_settings', $column)
+        ));
+
+        if ($missing) {
+            Schema::table('web_settings', function ($table) use ($missing) {
+                foreach ($missing as $column) {
+                    $table->string($column)->nullable();
+                }
+            });
         }
     }
 
