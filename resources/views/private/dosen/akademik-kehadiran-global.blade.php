@@ -167,6 +167,80 @@
         </div>
         <div class="card-footer">{{ $nilai->links() }}</div>
     </div>
+
+    <div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h3 class="card-title mb-0">Rekap Kehadiran Global</h3>
+                <div class="text-muted small">
+                    Semester {{ $semester }}
+                    @if($mahasiswaId) · Mahasiswa terpilih @endif
+                    @if($mataKuliahId) · Mata kuliah terpilih @endif
+                </div>
+            </div>
+            <form method="GET" action="{{ route('web-admin.akademik.kehadiran') }}" class="d-flex align-items-center gap-2">
+                <input type="hidden" name="semester" value="{{ $semester }}">
+                <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
+                @if($mahasiswaId)<input type="hidden" name="mahasiswa_id" value="{{ $mahasiswaId }}">@endif
+                @if($mataKuliahId)<input type="hidden" name="mata_kuliah_id" value="{{ $mataKuliahId }}">@endif
+                <label class="form-label mb-0 text-nowrap">Group By</label>
+                <select name="group_by" class="form-select" onchange="this.form.submit()" style="min-width:190px">
+                    <option value="mata_kuliah" {{ $groupBy === 'mata_kuliah' ? 'selected' : '' }}>Mata Kuliah</option>
+                    <option value="mahasiswa" {{ $groupBy === 'mahasiswa' ? 'selected' : '' }}>Nama Mahasiswa</option>
+                </select>
+            </form>
+        </div>
+        <div class="global-attendance-wrap">
+            <table class="table table-bordered table-vcenter mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width:55px">No.</th>
+                        @if($groupBy === 'mata_kuliah')
+                            <th>Kode</th>
+                            <th>Mata Kuliah</th>
+                            <th class="text-center">Mahasiswa</th>
+                        @else
+                            <th>NIM</th>
+                            <th>Nama Mahasiswa</th>
+                            <th class="text-center">Mata Kuliah</th>
+                        @endif
+                        <th class="text-center">Hadir</th>
+                        <th class="text-center">Izin</th>
+                        <th class="text-center">Sakit</th>
+                        <th class="text-center">Alpa</th>
+                        <th class="text-center">Total Pertemuan</th>
+                        <th class="text-center">% Hadir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @forelse($rekapKehadiran as $index => $r)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        @if($groupBy === 'mata_kuliah')
+                            <td><strong>{{ $r['kode'] }}</strong></td>
+                            <td>{{ $r['mata_kuliah'] }}</td>
+                            <td class="text-center">{{ $r['jumlah_mahasiswa'] }}</td>
+                        @else
+                            <td><strong>{{ $r['nim'] }}</strong></td>
+                            <td>{{ $r['mahasiswa'] }}</td>
+                            <td class="text-center">{{ $r['jumlah_mata_kuliah'] }}</td>
+                        @endif
+                        <td class="text-center">{{ $r['hadir'] }}</td>
+                        <td class="text-center">{{ $r['izin'] }}</td>
+                        <td class="text-center">{{ $r['sakit'] }}</td>
+                        <td class="text-center">{{ $r['alpa'] }}</td>
+                        <td class="text-center">{{ $r['total'] }}</td>
+                        <td class="text-center"><strong>{{ number_format($r['persentase'], 2) }}%</strong></td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">Belum ada data rekap kehadiran untuk filter yang dipilih.</td>
+                    </tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
