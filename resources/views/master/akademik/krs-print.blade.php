@@ -62,21 +62,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 <div class="no-print" style="margin-bottom:20px;text-align:right">
 <button onclick="window.print()" style="padding:8px 16px;background:#007bff;color:#fff;border:0;border-radius:4px">Cetak KRS</button>
 </div>
-<div class="container"><div class="kop-surat">
-<div class="kop-logo">
-@if(!empty($logoDataUri))
-    <img src="{{ $logoDataUri }}" width="85" height="auto" alt="Logo STIT Darul Ilmi">
-@else
-    <span style="font-size:8pt;">Logo STIT Darul Ilmi</span>
-@endif
-</div>
-<div class="kop-text">
-<h3>SEKOLAH TINGGI ILMU TARBIYAH</h3>
-<h2>STIT DARUL ILMI TASIKMALAYA</h2>
-<p>SK Menteri Agama RI No. 536 Tahun 2026</p>
-<p>Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</p>
-</div>
-</div>
+<div class="container">@include('shared.pdf.kop-surat')
 <div class="judul-doc">
 <p style="font-size:11pt;text-transform:uppercase">Fakultas Tarbiyah</p>
 <h4>KARTU RENCANA STUDI (KRS)</h4>
