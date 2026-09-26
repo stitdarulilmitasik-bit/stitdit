@@ -146,12 +146,9 @@
             <a class="dropdown-item" href="{{ url('/backup.php') }}" target="_blank" rel="noopener">
                 <i class="fas fa-database me-1"></i> Backup Website
             </a>
-            <form method="POST" action="{{ route($spref . 'maintenance.migrate') }}" class="m-0">
-                @csrf
-                <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start" onclick="return confirm('Jalankan migration database sekarang?');">
-                    <i class="fas fa-database me-1"></i> Database Migration
-                </button>
-            </form>
+            <a class="dropdown-item {{ Route::is($spref . 'maintenance.migrate') ? 'active' : '' }}" href="{{ route($spref . 'maintenance.migrate') }}">
+                <i class="fas fa-database me-1"></i> Database Migration
+            </a>
         @endif
         <form method="POST" action="{{ route($spref . 'maintenance.clear-cache') }}" class="m-0">
             @csrf
