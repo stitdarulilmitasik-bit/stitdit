@@ -29,26 +29,8 @@
     </style>
 </head>
 <body>
-    <div class="kop">
-        <table class="kop-table">
-            <tr>
-                <td class="logo">
-                    @if($logo)
-                        <img src="{{ $logo }}" alt="Logo STIT Darul Ilmi">
-                    @endif
-                </td>
-                <td class="kop-text">
-                    <div class="line1">SEKOLAH TINGGI ILMU TARBIYAH</div>
-                    <div class="line2">STIT DARUL ILMI TASIKMALAYA</div>
-                    <div class="line3">SK Menteri Agama RI No. 536&nbsp;&nbsp;Tahun 2026</div>
-                    <div class="address">Alamat : Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div>
-                </td>
-                <td style="width:125px"></td>
-            </tr>
-        </table>
-    </div>
-
-    <h2>JADWAL MENGAJAR DOSEN</h2>
+    @include('shared.pdf.kop-surat')
+<h2>JADWAL MENGAJAR DOSEN</h2>
     <div class="subtitle">STIT Darul Ilmi Tasikmalaya</div>
 
     <table class="info">
