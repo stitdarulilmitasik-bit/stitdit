@@ -41,11 +41,8 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>{{ $webs->school_name }}</h2>
-        <p>{{ $webs->school_apps }}</p>
-        <p>Data Pendaftar</p>
-    </div>
+    @include('shared.pdf.kop-surat')
+<div class="header"><p>Data Pendaftar</p></div>
 
     <table>
         <thead>
