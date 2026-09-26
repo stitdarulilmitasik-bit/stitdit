@@ -175,6 +175,25 @@
                                     </div>
                                 </div>
 
+                                <div class="row g-3 mt-3">
+                                    <div class="col-12">
+                                        <h4 class="mb-1">Kontak WhatsApp</h4>
+                                        <p class="text-secondary mb-3">Nomor ini digunakan oleh tombol chat WhatsApp pada halaman website. Gunakan format internasional, contoh: 628123456789.</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Admin Website</label>
+                                        <input type="text" inputmode="numeric" class="form-control" name="whatsapp_admin_website" value="{{ $webs->whatsapp_admin_website ?? '' }}" placeholder="628xxxxxxxxxx">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Admin Keuangan</label>
+                                        <input type="text" inputmode="numeric" class="form-control" name="whatsapp_admin_keuangan" value="{{ $webs->whatsapp_admin_keuangan ?? '' }}" placeholder="628xxxxxxxxxx">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Admin Penerimaan Mahasiswa Baru</label>
+                                        <input type="text" inputmode="numeric" class="form-control" name="whatsapp_admin_pmb" value="{{ $webs->whatsapp_admin_pmb ?? '' }}" placeholder="628xxxxxxxxxx">
+                                    </div>
+                                </div>
+
                                 <div class="row mt-3">
                                     <div class="col-12">
                                         <label class="form-label">Address</label>
