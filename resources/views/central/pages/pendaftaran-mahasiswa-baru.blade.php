@@ -87,7 +87,7 @@
             </div>
         </div>
     @else
-        <form action="{{ route('root.pendaftaran-mahasiswa-baru-store') }}" method="POST" class="pmb-card">
+        <form action="{{ route('root.pendaftaran-mahasiswa-baru-store') }}" method="POST" enctype="multipart/form-data" class="pmb-card">
             @csrf
             <div class="card-header">
                 <h2 class="card-title mb-1">Formulir Pendaftaran</h2>
@@ -206,6 +206,16 @@
                     </div>
                 </div>
 
+                <h3 class="section-title">Dokumen Persyaratan PMB</h3>
+                <div class="alert alert-info">
+                    <div class="fw-bold mb-1">Unggah dokumen sesuai persyaratan jalur pendaftaran.</div>
+                    <div class="small">Format: PDF, JPG, JPEG, PNG. Maksimal 5 MB per dokumen.</div>
+                </div>
+                <div id="dokumen-empty" class="text-secondary small mb-3">
+                    Pilih Jalur Pendaftaran terlebih dahulu untuk menampilkan persyaratan dokumen.
+                </div>
+                <div id="dokumen-list"></div>
+
                 <h3 class="section-title">Data Pendaftaran</h3>
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -263,7 +273,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const prodiSelect = document.getElementById('prodi_id');
     const gelombangSelect = document.getElementById('gelombang_id');
     const jalurSelect = document.getElementById('jalur_id');
+    const dokumenList = document.getElementById('dokumen-list');
+    const dokumenEmpty = document.getElementById('dokumen-empty');
     const oldProdi = @json(old('prodi_id'));
+    const syaratByJalur = @json($syaratByJalur);
 
     function loadProdi() {
         const selected = fakultas.find(item => String(item.id) === String(fakultasSelect.value));
@@ -285,6 +298,51 @@ document.addEventListener('DOMContentLoaded', function () {
         prodiSelect.disabled = false;
     }
 
+    function loadDokumen() {
+        const jalur = jalurSelect.value;
+        dokumenList.innerHTML = '';
+        const syarats = syaratByJalur[jalur] || [];
+
+        if (!jalur) {
+            dokumenEmpty.textContent = 'Pilih Jalur Pendaftaran terlebih dahulu untuk menampilkan persyaratan dokumen.';
+            dokumenEmpty.classList.remove('d-none');
+            return;
+        }
+
+        if (!syarats.length) {
+            dokumenEmpty.textContent = 'Tidak ada dokumen persyaratan yang terdaftar untuk jalur ini.';
+            dokumenEmpty.classList.remove('d-none');
+            return;
+        }
+
+        dokumenEmpty.classList.add('d-none');
+
+        syarats.forEach(function (syarat) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mb-3';
+            const label = document.createElement('label');
+            label.className = 'form-label required';
+            label.textContent = syarat.name;
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.name = 'dokumen[' + syarat.id + ']';
+            input.className = 'form-control';
+            input.accept = '.pdf,.jpg,.jpeg,.png';
+            input.required = true;
+            wrapper.appendChild(label);
+            wrapper.appendChild(input);
+
+            if (syarat.desc) {
+                const help = document.createElement('div');
+                help.className = 'form-text';
+                help.textContent = syarat.desc;
+                wrapper.appendChild(help);
+            }
+
+            dokumenList.appendChild(wrapper);
+        });
+    }
+
     function filterGelombang() {
         const jalur = jalurSelect.value;
         Array.from(gelombangSelect.options).forEach(option => {
@@ -300,9 +358,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     fakultasSelect.addEventListener('change', loadProdi);
     jalurSelect.addEventListener('change', filterGelombang);
+    jalurSelect.addEventListener('change', loadDokumen);
 
     loadProdi();
     filterGelombang();
+    loadDokumen();
 });
 </script>
 @endsection
