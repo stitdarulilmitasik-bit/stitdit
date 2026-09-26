@@ -177,7 +177,7 @@
 
 @section('content')
     <!-- Hero Section -->
-    <section class="hero-section text-center text-white" style="background-image: url('{{ ($galeri->photo ? stit_gallery_image_url($galeri->photo) : stit_image_url(null)) }}');">
+    <section class="hero-section text-center text-white" style="background-image: url('{{ ($galeri->photo ? route('root.galeri-cover-file', $galeri->code) : stit_image_url(null)) }}');">
         <div class="container hero-content">
             <div class="gallery-category mb-3">{{ $galeri->kategori->name ?? 'Umum' }}</div>
             <h1 class="display-4 fw-bold mb-3">{{ $galeri->name ?? 'Detail Galeri' }}</h1>
@@ -207,7 +207,7 @@
                         @if(isset($galeri) && $galeri->fotos->count() > 0)
                             <div class="gallery-grid" id="lightgallery">
                                 @foreach($galeri->fotos as $foto)
-                                    <a href="{{ stit_gallery_photo_url($foto->photo) }}" class="gallery-item" data-sub-html="<h4>{{ $galeri->name }}</h4><p>{{ $foto->desc }}</p>">
+                                    <a href="{{ route('root.galeri-foto-file', $foto->code) }}" class="gallery-item" data-sub-html="<h4>{{ $galeri->name }}</h4><p>{{ $foto->desc }}</p>">
                                         <img src="{{ stit_gallery_photo_url($foto->photo) }}" alt="{{ $foto->desc ?? $galeri->name }}">
                                         <div class="gallery-item-overlay">
                                             <div class="gallery-item-icon">
@@ -362,7 +362,7 @@
                                     <a href="{{ route('root.galeri-view', $recent->code) }}" class="list-group-item border-0 px-0">
                                         <div class="row g-2 align-items-center">
                                             <div class="col-auto">
-                                                <img src="{{ stit_gallery_image_url($recent->photo) }}" class="rounded" width="40" height="40" alt="{{ $recent->name }}" style="object-fit: cover;">
+                                                <img src="{{ route('root.galeri-cover-file', $recent->code) }}" class="rounded" width="40" height="40" alt="{{ $recent->name }}" style="object-fit: cover;">
                                             </div>
                                             <div class="col">
                                                 <div class="text-truncate">{{ $recent->name }}</div>
