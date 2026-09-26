@@ -201,7 +201,8 @@
             text-align: center;
         }
     
-.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(page);}
+.footer .page:after{content:"Halaman " counter(page);}
 </style>
 </head>
 <body>
@@ -437,6 +438,5 @@
         &nbsp;|&nbsp; Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span>
     </div>
 
-<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
 </body>
 </html>
