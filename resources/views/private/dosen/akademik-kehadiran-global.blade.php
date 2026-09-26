@@ -121,9 +121,19 @@
                     </tr>
                 </thead>
                 <tbody>
+                @php
+                    $groupCounts = $nilai->getCollection()->groupBy('matkul_id')->map->count();
+                    $groupSeen = [];
+                @endphp
                 @forelse($nilai as $index => $n)
                     @php
                         $att = $n->kehadiranMahasiswa->keyBy('pertemuan');
+                        $matkulKey = (string) $n->matkul_id;
+                        $showMataKuliah = !isset($groupSeen[$matkulKey]);
+                        if ($showMataKuliah) {
+                            $groupSeen[$matkulKey] = true;
+                        }
+                    @endphp
                         $hadir = $att->where('status','Hadir')->count();
                         $izin = $att->where('status','Izin')->count();
                         $sakit = $att->where('status','Sakit')->count();
@@ -133,7 +143,11 @@
                     @endphp
                     <tr>
                         <td class="text-center">{{ $nilai->firstItem() + $index }}</td>
-                        <td><strong>{{ $n->mataKuliah->name ?? '-' }}</strong></td>
+                        @if($showMataKuliah)
+                            <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle">
+                                <strong>{{ $n->mataKuliah->name ?? '-' }}</strong>
+                            </td>
+                        @endif
                         <td class="text-center">{{ $n->mataKuliah->code ?? '-' }}</td>
                         <td><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
                         <td class="student-name"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
