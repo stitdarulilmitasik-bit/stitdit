@@ -105,7 +105,7 @@
                             @php
                                 $tanggalLahir = $item->getRawOriginal('bio_datebirth');
                             @endphp
-                            {{ $tanggalLahir ? CarbonCarbon::parse($tanggalLahir)->format('d-M-Y') : '-' }}
+                            {{ $tanggalLahir ? date('d-M-Y', strtotime($tanggalLahir)) : '-' }}
                         </td>
                         <td style="min-width:240px;max-width:360px;white-space:normal;">{{ $item->getRawOriginal('ktp_addres') ?: '-' }}</td>
                         <td>{{ optional($item->programStudi)->name ?? '-' }}</td>
