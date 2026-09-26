@@ -56,6 +56,8 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;co
 .space-ttd{height:60px}
 .footer-print{margin-top:20px;border-top:1px solid #ccc;padding-top:5px;font-size:8pt;color:#555}
 @media print{body{padding:0}.container{max-width:100%}.no-print{display:none}@page{size:A4;margin:1.5cm}}
+
+.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
 </style>
 </head>
 <body>
@@ -95,4 +97,5 @@ $dosen2=$detail->mataKuliah?->dosen2;
 </tr></table>
 <div class="footer-print">Dicetak pada: {{ now()->locale('id')->translatedFormat('d F Y H:i:s') }} | Status KRS: {{ $krs->status }} | @if($krs->approved_at)Disetujui: {{ $krs->approved_at->format('d F Y H:i') }}@else Belum Disetujui @endif</div>
 </div>
+<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
 </body></html>
