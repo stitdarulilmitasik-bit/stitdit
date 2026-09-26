@@ -128,17 +128,32 @@
                                 </div>
 
                                 <div class="row mt-3">
+                                    @php
+                                        /*
+                                         * Khusus halaman Web Settings:
+                                         * jangan memakai accessor URL logo karena nilai database lama
+                                         * dapat berupa filename, /storage/... atau URL penuh.
+                                         * Halaman lain tidak diubah.
+                                         */
+                                        $vertLogoFile = basename(trim((string) $webs->getRawOriginal('school_logo_vert')));
+                                        $horiLogoFile = basename(trim((string) $webs->getRawOriginal('school_logo_hori')));
+                                        $vertLogoFile = $vertLogoFile !== '' && $vertLogoFile !== '.' ? $vertLogoFile : 'logo-vert.png';
+                                        $horiLogoFile = $horiLogoFile !== '' && $horiLogoFile !== '.' ? $horiLogoFile : 'logo-hori.png';
+                                        $logoVersion = optional($webs->updated_at)->timestamp ?: time();
+                                        $vertLogoUrl = asset('storage/images/logo/' . $vertLogoFile) . '?v=' . $logoVersion;
+                                        $horiLogoUrl = asset('storage/images/logo/' . $horiLogoFile) . '?v=' . $logoVersion;
+                                    @endphp
                                     <div class="col-md-6">
                                         <label class="form-label">Vertical Logo</label>
                                         <div class="mb-2">
-                                            <img src="{{ $webs->school_logo_vert }}" alt="Vertical Logo" class="logo-preview" id="preview-vert-logo">
+                                            <img src="{{ $vertLogoUrl }}" alt="Vertical Logo" class="logo-preview" id="preview-vert-logo">
                                         </div>
                                         <input type="file" class="form-control" name="school_logo_vert" id="vert-logo-input" accept="image/*">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Horizontal Logo</label>
                                         <div class="mb-2">
-                                            <img src="{{ $webs->school_logo_hori }}" alt="Horizontal Logo" class="logo-preview" id="preview-hori-logo">
+                                            <img src="{{ $horiLogoUrl }}" alt="Horizontal Logo" class="logo-preview" id="preview-hori-logo">
                                         </div>
                                         <input type="file" class="form-control" name="school_logo_hori" id="hori-logo-input" accept="image/*">
                                     </div>
