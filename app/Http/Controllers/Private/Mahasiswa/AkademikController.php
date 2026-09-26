@@ -359,9 +359,9 @@ class AkademikController extends Controller
         $u = Auth::guard('mahasiswa')->user();
         abort_unless($u, 403);
 
-        $mk = MataKuliah::where('code', $kode)
-            ->orWhere('kode_mk', $kode)
-            ->first();
+        // Kolom kode mata kuliah di database adalah "code".
+        // Jangan query kode_mk karena kolom tersebut tidak ada pada tabel mata_kuliahs.
+        $mk = MataKuliah::where('code', $kode)->first();
 
         if (!$mk) {
             return redirect()->route('mahasiswa.akademik.presensi')
