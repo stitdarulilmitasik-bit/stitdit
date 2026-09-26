@@ -4,7 +4,7 @@
 <style>
 .card{border:none;box-shadow:0 0 10px rgba(0,0,0,.05);border-radius:10px}
 .table-responsive{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.table-responsive>.table{min-width:900px}
+.table-responsive>.table{min-width:1350px}
 .table th,.table td{white-space:nowrap;vertical-align:middle}
 .avatar{width:40px;height:40px;object-fit:cover;border-radius:50%;border:2px solid #e9ecef}
 </style>
@@ -72,6 +72,9 @@
                         <th class="text-center">No</th>
                         <th>Mahasiswa</th>
                         <th>NIM</th>
+                        <th>Nomor Telepon</th>
+                        <th>Tanggal Lahir</th>
+                        <th>Alamat</th>
                         <th>Program Studi</th>
                         <th>Kelas</th>
                         <th>Semester</th>
@@ -92,13 +95,16 @@
                             </div>
                         </td>
                         <td>{{ $item->numb_nim ?? '-' }}</td>
+                        <td>{{ $item->phone ?? '-' }}</td>
+                        <td>{{ $item->tanggal_lahir ?? $item->birth_date ?? $item->tgl_lahir ?? '-' }}</td>
+                        <td style="min-width:240px;max-width:360px;white-space:normal;">{{ $item->alamat ?? $item->address ?? '-' }}</td>
                         <td>{{ optional($item->programStudi)->name ?? '-' }}</td>
                         <td>{{ optional($item->kelas)->name ?? '-' }}</td>
                         <td>Semester {{ $item->semester ?? '-' }}</td>
                         <td>{{ $item->type ?? '-' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center text-secondary py-5">Tidak ada data mahasiswa.</td></tr>
+                    <tr><td colspan="10" class="text-center text-secondary py-5">Tidak ada data mahasiswa.</td></tr>
                 @endforelse
                 </tbody>
             </table>
