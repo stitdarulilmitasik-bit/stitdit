@@ -303,9 +303,97 @@ class AkademikController extends Controller
 
     public function jadwalBySemester($id){ try{$u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); if(!is_numeric($id)||$id<=0)return redirect()->route('mahasiswa.akademik.jadwal')->with('error','ID semester tidak valid'); $s=TahunAkademik::findOrFail($id); $a=$this->getAvailableSemesters($u); $cur=$this->getCurrentSemester(); return view('private.mahasiswa.akademik.jadwal-kuliah',['menus'=>'Akademik','pages'=>'Jadwal Kuliah '.$s->name,'user'=>$u,'spref'=>$u->prefix,'currentSemester'=>$s,'availableSemesters'=>$a,'semesters'=>$a,'jadwal'=>$this->getJadwalKuliah($u->id,$s->id),'isCurrentSemester'=>$cur&&$s->id==$cur->id,'webs'=>WebSetting::first(),'academy'=>'SIAKAD']);}catch(\Exception $e){return redirect()->route('mahasiswa.akademik.jadwal')->with('error','Terjadi kesalahan saat memuat jadwal: '.$e->getMessage());} }
 
-    public function presensi(){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $s=$this->getCurrentSemester(); $summary=[]; if($s){$k=KRS::where('mahasiswa_id',$u->id)->where('taka_id',$s->id)->with('details.mataKuliah')->first(); foreach(($k?->details??collect())->whereIn('status',['Aktif','Mengulang']) as $d){if($d->mataKuliah)$summary[$d->mataKuliah->id]=['mata_kuliah'=>$d->mataKuliah->nama??$d->mataKuliah->name,'kode_mk'=>$d->mataKuliah->kode_mk??$d->mataKuliah->code,'total'=>0,'hadir'=>0,'izin'=>0,'sakit'=>0,'alpha'=>0,'persentase'=>0];}} return view('private.mahasiswa.akademik.presensi',['menus'=>'Akademik','pages'=>'Presensi Mahasiswa','user'=>$u,'spref'=>$u->prefix,'currentSemester'=>$s,'summary'=>$summary,'webs'=>WebSetting::first(),'academy'=>'SIAKAD']); }
+    public function presensi()
+    {
+        $u = Auth::guard('mahasiswa')->user();
+        abort_unless($u, 403);
 
-    public function detailPresensi($kode){ $u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $mk=MataKuliah::where('code',$kode)->first(); if(!$mk)return redirect()->route('mahasiswa.akademik.presensi')->with('error','Mata kuliah tidak ditemukan'); return view('private.mahasiswa.akademik.detail-presensi',['menus'=>'Akademik','pages'=>'Detail Presensi '.($mk->name??$kode),'user'=>$u,'spref'=>$u->prefix,'presensi'=>collect(),'attendances'=>collect(),'mataKuliah'=>$mk,'currentSemester'=>$this->getCurrentSemester(),'webs'=>WebSetting::first(),'academy'=>'SIAKAD']); }
+        $s = $this->getCurrentSemester();
+        $summary = [];
+
+        if ($s) {
+            $nilai = Nilai::where('mahasiswa_id', $u->id)
+                ->where('taka_id', $s->id)
+                ->with(['mataKuliah', 'kehadiranMahasiswa'])
+                ->get();
+
+            foreach ($nilai as $item) {
+                if (!$item->mataKuliah) {
+                    continue;
+                }
+
+                $att = $item->kehadiranMahasiswa;
+                $total = $att->count();
+                $hadir = $att->where('status', 'Hadir')->count();
+                $izin = $att->where('status', 'Izin')->count();
+                $sakit = $att->where('status', 'Sakit')->count();
+                $alpha = $att->where('status', 'Alpa')->count();
+
+                $summary[$item->mataKuliah->id] = [
+                    'mata_kuliah' => $item->mataKuliah->name ?? $item->mataKuliah->nama ?? '-',
+                    'kode_mk' => $item->mataKuliah->code ?? $item->mataKuliah->kode_mk ?? '-',
+                    'total' => $total,
+                    'hadir' => $hadir,
+                    'izin' => $izin,
+                    'sakit' => $sakit,
+                    'alpha' => $alpha,
+                    'persentase' => $total > 0 ? round(($hadir / $total) * 100, 1) : 0,
+                ];
+            }
+        }
+
+        return view('private.mahasiswa.akademik.presensi', [
+            'menus' => 'Akademik',
+            'pages' => 'Presensi Mahasiswa',
+            'user' => $u,
+            'spref' => $u->prefix,
+            'currentSemester' => $s,
+            'summary' => $summary,
+            'webs' => WebSetting::first(),
+            'academy' => 'SIAKAD',
+        ]);
+    }
+
+    public function detailPresensi($kode)
+    {
+        $u = Auth::guard('mahasiswa')->user();
+        abort_unless($u, 403);
+
+        $mk = MataKuliah::where('code', $kode)
+            ->orWhere('kode_mk', $kode)
+            ->first();
+
+        if (!$mk) {
+            return redirect()->route('mahasiswa.akademik.presensi')
+                ->with('error', 'Mata kuliah tidak ditemukan');
+        }
+
+        $semester = $this->getCurrentSemester();
+        $nilai = $semester
+            ? Nilai::where('mahasiswa_id', $u->id)
+                ->where('taka_id', $semester->id)
+                ->where('matkul_id', $mk->id)
+                ->with(['kehadiranMahasiswa', 'mataKuliah'])
+                ->first()
+            : null;
+
+        $presensi = $nilai
+            ? $nilai->kehadiranMahasiswa->sortBy('pertemuan')->values()
+            : collect();
+
+        return view('private.mahasiswa.akademik.detail-presensi', [
+            'menus' => 'Akademik',
+            'pages' => 'Detail Presensi ' . ($mk->name ?? $mk->nama ?? $kode),
+            'user' => $u,
+            'spref' => $u->prefix,
+            'presensi' => $presensi,
+            'attendances' => $presensi,
+            'mataKuliah' => $mk,
+            'currentSemester' => $semester,
+            'webs' => WebSetting::first(),
+            'academy' => 'SIAKAD',
+        ]);
+    }
 
     public function nilai(){ try{$u=Auth::guard('mahasiswa')->user(); abort_unless($u,403); $sem=$this->getNilaiSemester($u->id); $ipk=$this->hitungIPK($sem); return view('private.mahasiswa.akademik.nilai',['menus'=>'Akademik','pages'=>'Nilai & IPK','user'=>$u,'spref'=>$u->prefix,'semesters'=>$sem,'ipk'=>number_format($ipk['ipk'],2),'totalSks'=>$ipk['totalSks'],'availableSemesters'=>$this->getAvailableNilaiSemesters($u->id),'currentSemester'=>$this->getCurrentSemester(),'isAllSemesters'=>true,'webs'=>WebSetting::first(),'academy'=>'SIAKAD']);}catch(\Exception $e){return redirect()->route('mahasiswa.dashboard-render')->with('error','Terjadi kesalahan saat memuat nilai: '.$e->getMessage());} }
 
