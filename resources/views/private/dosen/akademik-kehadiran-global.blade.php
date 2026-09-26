@@ -144,11 +144,11 @@
                     <tr>
                         <td class="text-center">{{ $nilai->firstItem() + $index }}</td>
                         @if($showMataKuliah)
-                            <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle text-center">
-                                <strong>{{ $n->mataKuliah->code ?? '-' }}</strong>
-                            </td>
                             <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle">
                                 <strong>{{ $n->mataKuliah->name ?? '-' }}</strong>
+                            </td>
+                            <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle text-center">
+                                <strong>{{ $n->mataKuliah->code ?? '-' }}</strong>
                             </td>
                         @endif
                         <td><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
