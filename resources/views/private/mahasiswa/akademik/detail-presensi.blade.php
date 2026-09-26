@@ -242,114 +242,6 @@
                     @endif
                 </div>
             </div>
-div>
-                <div class="card-body">
-                    @if($presensi->isEmpty())
-                        <div class="no-presence">
-                            <div class="mb-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-off" width="48" height="48" viewBox="0 0 24 24" stroke-width="1.5" stroke="#9ca3af" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                    <path d="M9 5h9a2 2 0 0 1 2 2v9m-.184 3.839a2 2 0 0 1 -1.816 1.161h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 1.158 -1.815" />
-                                    <path d="M16 3v4" />
-                                    <path d="M8 3v1" />
-                                    <path d="M4 11h7m4 0h5" />
-                                    <path d="M3 3l18 18" />
-                                </svg>
-                            </div>
-                            <p class="h4">Belum ada data presensi</p>
-                            <p class="text-muted">
-                                Data presensi akan muncul setelah dosen mengisi daftar hadir.
-                            </p>
-                        </div>
-                    @else
-                        @foreach($presensi->groupBy(function($item) {
-                            return \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d');
-                        }) as $date => $attendances)
-                            @php
-                                $formattedDate = \Carbon\Carbon::parse($date);
-                                $dayName = $formattedDate->translatedFormat('l');
-                                $formattedDateString = $formattedDate->translatedFormat('d F Y');
-                            @endphp
-                            
-                            <div class="card attendance-card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div>
-                                            <div class="attendance-date">
-                                                {{ $dayName }}, {{ $formattedDateString }}
-                                            </div>
-                                            @if($attendances->first()->waktu_mulai)
-                                                <div class="attendance-time">
-                                                    {{ \Carbon\Carbon::parse($attendances->first()->waktu_mulai)->format('H:i') }} - 
-                                                    {{ \Carbon\Carbon::parse($attendances->first()->waktu_selesai)->format('H:i') }} WIB
-                                                </div>
-                                            @endif
-                                        </div>
-                                        @php
-                                            $status = $attendances->first()->status;
-                                            $statusClass = 'status-' . strtolower($status);
-                                            $statusText = '';
-                                            
-                                            switch($status) {
-                                                case 'H': 
-                                                    $statusText = 'Hadir';
-                                                    if($attendances->first()->keterlambatan > 0) {
-                                                        $statusClass .= ' status-late';
-                                                        $statusText .= ' (Terlambat ' . $attendances->first()->keterlambatan . ' menit)';
-                                                    }
-                                                    break;
-                                                case 'I': $statusText = 'Izin'; break;
-                                                case 'S': $statusText = 'Sakit'; break;
-                                                case 'A': $statusText = 'Alpha'; break;
-                                                default: $statusText = 'Belum Diisi';
-                                            }
-                                        @endphp
-                                        <span class="attendance-status {{ $statusClass }}">
-                                            {{ $statusText }}
-                                        </span>
-                                    </div>
-                                    
-                                    @if($attendances->first()->dosen)
-                                        <div class="lecturer-info">
-                                            <span class="text-muted">Dosen:</span>
-                                            <span class="lecturer-name">
-                                                {{ $attendances->first()->dosen->nama_lengkap }}
-                                            </span>
-                                        </div>
-                                    @endif
-                                    
-                                    @if($attendances->first()->keterangan)
-                                        <div class="mt-2">
-                                            <div class="text-muted mb-1">Keterangan:</div>
-                                            <div class="alert alert-soft-{{ $status == 'A' ? 'danger' : 'info' }} p-2 mb-0">
-                                                {{ $attendances->first()->keterangan }}
-                                            </div>
-                                        </div>
-                                    @endif
-                                    
-                                    @if($attendances->first()->bukti_izin)
-                                        <div class="mt-3">
-                                            <div class="text-muted mb-1">Bukti Izin:</div>
-                                            <a href="{{ Storage::url($attendances->first()->bukti_izin) }}" 
-                                               target="_blank" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                                    <path d="M9 15h6" />
-                                                    <path d="M12 12v6" />
-                                                </svg>
-                                                Lihat Bukti
-                                            </a>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -357,19 +249,13 @@ div>
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add print functionality
-        document.querySelectorAll('[onclick="window.print()"]').forEach(button => {
-            button.addEventListener('click', function() {
-                window.print();
-            });
-        });
-        
-        // Add tooltips to status badges
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[onclick="window.print()"]').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            window.print();
         });
     });
+});
 </script>
 @endpush
