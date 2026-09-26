@@ -8,14 +8,14 @@
     .schedule-item { border-left:3px solid #206bc4; padding:1rem 0 1rem 1rem; }
     .schedule-item + .schedule-item { border-top:1px solid var(--tblr-border-color); }
     .quick-action { min-height:74px; }
-    .dashboard-calendar { min-width: 720px; }
+    .dashboard-calendar { width:100%; max-width: 980px; margin:0 auto; }
     .dashboard-calendar-header, .dashboard-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
-    .dashboard-calendar-header > div { padding:.65rem; text-align:center; font-weight:700; background:var(--tblr-bg-surface-secondary); border:1px solid var(--tblr-border-color); }
-    .dashboard-calendar-day { min-height:125px; padding:.45rem; border:1px solid var(--tblr-border-color); background:var(--tblr-bg-surface); overflow:hidden; }
+    .dashboard-calendar-header > div { padding:.35rem .25rem; text-align:center; font-weight:600; font-size:.75rem; background:var(--tblr-bg-surface-secondary); border:1px solid var(--tblr-border-color); }
+    .dashboard-calendar-day { min-height:92px; padding:.3rem; border:1px solid var(--tblr-border-color); background:var(--tblr-bg-surface); overflow:hidden; }
     .dashboard-calendar-day.is-other-month { opacity:.45; background:var(--tblr-bg-surface-secondary); }
     .dashboard-calendar-day.is-today { box-shadow:inset 0 0 0 2px var(--tblr-primary); }
-    .dashboard-calendar-date { font-weight:700; margin-bottom:.35rem; }
-    .dashboard-calendar-event { margin-bottom:.35rem; padding:.35rem .45rem; border-left:3px solid var(--tblr-primary); border-radius:.25rem; background:var(--tblr-primary-lt); font-size:.78rem; line-height:1.25; }
+    .dashboard-calendar-date { font-weight:700; font-size:.75rem; margin-bottom:.2rem; }
+    .dashboard-calendar-event { margin-bottom:.2rem; padding:.2rem .3rem; border-left:2px solid var(--tblr-primary); border-radius:.2rem; background:var(--tblr-primary-lt); font-size:.68rem; line-height:1.15; }
 </style>
 @endsection
 
@@ -54,8 +54,8 @@
                     $hariKalender = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
                     $hariIni = now()->format('Y-m-d');
                 @endphp
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="fw-bold fs-3">{{ $bulanKalender->locale('id')->translatedFormat('F Y') }}</div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-bold fs-4">{{ $bulanKalender->locale('id')->translatedFormat('F Y') }}</div>
                     <span class="badge bg-blue-lt">{{ count($jadwal_dashboard ?? []) }} jadwal</span>
                 </div>
                 <div class="table-responsive">
