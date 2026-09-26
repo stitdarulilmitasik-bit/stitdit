@@ -47,6 +47,7 @@
             <span class="nav-link-title">Kemahasiswaan</span>
         </a>
         <div class="dropdown-menu">
+            <a class="dropdown-item" href="{{ route('root.pendaftaran-mahasiswa-baru') }}">Pendaftaran Calon Mahasiswa Baru</a>
             <a class="dropdown-item" href="{{ route('root.organisasi') }}">Organisasi Mahasiswa</a>
             <a class="dropdown-item" href="{{ route('root.beasiswa') }}">Beasiswa</a>
             <a class="dropdown-item" href="{{ route('root.prestasi') }}">Prestasi Mahasiswa</a>
