@@ -120,11 +120,13 @@ class LayananController extends Controller
             abort(403, 'Sesi mahasiswa tidak ditemukan. Silakan login kembali sebagai mahasiswa.');
         }
 
+        $data = $this->transkripData($user);
+
         return view('private.mahasiswa.layanan.transkrip', $this->layoutData('Transkrip Nilai', [
-            'nilai' => $this->transkripData($user)['nilai'],
-            'totalSks' => $this->transkripData($user)['totalSks'],
-            'totalMutu' => $this->transkripData($user)['totalMutu'],
-            'ipk' => $this->transkripData($user)['ipk'],
+            'nilai' => $data['nilai'],
+            'totalSks' => $data['totalSks'],
+            'totalMutu' => $data['totalMutu'],
+            'ipk' => $data['ipk'],
         ]));
     }
 
