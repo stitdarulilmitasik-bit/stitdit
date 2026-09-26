@@ -58,8 +58,8 @@ class GaleriController extends Controller
 
             $slug = Str::slug($request->name);
             $code = 'GLR-' . strtoupper(Str::random(8));
-            $photoName = time() . '-' . $code . '-' . uniqid() . '.' . $request->photo->getClientOriginalExtension();
-            $request->photo->storeAs('images/galeri', $photoName, 'public');
+            $photoName = $request->file('photo')->getClientOriginalName();
+            $request->photo->storeAs('images/galeri/' . $code, $photoName, 'public');
 
             $galeri = Galeri::create([
                 'code' => $code,
@@ -74,8 +74,8 @@ class GaleriController extends Controller
 
             foreach ($request->file('photos', []) as $photo) {
                 $fotoCode = 'FTO-' . strtoupper(Str::random(8));
-                $fotoName = time() . '-' . $fotoCode . '-' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                $photo->storeAs('images/galeri/foto', $fotoName, 'public');
+                $fotoName = $photo->getClientOriginalName();
+                $photo->storeAs('images/galeri/foto/' . $code, $fotoName, 'public');
 
                 GaleriFoto::create([
                     'code' => $fotoCode,
@@ -116,9 +116,9 @@ class GaleriController extends Controller
                 'updated_by' => Auth::id()
             ];
             if ($request->hasFile('photo')) {
-                if ($galeri->photo) Storage::disk('public')->delete('images/galeri/' . $galeri->photo);
-                $photoName = time() . '-' . $code . '-' . uniqid() . '.' . $request->photo->getClientOriginalExtension();
-                $request->photo->storeAs('images/galeri', $photoName, 'public');
+                if ($galeri->photo) { Storage::disk('public')->delete('images/galeri/' . $code . '/' . $galeri->photo); Storage::disk('public')->delete('images/galeri/' . $galeri->photo); }
+                $photoName = $request->file('photo')->getClientOriginalName();
+                $request->photo->storeAs('images/galeri/' . $code, $photoName, 'public');
                 $updateData['photo'] = $photoName;
             }
             $galeri->update($updateData);
@@ -136,9 +136,9 @@ class GaleriController extends Controller
         try {
             DB::beginTransaction();
             $galeri = Galeri::where('code', $code)->firstOrFail();
-            if ($galeri->photo) Storage::disk('public')->delete('images/galeri/' . $galeri->photo);
+            if ($galeri->photo) { Storage::disk('public')->delete('images/galeri/' . $galeri->code . '/' . $galeri->photo); Storage::disk('public')->delete('images/galeri/' . $galeri->photo); }
             foreach ($galeri->fotos as $foto) {
-                Storage::disk('public')->delete('images/galeri/foto/' . $foto->photo);
+                Storage::disk('public')->delete('images/galeri/foto/' . $galeri->code . '/' . $foto->photo); Storage::disk('public')->delete('images/galeri/foto/' . $foto->photo);
                 $foto->update(['deleted_by' => Auth::id()]);
                 $foto->delete();
             }
@@ -164,8 +164,8 @@ class GaleriController extends Controller
             ]);
             foreach ($request->file('photos', []) as $photo) {
                 $fotoCode = 'FTO-' . strtoupper(Str::random(8));
-                $photoName = time() . '-' . $fotoCode . '-' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                $photo->storeAs('images/galeri/foto', $photoName, 'public');
+                $photoName = $photo->getClientOriginalName();
+                $photo->storeAs('images/galeri/foto/' . $code, $photoName, 'public');
                 GaleriFoto::create([
                     'code' => $fotoCode,
                     'galeri_id' => $galeri->id,
@@ -183,12 +183,44 @@ class GaleriController extends Controller
         }
     }
 
+    public function serveCover($code)
+    {
+        $galeri = Galeri::where('code', $code)->firstOrFail();
+        $paths = [
+            'images/galeri/' . $galeri->code . '/' . $galeri->photo,
+            'images/galeri/' . $galeri->photo,
+        ];
+        foreach ($paths as $path) {
+            if ($galeri->photo && Storage::disk('public')->exists($path)) {
+                return response()->file(Storage::disk('public')->path($path));
+            }
+        }
+        abort(404);
+    }
+
+    public function serveFoto($code)
+    {
+        $foto = GaleriFoto::where('code', $code)->firstOrFail();
+        $galeri = Galeri::find($foto->galeri_id);
+        $paths = [
+            $galeri ? 'images/galeri/foto/' . $galeri->code . '/' . $foto->photo : null,
+            'images/galeri/foto/' . $foto->photo,
+        ];
+        foreach ($paths as $path) {
+            if ($path && Storage::disk('public')->exists($path)) {
+                return response()->file(Storage::disk('public')->path($path));
+            }
+        }
+        abort(404);
+    }
+
     public function deleteFoto($code)
     {
         try {
             DB::beginTransaction();
             $foto = GaleriFoto::where('code', $code)->firstOrFail();
-            if ($foto->photo) Storage::disk('public')->delete('images/galeri/foto/' . $foto->photo);
+            $galeri = Galeri::find($foto->galeri_id);
+            if ($foto->photo) { if ($galeri) Storage::disk('public')->delete('images/galeri/foto/' . $galeri->code . '/' . $foto->photo); Storage::disk('public')->delete('images/galeri/foto/' . $foto->photo); }
             $foto->update(['deleted_by' => Auth::id()]);
             $foto->delete();
             DB::commit();
