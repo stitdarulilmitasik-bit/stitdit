@@ -144,11 +144,13 @@
                     <tr>
                         <td class="text-center">{{ $nilai->firstItem() + $index }}</td>
                         @if($showMataKuliah)
+                            <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle text-center">
+                                <strong>{{ $n->mataKuliah->code ?? '-' }}</strong>
+                            </td>
                             <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle">
                                 <strong>{{ $n->mataKuliah->name ?? '-' }}</strong>
                             </td>
                         @endif
-                        <td class="text-center">{{ $n->mataKuliah->code ?? '-' }}</td>
                         <td><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
                         <td class="student-name"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
                         @for($i=1;$i<=16;$i++)
