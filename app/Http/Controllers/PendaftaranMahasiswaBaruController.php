@@ -16,7 +16,6 @@ use App\Models\Pengaturan\WebSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PendaftaranMahasiswaBaruController extends Controller
@@ -168,7 +167,8 @@ class PendaftaranMahasiswaBaruController extends Controller
 
             foreach ($syarats as $syarat) {
                 $file = $request->file('dokumen.' . $syarat->id);
-                $path = $file->store('dokumen-pmb/' . $pendaftarCode, 'public');
+                $storedPath = $file->store('dokumen-pmb/' . $pendaftarCode, 'public');
+                $path = 'storage/' . $storedPath;
                 DokumenPMB::create([
                     'pendaftar_id' => $pendaftar->id,
                     'syarat_id' => $syarat->id,
