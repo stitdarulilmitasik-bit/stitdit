@@ -16,7 +16,12 @@
         <h2 class="mb-1">Daftar Mahasiswa</h2>
         <div class="text-secondary">Data mahasiswa sebagai referensi akademik Dosen.</div>
     </div>
-    <span class="badge bg-light-primary text-primary"><i class="ti ti-users me-1"></i>{{ $mahasiswa->total() }} Mahasiswa</span>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ route('dosen.akademik.daftar-mahasiswa-export-excel', request()->query()) }}" class="btn btn-success">
+            <i class="ti ti-file-spreadsheet me-1"></i> Export to Excel
+        </a>
+        <span class="badge bg-light-primary text-primary"><i class="ti ti-users me-1"></i>{{ $mahasiswa->total() }} Mahasiswa</span>
+    </div>
 </div>
 
 <div class="card mb-4">
@@ -96,8 +101,8 @@
                         </td>
                         <td>{{ $item->numb_nim ?? '-' }}</td>
                         <td>{{ $item->phone ?? '-' }}</td>
-                        <td>{{ $item->tanggal_lahir ?? $item->birth_date ?? $item->tgl_lahir ?? '-' }}</td>
-                        <td style="min-width:240px;max-width:360px;white-space:normal;">{{ $item->alamat ?? $item->address ?? '-' }}</td>
+                        <td>{{ $item->getRawOriginal('bio_datebirth') ?: '-' }}</td>
+                        <td style="min-width:240px;max-width:360px;white-space:normal;">{{ $item->getRawOriginal('ktp_addres') ?: '-' }}</td>
                         <td>{{ optional($item->programStudi)->name ?? '-' }}</td>
                         <td>{{ optional($item->kelas)->name ?? '-' }}</td>
                         <td>Semester {{ $item->semester ?? '-' }}</td>
