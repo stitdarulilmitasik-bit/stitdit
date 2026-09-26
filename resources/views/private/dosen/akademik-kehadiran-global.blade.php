@@ -133,7 +133,7 @@
                         if ($showMataKuliah) {
                             $groupSeen[$matkulKey] = true;
                         }
-                    @endphp
+
                         $hadir = $att->where('status','Hadir')->count();
                         $izin = $att->where('status','Izin')->count();
                         $sakit = $att->where('status','Sakit')->count();
