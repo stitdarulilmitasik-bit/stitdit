@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 // Daftar Mahasiswa (referensi, hanya lihat)
 Route::get('/akademik/daftar-mahasiswa',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'daftarMahasiswa'])->name('akademik.daftar-mahasiswa');
+Route::get('/akademik/daftar-mahasiswa/export-excel',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'exportDaftarMahasiswa'])->name('akademik.daftar-mahasiswa-export-excel');
 
 // Tahun Akademik
 Route::get('/akademik/tahun-akademik',[App\Http\Controllers\Master\Akademik\TahunAkademikController::class, 'renderTaka'])->name('akademik.taka-render');
