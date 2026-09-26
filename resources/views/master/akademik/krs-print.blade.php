@@ -32,30 +32,30 @@ $tahunAkademik = $krs->tahunAkademik?->name ?? '-';
 <title>KRS - {{ $krs->mahasiswa->name }} ({{ $krs->mahasiswa->numb_nim ?? $krs->mahasiswa->nim ?? '-' }})</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.25;color:#000;background:#fff;padding:0}
+body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.4;color:#000;background:#fff;padding:20px}
 .container{width:100%;max-width:800px;margin:0 auto}
-.kop-surat{display:table;width:100%;border-bottom:3px double #000;padding-bottom:6px;margin-bottom:8px}
+.kop-surat{display:table;width:100%;border-bottom:3px double #000;padding-bottom:10px;margin-bottom:15px}
 .kop-logo{display:table-cell;width:100px;vertical-align:middle;text-align:center}
 .kop-logo img{width:85px;height:auto;display:block;margin:0 auto}
 .kop-text{display:table-cell;vertical-align:middle;text-align:center}
 .kop-text h3{font-size:14pt;font-weight:bold;text-transform:uppercase}
 .kop-text h2{font-size:16pt;font-weight:bold;text-transform:uppercase;margin:2px 0}
 .kop-text p{font-size:9pt;margin-top:2px}
-.judul-doc{text-align:center;margin-bottom:8px}
+.judul-doc{text-align:center;margin-bottom:15px}
 .judul-doc h4{font-size:13pt;text-transform:uppercase;text-decoration:underline}
 .judul-doc p{font-size:11pt;font-weight:bold}
-.table-bio{width:100%;margin-bottom:8px;border-collapse:collapse}
-.table-bio td{padding:2px 0;vertical-align:top;font-size:10pt}
-.table-krs{width:100%;border-collapse:collapse;margin-bottom:8px}
-.table-krs th,.table-krs td{border:1px solid #000;padding:3px 4px;font-size:9.2pt}
+.table-bio{width:100%;margin-bottom:15px;border-collapse:collapse}
+.table-bio td{padding:3px 0;vertical-align:top;font-size:10.5pt}
+.table-krs{width:100%;border-collapse:collapse;margin-bottom:15px}
+.table-krs th,.table-krs td{border:1px solid #000;padding:5px 6px;font-size:10pt}
 .table-krs th{background:#f2f2f2;text-align:center;font-weight:bold}
 .text-center{text-align:center}.text-bold{font-weight:bold}
-.catatan{font-size:8.2pt;margin-bottom:8px}.catatan ol{padding-left:18px}
+.catatan{font-size:9pt;margin-bottom:25px}.catatan ol{padding-left:18px}
 .table-ttd{width:100%;border-collapse:collapse;text-align:center;margin-top:10px}
-.table-ttd td{width:33.3%;vertical-align:top;padding-bottom:4px;font-size:9.5pt}
-.space-ttd{height:38px}
-.footer-print{margin-top:8px;border-top:1px solid #ccc;padding-top:3px;font-size:7.5pt;color:#555}
-@media print{body{padding:0}.container{max-width:100%}@page{size:A4 portrait;margin:0.9cm 1cm 0.8cm}}
+.table-ttd td{width:33.3%;vertical-align:top;padding-bottom:10px;font-size:10.5pt}
+.space-ttd{height:60px}
+.footer-print{margin-top:20px;border-top:1px solid #ccc;padding-top:5px;font-size:8pt;color:#555}
+@media print{body{padding:0}.container{max-width:100%}.no-print{display:none}@page{size:A4;margin:1.5cm}}
 </style>
 </head>
 <body>
