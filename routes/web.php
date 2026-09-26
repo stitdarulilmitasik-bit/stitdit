@@ -39,6 +39,8 @@ Route::get('/siakad/pembayaran', fn() => redirect()->route('auth.render-signin')
 Route::get('/perpustakaan', [App\Http\Controllers\PublicInfoController::class, 'show'])->defaults('page', 'perpustakaan')->name('root.perpustakaan');
 Route::get('/laboratorium', [App\Http\Controllers\PublicInfoController::class, 'show'])->defaults('page', 'laboratorium')->name('root.laboratorium');
 Route::get('/kemahasiswaan', [App\Http\Controllers\PublicInfoController::class, 'show'])->defaults('page', 'kemahasiswaan')->name('root.kemahasiswaan');
+Route::get('/pendaftaran-mahasiswa-baru', [App\Http\Controllers\PendaftaranMahasiswaBaruController::class, 'index'])->name('root.pendaftaran-mahasiswa-baru');
+Route::post('/pendaftaran-mahasiswa-baru', [App\Http\Controllers\PendaftaranMahasiswaBaruController::class, 'store'])->name('root.pendaftaran-mahasiswa-baru-store');
 Route::get('/keuangan', [App\Http\Controllers\PublicInfoController::class, 'show'])->defaults('page', 'keuangan')->name('root.keuangan');
 
 Route::get('/welcome', [App\Http\Controllers\RootController::class, 'renderWelcome'])->name('root.welcome');
