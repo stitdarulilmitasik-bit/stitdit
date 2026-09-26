@@ -192,6 +192,10 @@
                                         <label class="form-label">Admin Penerimaan Mahasiswa Baru</label>
                                         <input type="text" inputmode="numeric" class="form-control" name="whatsapp_admin_pmb" value="{{ $webs->whatsapp_admin_pmb ?? '' }}" placeholder="628xxxxxxxxxx">
                                     </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Operator</label>
+                                        <input type="text" inputmode="numeric" class="form-control" name="whatsapp_admin_operator" value="{{ $webs->whatsapp_admin_operator ?? '' }}" placeholder="628xxxxxxxxxx">
+                                    </div>
                                 </div>
 
                                 <div class="row mt-3">
