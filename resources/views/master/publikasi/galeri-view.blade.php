@@ -37,7 +37,7 @@
 
 @if($galeri->fotos->count())
 <div class="gallery-grid">@foreach($galeri->fotos as $foto)<div class="gallery-item">
-<img src="{{ stit_gallery_photo_url($foto->photo) }}" alt="{{ $foto->desc ?: 'Foto dokumentasi '.$galeri->name }}" loading="lazy">
+<img src="{{ filter_var($foto->photo, FILTER_VALIDATE_URL) ? $foto->photo : asset('storage/' . ltrim($foto->photo, '/')) }}" alt="{{ $foto->desc ?: 'Foto dokumentasi '.$galeri->name }}" loading="lazy">
 <div class="overlay">{{ $foto->desc ? Str::limit($foto->desc,50) : 'Dokumentasi kegiatan' }}</div>
 <div class="actions"><button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete('{{ $foto->code }}')"><i class="fas fa-trash"></i></button></div>
 </div>@endforeach</div>
