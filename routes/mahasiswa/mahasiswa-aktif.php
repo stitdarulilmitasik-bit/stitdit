@@ -14,7 +14,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => ['checkUser:Mahasiswa Akt
         Route::post('/krs', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'storeKrs'])->name('krs.store');
         Route::post('/krs/submit', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'submitKrs'])->name('krs.submit');
         Route::delete('/krs/{detailId}', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'destroyKrs'])->name('krs.destroy');
-        Route::get('/jadwal', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'jadwalKuliah'])->name('jadwal');
+        // Jadwal kuliah sekarang ditampilkan langsung di dashboard mahasiswa.\n        Route::get('/jadwal', fn () => redirect()->route('mahasiswa.dashboard-render'))->name('jadwal');
         Route::get('/jadwal-kuliah', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'jadwalKuliah'])->name('jadwal-kuliah');
         Route::get('/jadwal/{semester}', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'jadwalBySemester'])->name('jadwal.semester');
         Route::get('/jadwal-semester/{semester}', [App\Http\Controllers\Private\Mahasiswa\AkademikController::class, 'jadwalBySemester'])->name('jadwal-by-semester');
