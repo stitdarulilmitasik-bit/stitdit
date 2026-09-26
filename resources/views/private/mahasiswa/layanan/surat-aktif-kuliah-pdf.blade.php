@@ -8,6 +8,7 @@
 <style>
 @page{size:A4 portrait;margin:12mm 15mm 10mm 18mm}
 *{box-sizing:border-box}body{font-family:DejaVu Sans,Arial,sans-serif;font-size:10.2pt;line-height:1.32;color:#111;margin:0}.kop{border-bottom:3px solid #111;padding-bottom:6px;margin-bottom:10px}.kop-table{width:100%;border-collapse:collapse}.kop-logo{width:125px;text-align:center;vertical-align:middle}.kop-logo img{width:110px;height:110px;object-fit:contain}.kop-text{text-align:center;vertical-align:middle}.kop-text .a{font-size:13.5pt;font-weight:bold}.kop-text .b{font-size:17pt;font-weight:bold}.kop-text .c{font-size:9pt;font-weight:bold}.kop-text .d{font-size:8.4pt}.title{text-align:center;font-weight:bold;font-size:12.5pt;text-decoration:underline;margin-top:3px}.nomor{text-align:center;margin:2px 0 10px}.row{display:table;width:100%;margin:2px 0}.label{display:table-cell;width:178px;vertical-align:top}.value{display:table-cell;vertical-align:top}.section{margin:7px 0 3px}.date-right{width:43%;margin-left:57%;text-align:center;margin-top:18px}.ttd{width:43%;margin-left:57%;margin-top:3px;border-collapse:collapse}.ttd td{vertical-align:top}.right{text-align:center;width:100%}.signature-space{height:52px}.tembusan{margin-top:18px;font-size:8.8pt}.small{font-size:8.8pt}
+.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
 </style>
 </head>
 <body>
@@ -33,5 +34,6 @@
 <div class="date-right">Tasikmalaya, {{ $tgl }}</div>
 <table class="ttd"><tr><td class="right">{{ $pejabat_jabatan }}<div class="signature-space"></div><strong><u>{{ $pejabat_nama }}</u></strong><br>NIP/NIK. {{ $pejabat_nip }}</td></tr></table>
 <div class="tembusan"><strong>Tembusan:</strong><br>1. Ketua Prodi MPI STIT Darul Ilmi Tasikmalaya<br>2. Arsip</div>
+<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
 </body>
 </html>
