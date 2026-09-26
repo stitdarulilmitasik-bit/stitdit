@@ -19,6 +19,7 @@
         <span class="nav-link-title">Master Akademik</span>
     </a>
     <div class="dropdown-menu">
+        <a class="dropdown-item {{ Route::is('dosen.akademik.daftar-mahasiswa') ? 'active' : '' }}" href="{{ route('dosen.akademik.daftar-mahasiswa') }}">Daftar Mahasiswa</a>
         <a class="dropdown-item {{ Route::is('dosen.akademik.taka-*') ? 'active' : '' }}" href="{{ route('dosen.akademik.taka-render') }}">Tahun Akademik</a>
         <a class="dropdown-item {{ Route::is('dosen.akademik.fakultas-*') ? 'active' : '' }}" href="{{ route('dosen.akademik.fakultas-render') }}">Fakultas</a>
         <a class="dropdown-item {{ Route::is('dosen.akademik.prodi-*') ? 'active' : '' }}" href="{{ route('dosen.akademik.prodi-render') }}">Program Studi</a>
