@@ -16,10 +16,34 @@ class WebSetting extends Model
 
     public function getSchoolLogoHoriAttribute($value)
     {
-        return stit_storage_image_url('images/logo', $value ?: 'logo-hori.png', 'images/logo/logo-hori.png');
+        return $this->resolveLogoUrl($value, 'logo-hori.png');
     }
+
     public function getSchoolLogoVertAttribute($value)
     {
-        return stit_storage_image_url('images/logo', $value ?: 'logo-vert.png', 'images/logo/logo-vert.png');
+        return $this->resolveLogoUrl($value, 'logo-vert.png');
+    }
+
+    private function resolveLogoUrl(?string $value, string $fallback): string
+    {
+        $value = trim((string) $value);
+
+        if ($value !== '' && filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        $value = ltrim($value, '/');
+        foreach (['storage/images/logo/', 'images/logo/'] as $prefix) {
+            if (str_starts_with($value, $prefix)) {
+                $value = substr($value, strlen($prefix));
+                break;
+            }
+        }
+
+        return stit_storage_image_url(
+            'images/logo',
+            $value ?: $fallback,
+            'images/logo/' . $fallback
+        );
     }
 }
