@@ -8,6 +8,14 @@
     .schedule-item { border-left:3px solid #206bc4; padding:1rem 0 1rem 1rem; }
     .schedule-item + .schedule-item { border-top:1px solid var(--tblr-border-color); }
     .quick-action { min-height:74px; }
+    .dashboard-calendar { min-width: 720px; }
+    .dashboard-calendar-header, .dashboard-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+    .dashboard-calendar-header > div { padding:.65rem; text-align:center; font-weight:700; background:var(--tblr-bg-surface-secondary); border:1px solid var(--tblr-border-color); }
+    .dashboard-calendar-day { min-height:125px; padding:.45rem; border:1px solid var(--tblr-border-color); background:var(--tblr-bg-surface); overflow:hidden; }
+    .dashboard-calendar-day.is-other-month { opacity:.45; background:var(--tblr-bg-surface-secondary); }
+    .dashboard-calendar-day.is-today { box-shadow:inset 0 0 0 2px var(--tblr-primary); }
+    .dashboard-calendar-date { font-weight:700; margin-bottom:.35rem; }
+    .dashboard-calendar-event { margin-bottom:.35rem; padding:.35rem .45rem; border-left:3px solid var(--tblr-primary); border-radius:.25rem; background:var(--tblr-primary-lt); font-size:.78rem; line-height:1.25; }
 </style>
 @endsection
 
@@ -27,50 +35,67 @@
     <div class="col-sm-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="subheader">Tagihan Aktif</div><div class="h2 mb-2">Rp {{ number_format($total_tagihan ?? 0,0,',','.') }}</div><div class="text-secondary">{{ count($tagihan_aktif ?? []) }} tagihan belum dibayar</div></div></div></div>
     <div class="col-sm-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="subheader">Kehadiran</div>@if($kehadiran_tersedia ?? false)<div class="h1 mb-2">{{ $kehadiran_bulan_ini }}%</div><div class="text-secondary">{{ $hadir }} hadir dari {{ $total_pertemuan }} pertemuan</div><div class="mt-2 small"><span class="text-success">{{ $hadir }} Hadir</span> · <span class="text-primary">{{ $izin }} Izin</span> · <span class="text-warning">{{ $sakit }} Sakit</span> · <span class="text-danger">{{ $alpha }} Alpa</span></div>@else<div class="h2 mb-2">Belum tersedia</div><div class="text-secondary">Data presensi akan tampil setelah dosen mengisi.</div>@endif</div></div></div>
 
-    <div class="col-lg-8"><div class="card h-100"><div class="card-header"><div><h3 class="card-title mb-1">Jadwal Kuliah</h3><div class="text-secondary small">Jadwal kuliah Anda ditampilkan langsung di dashboard</div></div></div><div class="card-body">
-        @if(!empty($jadwal_dashboard))
-            @php
-                $hariDashboard = [
-                    'Senin' => 'Senin', 'Selasa' => 'Selasa', 'Rabu' => 'Rabu',
-                    'Kamis' => 'Kamis', 'Jumat' => 'Jumat', 'Sabtu' => 'Sabtu', 'Minggu' => 'Minggu'
-                ];
-                $jadwalGrouped = collect($jadwal_dashboard)->groupBy('hari');
-            @endphp
-            @foreach($hariDashboard as $namaHari => $labelHari)
-                @php $jadwalHari = $jadwalGrouped->get($namaHari, collect()); @endphp
-                @if($jadwalHari->isNotEmpty())
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-2 rounded bg-blue-lt">
-                            <div class="fw-bold">{{ $labelHari }}</div>
-                            <span class="badge bg-blue-lt">{{ $jadwalHari->count() }} Mata Kuliah</span>
+    <div class="col-12">
+        <div class="card h-100">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title mb-1">Jadwal Kuliah</h3>
+                    <div class="text-secondary small">Kalender jadwal kuliah mahasiswa</div>
+                </div>
+                <div class="card-actions">
+                    <a href="{{ route('mahasiswa.akademik.jadwal') }}" class="btn btn-sm btn-outline-primary">Lihat Jadwal</a>
+                </div>
+            </div>
+            <div class="card-body">
+                @php
+                    $bulanKalender = $kalender_bulan ?? now()->startOfMonth();
+                    $mulaiKalender = $bulanKalender->copy()->startOfWeek(Carbon\Carbon::MONDAY);
+                    $akhirKalender = $bulanKalender->copy()->endOfMonth()->endOfWeek(Carbon\Carbon::SUNDAY);
+                    $hariKalender = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+                    $hariIni = now()->format('Y-m-d');
+                @endphp
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="fw-bold fs-3">{{ $bulanKalender->locale('id')->translatedFormat('F Y') }}</div>
+                    <span class="badge bg-blue-lt">{{ count($jadwal_dashboard ?? []) }} jadwal</span>
+                </div>
+                <div class="table-responsive">
+                    <div class="dashboard-calendar">
+                        <div class="dashboard-calendar-header">
+                            @foreach($hariKalender as $hari)
+                                <div>{{ $hari }}</div>
+                            @endforeach
                         </div>
-                        @foreach($jadwalHari as $jadwal)
-                            <div class="schedule-item">
-                                <div class="row align-items-center g-2">
-                                    <div class="col">
-                                        <div class="fw-bold">{{ $jadwal['mata_kuliah'] }}</div>
-                                        <div class="text-secondary small mt-1">{{ $jadwal['kode'] }} · {{ $jadwal['bsks'] }} SKS · {{ $jadwal['dosen'] }}</div>
-                                        <div class="text-secondary small">{{ $jadwal['tanggal'] }} · {{ $jadwal['ruang'] }} · {{ $jadwal['metode'] }}</div>
-                                    </div>
-                                    <div class="col-auto text-end">
-                                        <div class="fw-bold">{{ $jadwal['time_start'] }} - {{ $jadwal['time_ended'] }}</div>
-                                        @php
-                                            $statusClass = $jadwal['status'] === 'berlangsung' ? 'bg-green' : ($jadwal['status'] === 'akan_datang' ? 'bg-orange' : 'bg-secondary');
-                                            $statusText = $jadwal['status'] === 'berlangsung' ? 'Sedang berlangsung' : ($jadwal['status'] === 'akan_datang' ? 'Akan datang' : 'Sudah dilaksanakan');
-                                        @endphp
-                                        <span class="badge {{ $statusClass }} text-white mt-1">{{ $statusText }}</span>
-                                    </div>
+                        <div class="dashboard-calendar-grid">
+                            @for($tanggal = $mulaiKalender->copy(); $tanggal->lte($akhirKalender); $tanggal->addDay())
+                                @php
+                                    $keyTanggal = $tanggal->format('Y-m-d');
+                                    $jadwalTanggal = collect($jadwal_kalender ?? [])->get($keyTanggal, collect());
+                                    $isBulanIni = $tanggal->month === $bulanKalender->month;
+                                    $isHariIni = $keyTanggal === $hariIni;
+                                @endphp
+                                <div class="dashboard-calendar-day {{ $isBulanIni ? '' : 'is-other-month' }} {{ $isHariIni ? 'is-today' : '' }}">
+                                    <div class="dashboard-calendar-date">{{ $tanggal->day }}</div>
+                                    @foreach($jadwalTanggal as $jadwal)
+                                        <div class="dashboard-calendar-event" title="{{ $jadwal['mata_kuliah'] }} - {{ $jadwal['time_start'] }} - {{ $jadwal['ruang'] }}">
+                                            <div class="fw-semibold text-truncate">{{ $jadwal['mata_kuliah'] }}</div>
+                                            <div class="small text-secondary">{{ $jadwal['time_start'] }}–{{ $jadwal['time_ended'] }}</div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            </div>
-                        @endforeach
+                            @endfor
+                        </div>
+                    </div>
+                </div>
+                @if(empty($jadwal_dashboard))
+                    <div class="empty py-4">
+                        <div class="empty-icon">📅</div>
+                        <p class="empty-title">Belum ada jadwal kuliah</p>
+                        <p class="empty-subtitle text-secondary">Jadwal yang dibuat untuk kelas Anda akan tampil pada kalender.</p>
                     </div>
                 @endif
-            @endforeach
-        @else
-            <div class="empty py-5"><div class="empty-icon">📅</div><p class="empty-title">Belum ada jadwal kuliah</p><p class="empty-subtitle text-secondary">Jadwal yang dibuat untuk kelas Anda akan tampil di sini.</p></div>
-        @endif
-    </div></div></div>
-
+            </div>
+        </div>
+    </div>
     <div class="col-lg-8"><div class="card h-100"><div class="card-header"><div><h3 class="card-title mb-1">Rekap Kehadiran</h3><div class="text-secondary small">@if($kehadiran_semester){{ $kehadiran_semester->name }}@else Semester aktif @endif</div></div><div class="card-actions"><a href="{{ route('mahasiswa.akademik.presensi') }}" class="btn btn-sm btn-outline-primary">Lihat Presensi</a></div></div><div class="table-responsive"><table class="table table-vcenter card-table"><thead><tr><th>Mata Kuliah</th><th>Hadir</th><th>Izin</th><th>Sakit</th><th>Alpa</th><th class="text-end">Persentase</th></tr></thead><tbody>@forelse($kehadiran_rekap ?? [] as $item)<tr><td><div class="fw-medium">{{ $item['mata_kuliah'] }}</div><div class="text-secondary small">{{ $item['kode_mk'] }}</div></td><td class="text-success">{{ $item['hadir'] }}</td><td class="text-primary">{{ $item['izin'] }}</td><td class="text-warning">{{ $item['sakit'] }}</td><td class="text-danger">{{ $item['alpha'] }}</td><td class="text-end fw-semibold">{{ $item['persentase'] }}%</td></tr>@empty<tr><td colspan="6" class="text-center text-secondary py-4">Belum ada rekap kehadiran yang diinput.</td></tr>@endforelse</tbody></table></div></div></div>
 
     <div class="col-lg-4"><div class="card mb-3"><div class="card-header"><h3 class="card-title">Akses Cepat</h3></div><div class="card-body"><div class="row g-2">
