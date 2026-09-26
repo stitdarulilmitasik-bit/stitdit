@@ -1,4 +1,4 @@
-@extends('core-theme::layouts.app')
+@extends('core-themes.core-backpage')
 
 @section('title', 'Detail Presensi - ' . $mataKuliah->nama)
 
@@ -108,7 +108,7 @@
                     Detail Presensi
                 </h2>
                 <div class="text-muted mt-1">
-                    {{ $mataKuliah->nama }} ({{ $mataKuliah->kode_mk }})
+                    {{ $mataKuliah->name ?? $mataKuliah->nama ?? '-' }} ({{ $mataKuliah->code ?? $mataKuliah->kode_mk ?? '-' }})
                 </div>
             </div>
             <div class="col-auto ms-auto d-print-none">
@@ -210,6 +210,39 @@
                 <div class="card-header">
                     <h3 class="card-title">Daftar Presensi</h3>
                 </div>
+                <div class="card-body">
+                    @if($presensi->isEmpty())
+                        <div class="no-presence">
+                            <p class="h4">Belum ada data presensi</p>
+                            <p class="text-muted mb-0">Data akan muncul setelah dosen mengisi daftar hadir.</p>
+                        </div>
+                    @else
+                        @foreach($presensi as $attendance)
+                            @php
+                                $status = $attendance->status;
+                                $statusClass = 'status-' . strtolower($status);
+                            @endphp
+                            <div class="card attendance-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="attendance-date">Pertemuan {{ $attendance->pertemuan }}</div>
+                                            <div class="attendance-time">
+                                                {{ $attendance->created_at ? $attendance->created_at->locale('id')->translatedFormat('d F Y, H:i') : '-' }}
+                                            </div>
+                                        </div>
+                                        <span class="attendance-status {{ $statusClass }}">{{ $status }}</span>
+                                    </div>
+                                    @if($attendance->catatan)
+                                        <div class="mt-2 alert alert-info p-2 mb-0">{{ $attendance->catatan }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+div>
                 <div class="card-body">
                     @if($presensi->isEmpty())
                         <div class="no-presence">
