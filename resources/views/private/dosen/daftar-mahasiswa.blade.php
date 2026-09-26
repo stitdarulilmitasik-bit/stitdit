@@ -101,7 +101,12 @@
                         </td>
                         <td>{{ $item->numb_nim ?? '-' }}</td>
                         <td>{{ $item->phone ?? '-' }}</td>
-                        <td>{{ $item->getRawOriginal('bio_datebirth') ?: '-' }}</td>
+                        <td>
+                            @php
+                                $tanggalLahir = $item->getRawOriginal('bio_datebirth');
+                            @endphp
+                            {{ $tanggalLahir ? CarbonCarbon::parse($tanggalLahir)->format('d-M-Y') : '-' }}
+                        </td>
                         <td style="min-width:240px;max-width:360px;white-space:normal;">{{ $item->getRawOriginal('ktp_addres') ?: '-' }}</td>
                         <td>{{ optional($item->programStudi)->name ?? '-' }}</td>
                         <td>{{ optional($item->kelas)->name ?? '-' }}</td>
