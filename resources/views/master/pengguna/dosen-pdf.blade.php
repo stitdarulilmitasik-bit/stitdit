@@ -47,23 +47,7 @@
     }
 @endphp
 
-<div class="kop">
-    <table class="kop-table">
-        <tr>
-            <td class="kop-logo">
-                @if($logo)<img src="{{ $logo }}" alt="Logo STIT Darul Ilmi">@endif
-            </td>
-            <td class="kop-text">
-                <div class="a">SEKOLAH TINGGI ILMU TARBIYAH</div>
-                <div class="b">STIT DARUL ILMI TASIKMALAYA</div>
-                <div class="c">SK Menteri Agama RI No. 536 Tahun 2026</div>
-                <div class="d">Alamat : Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div>
-            </td>
-            <td style="width:95px"></td>
-        </tr>
-    </table>
-</div>
-
+@include('shared.pdf.kop-surat')
 <div class="title">
     <div class="title-main">DAFTAR DOSEN</div>
     <div class="title-sub">Sistem Informasi Akademik STIT Darul Ilmi Tasikmalaya</div>
