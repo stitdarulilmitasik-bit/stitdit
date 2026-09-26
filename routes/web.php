@@ -14,6 +14,8 @@ Route::get('/berita', [App\Http\Controllers\RootController::class, 'renderBerita
 Route::get('/berita/{slug}/view', [App\Http\Controllers\RootController::class, 'renderBeritaView'])->name('root.berita-view');
 Route::get('/galeri', [App\Http\Controllers\RootController::class, 'renderGaleri'])->name('root.galeri-index');
 Route::get('/galeri/{code}/view', [App\Http\Controllers\RootController::class, 'renderGaleriView'])->name('root.galeri-view');
+Route::get('/galeri/{code}/cover-file', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'serveCover'])->name('root.galeri-cover-file');
+Route::get('/galeri/foto/{code}/file', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'serveFoto'])->name('root.galeri-foto-file');
 Route::get('/program-studi', [App\Http\Controllers\RootController::class, 'renderProgramStudi'])->name('root.prodi-index');
 Route::get('/program-studi/{slug}/view', [App\Http\Controllers\RootController::class, 'renderProgramStudiView'])->name('root.prodi-view');
 
