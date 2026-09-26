@@ -236,6 +236,8 @@ use Illuminate\Support\Facades\Route;
     Route::delete('/publikasi/galeri/{code}', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'deleteGaleri'])->name('publikasi.galeri-delete');
 
     // MASTER PUBLIKASI => GALERI FOTO
+    Route::get('/publikasi/galeri/{code}/cover-file', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'serveCover'])->name('publikasi.galeri-cover-file');
+    Route::get('/publikasi/galeri/foto/{code}/file', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'serveFoto'])->name('publikasi.galeri-foto-file');
     Route::post('/publikasi/galeri/{code}/foto', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'handleFoto'])->name('publikasi.galeri-foto-handle');
     Route::delete('/publikasi/galeri/foto/{code}', [App\Http\Controllers\Master\Publikasi\GaleriController::class, 'deleteFoto'])->name('publikasi.galeri-foto-delete');
 
