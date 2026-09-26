@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Private\Mahasiswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Layanan\CutiAkademik;
+use App\Models\Layanan\LegalisirPengajuan;
 use App\Models\Pengaturan\WebSetting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -185,14 +186,70 @@ class LayananController extends Controller
 
     public function legalisirDokumen()
     {
-        return view('private.mahasiswa.menu-page', $this->layoutData('Legalisir Dokumen', [
-            'message' => 'Halaman pengajuan legalisir dokumen mahasiswa.',
+        $user = $this->mahasiswa();
+
+        if (!$user) {
+            abort(403, 'Sesi mahasiswa tidak ditemukan. Silakan login kembali sebagai mahasiswa.');
+        }
+
+        $pengajuan = LegalisirPengajuan::where('mahasiswa_id', $user->id)
+            ->latest('tanggal_pengajuan')
+            ->latest('id')
+            ->get();
+
+        $jenisDokumen = [
+            'Ijazah',
+            'Transkrip Nilai',
+            'KHS',
+            'KRS',
+            'Surat Keterangan Aktif Kuliah',
+            'Surat Keterangan Lulus',
+            'Sertifikat',
+            'Dokumen Akademik Lainnya',
+        ];
+
+        return view('private.mahasiswa.layanan.legalisir', $this->layoutData('Legalisir Dokumen', [
+            'pengajuan' => $pengajuan,
+            'jenisDokumen' => $jenisDokumen,
         ]));
     }
 
     public function ajukanLegalisir(Request $request)
     {
-        return back()->with('success', 'Pengajuan legalisir dokumen berhasil dikirim.');
+        $user = $this->mahasiswa();
+
+        if (!$user) {
+            abort(403, 'Sesi mahasiswa tidak ditemukan. Silakan login kembali sebagai mahasiswa.');
+        }
+
+        $data = $request->validate([
+            'jenis_dokumen' => 'required|string|max:150',
+            'jumlah' => 'required|integer|min:1|max:20',
+            'keperluan' => 'required|string|max:1000',
+            'catatan_mahasiswa' => 'nullable|string|max:2000',
+            'file_pendukung' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('file_pendukung')) {
+            $data['file_pendukung'] = $request->file('file_pendukung')->store('legalisir/pendukung', 'public');
+        }
+
+        $prefix = 'LEG-' . now()->format('Ymd') . '-';
+        $last = LegalisirPengajuan::whereDate('tanggal_pengajuan', now()->toDateString())
+            ->latest('id')
+            ->first();
+        $sequence = $last ? ((int) substr((string) $last->nomor_pengajuan, -4)) + 1 : 1;
+
+        $data['mahasiswa_id'] = $user->id;
+        $data['nomor_pengajuan'] = $prefix . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+        $data['tanggal_pengajuan'] = now()->toDateString();
+        $data['status'] = 'Diajukan';
+
+        LegalisirPengajuan::create($data);
+
+        return redirect()
+            ->route('mahasiswa.layanan.legalisir')
+            ->with('success', 'Pengajuan legalisir berhasil dikirim dan menunggu verifikasi bagian akademik.');
     }
 
     public function ajukanCuti(Request $request)
