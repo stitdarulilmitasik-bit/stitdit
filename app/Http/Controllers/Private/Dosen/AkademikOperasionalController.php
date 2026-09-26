@@ -157,6 +157,40 @@ class AkademikOperasionalController extends Controller
         return view('private.dosen.akademik-nilai', $data);
     }
 
+    public function daftarMahasiswa(Request $request)
+    {
+        $data = $this->base('Daftar Mahasiswa');
+        $dosenId = $data['user']->id;
+
+        $semester = $request->input('semester');
+        $kelasId = $request->input('kelas_id');
+        $prodiId = $request->input('prodi_id');
+        $search = trim((string) $request->input('search', ''));
+
+        $data['mahasiswa'] = \App\Models\Mahasiswa::with(['programStudi', 'kelas'])
+            ->when($semester !== null && $semester !== '', fn ($q) => $q->where('semester', (int) $semester))
+            ->when($kelasId, fn ($q) => $q->where('kelas_id', $kelasId))
+            ->when($prodiId, fn ($q) => $q->where('prodi_id', $prodiId))
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('numb_nim', 'like', '%' . $search . '%');
+                });
+            })
+            ->orderBy('name')
+            ->paginate(30)
+            ->withQueryString();
+
+        $data['kelasOptions'] = \App\Models\Akademik\Kelas::orderBy('name')->get(['id', 'name']);
+        $data['prodiOptions'] = \App\Models\Akademik\ProgramStudi::orderBy('name')->get(['id', 'name']);
+        $data['semesterFilter'] = $semester;
+        $data['kelasFilter'] = $kelasId;
+        $data['prodiFilter'] = $prodiId;
+        $data['searchFilter'] = $search;
+
+        return view('private.dosen.daftar-mahasiswa', $data);
+    }
+
     public function kehadiran(Request $request)
     {
         $data = $this->base('Input Kehadiran Mahasiswa');
