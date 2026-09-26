@@ -39,7 +39,7 @@
             color: #666;
         }
     
-.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(page);}
 </style>
 </head>
 <body>
@@ -75,9 +75,8 @@
         </tbody>
     </table>
 
-    <div class="footer">
+    <div class="footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya | Halaman <span class="page"></span><br>
         <p>Dicetak pada: {{ now()->format('d F Y H:i:s') }}</p>
     </div>
-<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
 </body>
 </html> 
