@@ -546,30 +546,47 @@
     </div>
     <div class="chat-popup" id="chatPopup">
         <div class="chat-popup-header">
-            <h4 class="m-0">Hubungi Kami</h4>
+            <h4 class="m-0">Hubungi Kami via WhatsApp</h4>
             <button type="button" class="btn-close" onclick="toggleChatPopup()"></button>
         </div>
         <div class="chat-popup-body">
             <form id="whatsappForm" onsubmit="sendWhatsApp(event)">
                 <div class="mb-3">
+                    <label class="form-label">Tujuan Chat</label>
+                    <div class="d-grid gap-2">
+                        <label class="form-selectgroup-item">
+                            <input type="radio" name="whatsapp_target" value="website" class="form-selectgroup-input" required>
+                            <span class="form-selectgroup-label">Admin Website</span>
+                        </label>
+                        <label class="form-selectgroup-item">
+                            <input type="radio" name="whatsapp_target" value="keuangan" class="form-selectgroup-input">
+                            <span class="form-selectgroup-label">Admin Keuangan</span>
+                        </label>
+                        <label class="form-selectgroup-item">
+                            <input type="radio" name="whatsapp_target" value="pmb" class="form-selectgroup-input">
+                            <span class="form-selectgroup-label">Admin Penerimaan Mahasiswa Baru</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Nama</label>
                     <input type="text" class="form-control" id="name" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">No. WhatsApp</label>
-                    <input type="tel" class="form-control" id="whatsapp" required>
+                    <label class="form-label">No. WhatsApp Anda</label>
+                    <input type="tel" class="form-control" id="whatsapp" inputmode="tel" placeholder="08xxxxxxxxxx" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Pesan</label>
-                    <textarea class="form-control" id="message" rows="3" required></textarea>
+                    <textarea class="form-control" id="message" rows="3" placeholder="Tuliskan kebutuhan Anda..." required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-whatsapp" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                         <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9"></path>
-                        <path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"></path>
+                        <path d="M9 10a.5.5 0 0 0 1 0v-1a.5.5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0 -1h-1a.5.5 0 0 0 0 1"></path>
                     </svg>
-                    Kirim Pesan
+                    Mulai Chat WhatsApp
                 </button>
             </form>
         </div>
@@ -686,22 +703,51 @@
             popup.classList.toggle('show');
         }
 
+        function normalizeWhatsAppNumber(value) {
+            let number = String(value || '').replace(/[^0-9]/g, '');
+            if (number.startsWith('0')) number = '62' + number.substring(1);
+            if (number.startsWith('8')) number = '62' + number;
+            return number;
+        }
+
         function sendWhatsApp(event) {
             event.preventDefault();
-            const name = document.getElementById('name').value;
-            const whatsapp = document.getElementById('whatsapp').value;
-            const message = document.getElementById('message').value;
 
-            // Format pesan
-            const formattedMessage = `Halo, saya ${name}\n\n${message}`;
+            const target = document.querySelector('input[name="whatsapp_target"]:checked')?.value;
+            const numbers = {
+                website: @json($webs->whatsapp_admin_website ?? ''),
+                keuangan: @json($webs->whatsapp_admin_keuangan ?? ''),
+                pmb: @json($webs->whatsapp_admin_pmb ?? '')
+            };
+            const labels = {
+                website: 'Admin Website',
+                keuangan: 'Admin Keuangan',
+                pmb: 'Admin Penerimaan Mahasiswa Baru'
+            };
 
-            // Buat URL WhatsApp dengan nomor dan pesan
-            const whatsappUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent(formattedMessage)}`;
+            const recipient = normalizeWhatsAppNumber(numbers[target]);
+            if (!recipient) {
+                alert('Nomor WhatsApp untuk ' + (labels[target] || 'tujuan ini') + ' belum dikonfigurasi.');
+                return;
+            }
 
-            // Buka WhatsApp di tab baru
-            window.open(whatsappUrl, '_blank');
+            const name = document.getElementById('name').value.trim();
+            const sender = normalizeWhatsAppNumber(document.getElementById('whatsapp').value);
+            const message = document.getElementById('message').value.trim();
 
-            // Reset form
+            if (!sender) {
+                alert('Nomor WhatsApp Anda belum valid.');
+                return;
+            }
+
+            const formattedMessage =
+                'Halo ' + labels[target] + ', saya ' + name + '.\n' +
+                'Nomor WhatsApp saya: +' + sender + '\n\n' +
+                message;
+
+            const whatsappUrl = 'https://wa.me/' + recipient + '?text=' + encodeURIComponent(formattedMessage);
+            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+
             event.target.reset();
             toggleChatPopup();
         }
