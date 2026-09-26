@@ -192,6 +192,6 @@
     </tbody>
 </table>
 
-<div class="footer">Printed via SIAKAD STIT-Darul Ilmi Tasikmalaya</div>
+<div class="footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya</div>
 </body>
 </html>
