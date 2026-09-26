@@ -19,6 +19,9 @@
             <p class="text-muted mb-0">Input dan rekap kehadiran mahasiswa per mata kuliah dan pertemuan.</p>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('web-admin.akademik.kehadiran.export-pdf', request()->query()) }}" class="btn btn-danger" target="_blank">
+                <i class="ti ti-file-type-pdf me-1"></i> Export to PDF
+            </a>
             @if($mahasiswaId)
                 <a href="{{ route('web-admin.akademik.kehadiran.pdf', ['mahasiswaId' => $mahasiswaId, 'semester' => $semester]) }}"
                    class="btn btn-danger" target="_blank">
