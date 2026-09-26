@@ -34,7 +34,9 @@
     .matkul strong { font-size: 7.2pt; }
     .matkul small { color: #555; font-size: 6.2pt; }
     .hadir { font-weight: bold; }
-    .footer { position: fixed; left: 0; right: 0; bottom: -9mm; border-top: 1px solid #777; padding-top: 3px; text-align: center; font-size: 6.5pt; color: #555; }
+    .footer { position: fixed; left: 0; right: 0; bottom: -9mm; border-top: 1px solid #777; padding-top: 3px; text-align: center; font-size: 6.5pt; color: #555; } .footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+
+.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
 </style>
 </head>
 <body>
