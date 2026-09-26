@@ -39,21 +39,146 @@ class LayananController extends Controller
         return view('private.mahasiswa.menu-page', $this->layoutData($title));
     }
 
+    /**
+     * Build the student's cumulative transcript directly from published/locked
+     * grades. A course is represented once; when the same course is repeated,
+     * the best published grade is retained.
+     */
+    private function transkripData($user): array
+    {
+        $nilai = \App\Models\Akademik\Nilai::query()
+            ->with(['mataKuliah', 'tahunAkademik'])
+            ->where('mahasiswa_id', $user->id)
+            ->whereBetween('semester', [1, 8])
+            ->whereIn('status', ['Published', 'Locked'])
+            ->orderBy('semester')
+            ->orderBy('matkul_id')
+            ->get();
+
+        $gradePoint = static function ($n): float {
+            $huruf = strtoupper(trim((string) ($n->nilai_huruf ?? '')));
+            $map = \App\Models\Akademik\Nilai::NILAI_HURUF_MAP;
+
+            if ($huruf !== '' && isset($map[$huruf])) {
+                return (float) $map[$huruf]['mutu'];
+            }
+
+            return (float) ($n->nilai_mutu ?? 0);
+        };
+
+        $nilaiTerbaik = $nilai
+            ->groupBy(function ($n) {
+                return (string) ($n->matkul_id ?? $n->mataKuliah?->id ?? $n->id);
+            })
+            ->map(function ($items) use ($gradePoint) {
+                return $items
+                    ->sort(function ($a, $b) use ($gradePoint) {
+                        $pointCompare = $gradePoint($b) <=> $gradePoint($a);
+                        if ($pointCompare !== 0) {
+                            return $pointCompare;
+                        }
+
+                        $angkaCompare = (float) ($b->nilai_angka ?? 0) <=> (float) ($a->nilai_angka ?? 0);
+                        if ($angkaCompare !== 0) {
+                            return $angkaCompare;
+                        }
+
+                        return (int) ($a->semester ?? 0) <=> (int) ($b->semester ?? 0);
+                    })
+                    ->first();
+            })
+            ->sortBy([
+                ['semester', 'asc'],
+                ['matkul_id', 'asc'],
+            ])
+            ->values();
+
+        $totalSks = (float) $nilaiTerbaik->sum(function ($n) {
+            return (float) ($n->sks ?? $n->mataKuliah?->sks ?? $n->mataKuliah?->bsks ?? 0);
+        });
+
+        $totalMutu = (float) $nilaiTerbaik->sum(function ($n) use ($gradePoint) {
+            $sks = (float) ($n->sks ?? $n->mataKuliah?->sks ?? $n->mataKuliah?->bsks ?? 0);
+            return $gradePoint($n) * $sks;
+        });
+
+        $ipk = $totalSks > 0 ? round($totalMutu / $totalSks, 2) : 0.00;
+
+        return [
+            'nilai' => $nilaiTerbaik,
+            'totalSks' => $totalSks,
+            'totalMutu' => $totalMutu,
+            'ipk' => $ipk,
+        ];
+    }
+
     public function transkripNilai()
     {
-        return view('private.mahasiswa.menu-page', $this->layoutData('Transkrip Nilai', [
-            'message' => 'Halaman transkrip nilai mahasiswa.',
+        $user = $this->mahasiswa();
+
+        if (!$user) {
+            abort(403, 'Sesi mahasiswa tidak ditemukan. Silakan login kembali sebagai mahasiswa.');
+        }
+
+        return view('private.mahasiswa.layanan.transkrip', $this->layoutData('Transkrip Nilai', [
+            'nilai' => $this->transkripData($user)['nilai'],
+            'totalSks' => $this->transkripData($user)['totalSks'],
+            'totalMutu' => $this->transkripData($user)['totalMutu'],
+            'ipk' => $this->transkripData($user)['ipk'],
         ]));
     }
 
     public function cetakTranskrip()
     {
-        return view('private.mahasiswa.menu-page', $this->layoutData('Transkrip Nilai', [
-            'message' => 'Transkrip nilai mahasiswa.',
-            'nilai' => collect(),
-            'totalSks' => 0,
-            'ipk' => 0,
-        ]));
+        $user = $this->mahasiswa();
+
+        if (!$user) {
+            abort(403, 'Sesi mahasiswa tidak ditemukan. Silakan login kembali sebagai mahasiswa.');
+        }
+
+        $data = $this->transkripData($user);
+        $webs = WebSetting::first();
+
+        $logoDataUri = null;
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        foreach (['images/logo/logo-vert1.png', 'images/logo/logo-hori.png'] as $logoPath) {
+            if (!$disk->exists($logoPath)) {
+                continue;
+            }
+
+            try {
+                $bytes = $disk->get($logoPath);
+                if ($bytes !== '') {
+                    $mime = $disk->mimeType($logoPath) ?: 'image/png';
+                    $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($bytes);
+                    break;
+                }
+            } catch (\Throwable $e) {
+                // Continue with the PDF without a logo if storage is unavailable.
+            }
+        }
+
+        $pdf = Pdf::loadView('private.mahasiswa.layanan.transkrip-pdf', [
+            'webs' => $webs,
+            'mahasiswa' => $user,
+            'nilai' => $data['nilai'],
+            'totalSks' => $data['totalSks'],
+            'totalMutu' => $data['totalMutu'],
+            'ipk' => $data['ipk'],
+            'logoDataUri' => $logoDataUri,
+        ])->setPaper('a4', 'portrait')->setOptions([
+            'defaultFont' => 'Helvetica',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'dpi' => 96,
+            'enable_font_subsetting' => true,
+        ]);
+
+        $filename = 'Transkrip-Nilai-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $user->numb_nim ?? $user->name ?? 'mahasiswa') . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     public function legalisirDokumen()
