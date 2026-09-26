@@ -74,6 +74,7 @@ class WebSettingController extends Controller
                 'whatsapp_admin_website' => 'nullable|string|max:30',
                 'whatsapp_admin_keuangan' => 'nullable|string|max:30',
                 'whatsapp_admin_pmb' => 'nullable|string|max:30',
+                'whatsapp_admin_operator' => 'nullable|string|max:30',
                 'school_address' => 'nullable|string',
                 'school_longitude' => 'nullable|string|max:20',
                 'school_latitude' => 'nullable|string|max:20',
@@ -197,6 +198,7 @@ class WebSettingController extends Controller
             'whatsapp_admin_website',
             'whatsapp_admin_keuangan',
             'whatsapp_admin_pmb',
+            'whatsapp_admin_operator',
         ];
 
         $missing = array_values(array_filter(
