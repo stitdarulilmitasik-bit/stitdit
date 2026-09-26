@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 // Master Akademik Dosen: menggunakan controller Master yang sama dengan Admin.
 // Seluruh route berada di dalam middleware Dosen Aktif dari dosen-aktif.php.
 
+// Daftar Mahasiswa (referensi, hanya lihat)
+Route::get('/akademik/daftar-mahasiswa',[App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'daftarMahasiswa'])->name('akademik.daftar-mahasiswa');
+
 // Tahun Akademik
 Route::get('/akademik/tahun-akademik',[App\Http\Controllers\Master\Akademik\TahunAkademikController::class, 'renderTaka'])->name('akademik.taka-render');
 Route::post('/akademik/tahun-akademik',[App\Http\Controllers\Master\Akademik\TahunAkademikController::class, 'handleTaka'])->name('akademik.taka-handle');
