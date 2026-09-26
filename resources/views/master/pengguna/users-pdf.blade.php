@@ -81,7 +81,7 @@
 </table>
 
 <div class="footer">
-    Printed via SIAKAD STIT-Darul Ilmi Tasikmalaya
+    Printed via SIAKAD STIT Darul Ilmi Tasikmalaya
     &nbsp;|&nbsp; <span class="page"></span>
 </div>
 </body>
