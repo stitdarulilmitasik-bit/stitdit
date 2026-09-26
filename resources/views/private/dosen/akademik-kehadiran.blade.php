@@ -134,6 +134,10 @@
                     </tr>
                 </thead>
                 <tbody>
+                @php
+                    $groupCounts = $nilai->getCollection()->groupBy('matkul_id')->map->count();
+                    $groupSeen = [];
+                @endphp
                 @forelse($nilai as $index => $n)
                     @php
                         $att = $n->kehadiranMahasiswa->keyBy('pertemuan');
@@ -143,11 +147,22 @@
                         $alpa = $att->where('status','Alpa')->count();
                         $total = $att->count();
                         $persentase = $total > 0 ? round(($hadir / $total) * 100, 2) : 0;
+                        $matkulKey = (string) $n->matkul_id;
+                        $showMataKuliah = !isset($groupSeen[$matkulKey]);
+                        if ($showMataKuliah) {
+                            $groupSeen[$matkulKey] = true;
+                        }
                     @endphp
                     <tr>
                         <td class="text-center">{{ $nilai->firstItem() + $index }}</td>
-                        <td><strong>{{ $n->mataKuliah->name ?? '-' }}</strong></td>
-                        <td class="text-center">{{ $n->mataKuliah->code ?? '-' }}</td>
+                        @if($showMataKuliah)
+                            <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle">
+                                <strong>{{ $n->mataKuliah->name ?? '-' }}</strong>
+                            </td>
+                            <td rowspan="{{ $groupCounts[$n->matkul_id] ?? 1 }}" class="align-middle text-center">
+                                <strong>{{ $n->mataKuliah->code ?? '-' }}</strong>
+                            </td>
+                        @endif
                         <td><strong>{{ $n->mahasiswa->numb_nim ?? $n->mahasiswa->nim ?? $n->mahasiswa->code ?? '-' }}</strong></td>
                         <td class="student-name"><strong>{{ $n->mahasiswa->name ?? '-' }}</strong></td>
                         @for($i=1;$i<=16;$i++)
