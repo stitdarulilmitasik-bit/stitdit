@@ -36,13 +36,13 @@
                 </a>
                 <a class="dropdown-item" href="{{ route('mahasiswa.akademik.presensi') }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
                     </span>
                     Presensi
                 </a>
                 <a class="dropdown-item" href="{{ route('mahasiswa.akademik.nilai') }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"><path d="M12 1l3 6l6 3l-6 3l-3 6l-3 -6l-6 -3l6 -3z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l3 6l6 3l-6 3l-3 6l-3 -6l-6 -3l6 -3z" /></svg>
                     </span>
                     Nilai & IPK
                 </a>
@@ -55,7 +55,7 @@
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#navbar-keuangan" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
         <span class="nav-link-icon d-md-none d-lg-inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"><path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" /></svg>
         </span>
         <span class="nav-link-title">Keuangan</span>
     </a>
@@ -75,7 +75,7 @@
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#navbar-layanan" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
         <span class="nav-link-icon d-md-none d-lg-inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/></svg>
         </span>
         <span class="nav-link-title">Layanan</span>
     </a>
@@ -95,7 +95,7 @@
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#navbar-informasi" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
         <span class="nav-link-icon d-md-none d-lg-inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"><path d="M12 8v4M12 16h.01"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4M12 16h.01"/></svg>
         </span>
         <span class="nav-link-title">Informasi</span>
     </a>
@@ -115,7 +115,7 @@
 <li class="nav-item">
     <a class="nav-link" href="{{ route('mahasiswa.bantuan') }}">
         <span class="nav-link-icon d-md-none d-lg-inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"><path d="M12 16v.01M12 13a2 2 0 0 0 .914 -3.782"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v.01M12 13a2 2 0 0 0 .914 -3.782"/></svg>
         </span>
         <span class="nav-link-title">Bantuan</span>
     </a>
