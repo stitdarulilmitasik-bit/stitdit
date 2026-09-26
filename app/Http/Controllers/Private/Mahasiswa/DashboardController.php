@@ -90,6 +90,8 @@ class DashboardController extends Controller
         $data['jadwal_dashboard'] = [];
         $data['jadwal_akan_datang'] = [];
         $data['jadwal_sudah_dilaksanakan'] = [];
+        $data['jadwal_kalender'] = [];
+        $data['kalender_bulan'] = Carbon::today()->startOfMonth();
 
         try {
         $day = $today->locale('id')->translatedFormat('l');
@@ -120,6 +122,18 @@ class DashboardController extends Controller
                 ->where('status', 'selesai')
                 ->sortByDesc(fn ($item) => $item['tanggal_sort'] ?? '')
                 ->values()
+                ->all();
+
+            $monthStart = Carbon::today()->startOfMonth();
+            $monthEnd = $monthStart->copy()->endOfMonth();
+            $data['kalender_bulan'] = $monthStart;
+            $data['jadwal_kalender'] = collect($data['jadwal_dashboard'])
+                ->filter(function ($item) use ($monthStart, $monthEnd) {
+                    if (empty($item['tanggal_sort']) || $item['tanggal_sort'] === '-') return false;
+                    $date = Carbon::parse($item['tanggal_sort']);
+                    return $date->betweenIncluded($monthStart, $monthEnd);
+                })
+                ->groupBy('tanggal_sort')
                 ->all();
         } catch (\Throwable $e) {
             report($e);
