@@ -281,7 +281,7 @@
                                 @else
                                     <div class="gallery-badge status-archive">Archive</div>
                                 @endif
-                                <img src="{{ stit_gallery_image_url($galeri->photo) }}" class="card-img-top" alt="{{ $galeri->name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ stit_image_url(null) }}'">
+                                <img src="{{ route('root.galeri-cover-file', $galeri->code) }}" class="card-img-top" alt="{{ $galeri->name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ stit_image_url(null) }}'">
                                 <div class="gallery-overlay">
                                     <div class="gallery-actions">
                                         <a href="{{ route('root.galeri-view', $galeri->code) }}" class="btn btn-light">
