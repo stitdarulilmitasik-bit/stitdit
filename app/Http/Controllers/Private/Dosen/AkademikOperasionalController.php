@@ -393,6 +393,63 @@ class AkademikOperasionalController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
 
+        // Rekap global mengikuti filter semester, mahasiswa, dan mata kuliah yang sama.
+        // Grouping dapat dipilih: mata_kuliah atau mahasiswa.
+        $groupBy = $request->input('group_by', 'mata_kuliah');
+        if (!in_array($groupBy, ['mata_kuliah', 'mahasiswa'], true)) {
+            $groupBy = 'mata_kuliah';
+        }
+
+        $rekapNilai = Nilai::with(['mahasiswa', 'mataKuliah', 'kehadiranMahasiswa'])
+            ->where('semester', $semester)
+            ->whereHas('mataKuliah')
+            ->when($mahasiswaId, fn ($q) => $q->where('mahasiswa_id', $mahasiswaId))
+            ->when($mataKuliahId, fn ($q) => $q->where('matkul_id', $mataKuliahId))
+            ->get();
+
+        $rekapKehadiran = $rekapNilai
+            ->flatMap(function ($n) {
+                return $n->kehadiranMahasiswa->map(function ($a) use ($n) {
+                    $a->setRelation('nilai', $n);
+                    return $a;
+                });
+            })
+            ->groupBy(function ($a) use ($groupBy) {
+                return $groupBy === 'mahasiswa'
+                    ? (string) $a->nilai->mahasiswa_id
+                    : (string) $a->nilai->matkul_id;
+            })
+            ->map(function ($items) use ($groupBy) {
+                $first = $items->first();
+                $nilai = $first->nilai;
+
+                $hadir = $items->where('status', 'Hadir')->count();
+                $izin = $items->where('status', 'Izin')->count();
+                $sakit = $items->where('status', 'Sakit')->count();
+                $alpa = $items->where('status', 'Alpa')->count();
+                $total = $items->count();
+
+                return [
+                    'id' => $groupBy === 'mahasiswa' ? $nilai->mahasiswa_id : $nilai->matkul_id,
+                    'kode' => $nilai->mataKuliah->code ?? '-',
+                    'mata_kuliah' => $nilai->mataKuliah->name ?? '-',
+                    'nim' => $nilai->mahasiswa->numb_nim ?? $nilai->mahasiswa->nim ?? $nilai->mahasiswa->code ?? '-',
+                    'mahasiswa' => $nilai->mahasiswa->name ?? '-',
+                    'jumlah_mata_kuliah' => $items->pluck('nilai.matkul_id')->unique()->count(),
+                    'jumlah_mahasiswa' => $items->pluck('nilai.mahasiswa_id')->unique()->count(),
+                    'hadir' => $hadir,
+                    'izin' => $izin,
+                    'sakit' => $sakit,
+                    'alpa' => $alpa,
+                    'total' => $total,
+                    'persentase' => $total > 0 ? round(($hadir / $total) * 100, 2) : 0,
+                ];
+            })
+            ->sortBy(function ($item) use ($groupBy) {
+                return mb_strtolower($groupBy === 'mahasiswa' ? $item['mahasiswa'] : $item['mata_kuliah']);
+            })
+            ->values();
+
         $data = [
             'user' => Auth::guard('web')->user(),
             'webs' => $webs,
@@ -407,6 +464,8 @@ class AkademikOperasionalController extends Controller
             'mataKuliahOptions' => $mataKuliahOptions,
             'mahasiswaId' => $mahasiswaId,
             'mataKuliahId' => $mataKuliahId,
+            'groupBy' => $groupBy,
+            'rekapKehadiran' => $rekapKehadiran,
         ];
 
         return view('private.dosen.akademik-kehadiran-global', $data);
