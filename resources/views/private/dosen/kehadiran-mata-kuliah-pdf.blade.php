@@ -116,8 +116,8 @@
         color: #555; 
     }
 
-.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
-.footer .page:after{content:"Halaman " counter(page) " dari " counter(pages)}
+.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(page);}
+.footer .page:after{content:"Halaman " counter(page) " dari " counter(page)}
 </style>
 </head>
 <body>
