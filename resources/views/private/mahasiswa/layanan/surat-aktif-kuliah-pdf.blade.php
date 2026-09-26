@@ -1,13 +1,4 @@
 @php
-    $logo = null;
-    $candidates = [storage_path('app/public/images/logo/logo-vert1.png')];
-    foreach ($candidates as $candidate) {
-        if (is_file($candidate)) {
-            $mime = mime_content_type($candidate) ?: 'image/png';
-            $logo = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($candidate));
-            break;
-        }
-    }
     $tgl = \Carbon\Carbon::parse($tanggal_surat)->locale('id')->translatedFormat('d F Y');
 @endphp
 <!doctype html>
@@ -20,7 +11,7 @@
 </style>
 </head>
 <body>
-<div class="kop"><table class="kop-table"><tr><td class="kop-logo">@if($logo)<img src="{{ $logo }}">@endif</td><td class="kop-text"><div class="a">SEKOLAH TINGGI ILMU TARBIYAH</div><div class="b">STIT DARUL ILMI TASIKMALAYA</div><div class="c">SK Menteri Agama RI No. 536 Tahun 2026</div><div class="d">Alamat : Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div></td></tr></table></div>
+@include('shared.pdf.kop-surat')
 <div class="title">SURAT KETERANGAN AKTIF KULIAH</div>
 <div class="nomor">Nomor : {{ $nomor_surat }}</div>
 <p>Yang bertandatangan di bawah ini:</p>
