@@ -208,7 +208,7 @@
                             <div class="gallery-grid" id="lightgallery">
                                 @foreach($galeri->fotos as $foto)
                                     <a href="{{ route('root.galeri-foto-file', $foto->code) }}" class="gallery-item" data-sub-html="<h4>{{ $galeri->name }}</h4><p>{{ $foto->desc }}</p>">
-                                        <img src="{{ stit_gallery_photo_url($foto->photo) }}" alt="{{ $foto->desc ?? $galeri->name }}">
+                                        <img src="{{ route('root.galeri-foto-file', $foto->code) }}" alt="{{ $foto->desc ?? $galeri->name }}">
                                         <div class="gallery-item-overlay">
                                             <div class="gallery-item-icon">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
