@@ -465,13 +465,23 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                             @if ($user ?? null)
-                            <a href="{{ route($spref.'profile-render') }}" class="dropdown-item">
+                            @php
+                                $profileRoute = match (true) {
+                                    request()->routeIs('mahasiswa.*') => 'mahasiswa.profile-render',
+                                    request()->routeIs('dosen.*') => 'dosen.profile-render',
+                                    request()->routeIs('web-admin.*') => 'web-admin.profile-render',
+                                    default => null,
+                                };
+                            @endphp
+                            @if ($profileRoute && \Illuminate\Support\Facades\Route::has($profileRoute))
+                            <a href="{{ route($profileRoute) }}" class="dropdown-item">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-inline me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
                                     <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
                                 </svg>
                                 Profil
                             </a>
+                            @endif
 
                             <a href="{{ route('auth.handle-logout') }}" class="dropdown-item">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-inline me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
