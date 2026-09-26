@@ -15,6 +15,7 @@ Route::group(['prefix' => 'web-admin', 'middleware' => ['checkUser:web'], 'as' =
 
     // Kehadiran mahasiswa dapat dikelola Administrator tanpa berpindah guard Dosen.
     Route::get('/akademik/kehadiran', [App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'webAdminKehadiran'])->name('akademik.kehadiran');
+    Route::get('/akademik/kehadiran/export-pdf', [App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'webAdminKehadiranExportPdf'])->name('akademik.kehadiran.export-pdf');
     Route::get('/akademik/kehadiran/{mahasiswaId}/pdf', [App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'webAdminKehadiranPdf'])->name('akademik.kehadiran.pdf');
     Route::get('/akademik/kehadiran/mata-kuliah/{mataKuliahId}/pdf', [App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'webAdminKehadiranMataKuliahPdf'])->name('akademik.kehadiran.mata-kuliah.pdf');
     Route::post('/akademik/kehadiran', [App\Http\Controllers\Private\Dosen\AkademikOperasionalController::class, 'webAdminSimpanKehadiran'])->name('akademik.kehadiran.store');
