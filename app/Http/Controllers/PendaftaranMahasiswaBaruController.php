@@ -8,12 +8,15 @@ use App\Models\Akademik\JenisKelas;
 use App\Models\Akademik\ProgramStudi;
 use App\Models\Mahasiswa;
 use App\Models\Pendaftaran\Pendaftar;
+use App\Models\Pendaftaran\DokumenPMB;
+use App\Models\PMB\SyaratPendaftaran;
 use App\Models\PMB\GelombangPendaftaran;
 use App\Models\PMB\JalurPendaftaran;
 use App\Models\Pengaturan\WebSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PendaftaranMahasiswaBaruController extends Controller
@@ -82,6 +85,17 @@ class PendaftaranMahasiswaBaruController extends Controller
             'gelombang_id' => 'required|exists:gelombang_pendaftarans,id',
         ]);
 
+        $syarats = SyaratPendaftaran::where('jalur_id', $request->jalur_id)->orderBy('name')->get();
+        foreach ($syarats as $syarat) {
+            $request->validate([
+                'dokumen.' . $syarat->id => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            ], [
+                'dokumen.' . $syarat->id . '.required' => 'Dokumen ' . $syarat->name . ' wajib diunggah.',
+                'dokumen.' . $syarat->id . '.mimes' => 'Dokumen ' . $syarat->name . ' harus berformat PDF, JPG, JPEG, atau PNG.',
+                'dokumen.' . $syarat->id . '.max' => 'Dokumen ' . $syarat->name . ' maksimal berukuran 5 MB.',
+            ]);
+        }
+
         $prodi = ProgramStudi::where('id', $request->prodi_id)
             ->where('fakultas_id', $request->fakultas_id)
             ->where('status', 'Aktif')
@@ -135,7 +149,7 @@ class PendaftaranMahasiswaBaruController extends Controller
                 'taka_regist' => optional($gelombang->jalur?->periode)->taka_id,
             ]);
 
-            Pendaftar::create([
+            $pendaftar = Pendaftar::create([
                 'mahasiswa_id' => $mahasiswa->id,
                 'jalur_id' => $request->jalur_id,
                 'jenis_id' => $request->jenis_id,
@@ -150,6 +164,20 @@ class PendaftaranMahasiswaBaruController extends Controller
                 'register_date' => now(),
                 'status' => 'Pending',
             ]);
+
+            foreach ($syarats as $syarat) {
+                $file = $request->file('dokumen.' . $syarat->id);
+                $path = $file->store('dokumen-pmb/' . $pendaftarCode, 'public');
+                DokumenPMB::create([
+                    'pendaftar_id' => $pendaftar->id,
+                    'syarat_id' => $syarat->id,
+                    'type' => $syarat->name,
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path,
+                    'code' => 'DOC-' . strtoupper(Str::random(8)),
+                    'status' => 'Pending',
+                ]);
+            }
 
             DB::commit();
 
