@@ -3,161 +3,121 @@
 namespace App\Traits;
 
 use App\Models\Pengaturan\LogAktivitas;
+use App\Models\Pengaturan\ActivityLogChange;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Log;
-use App\Models\Pengaturan\ActivityLogChange;
-use App\Jobs\ProcessActivityLog;
+use Illuminate\Support\Facades\DB;
 
 trait HasLogAktivitas
 {
     protected static function bootHasLogAktivitas()
     {
-        static::created(function ($model) {
-            static::logAktivitas($model, 'create');
-        });
-
-        static::updated(function ($model) {
-            static::logAktivitas($model, 'update');
-        });
-
-        static::deleted(function ($model) {
-            static::logAktivitas($model, 'delete');
-        });
+        static::created(fn ($model) => static::logAktivitas($model, 'create'));
+        static::updated(fn ($model) => static::logAktivitas($model, 'update'));
+        static::deleted(fn ($model) => static::logAktivitas($model, 'delete'));
     }
 
     protected static function getClientIp()
     {
-        if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-            return $_SERVER['HTTP_CF_CONNECTING_IP'];
-        }
-
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
-        }
-
-        if (isset($_SERVER['HTTP_X_REAL_IP'])) {
-            return $_SERVER['HTTP_X_REAL_IP'];
-        }
-
-        return $_SERVER['REMOTE_ADDR'] ?? null;
+        return $_SERVER['HTTP_CF_CONNECTING_IP']
+            ?? (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]) : null)
+            ?? ($_SERVER['HTTP_X_REAL_IP'] ?? ($_SERVER['REMOTE_ADDR'] ?? null));
     }
 
     protected static function logAktivitas($model, $action)
     {
-        $authenticatedUser = null;
-        $authenticatedUserId = null;
-        $authenticatedUserType = 'guest';
+        $user = null;
+        $userType = 'guest';
 
-        foreach (['mahasiswa', 'dosen', 'web'] as $guardName) {
-            if (Auth::guard($guardName)->check()) {
-                $authenticatedUser = Auth::guard($guardName)->user();
-                $authenticatedUserId = $authenticatedUser->id ?? null;
-                $authenticatedUserType = $guardName === 'web' ? 'user' : $guardName;
+        foreach (['web', 'mahasiswa', 'dosen'] as $guard) {
+            if (Auth::guard($guard)->check()) {
+                $user = Auth::guard($guard)->user();
+                $userType = $guard === 'web' ? 'user' : $guard;
                 break;
             }
         }
 
-        if ($authenticatedUser === null || !$model->getKey()) {
+        if (!$user || !$model->getKey()) {
             return;
         }
 
-        $changesToLog = [];
+        $changes = [];
 
         if ($action === 'update') {
-            $dirty = $model->getDirty();
-            $original = $model->getOriginal();
-
-            $attributesToLog = $model->getGuarded() === []
-                ? $dirty
-                : array_intersect_key($dirty, array_flip($model->getFillable()));
-
-            foreach ($attributesToLog as $key => $newValue) {
-                $oldValue = $original[$key] ?? null;
-
+            foreach ($model->getDirty() as $field => $newValue) {
+                $oldValue = $model->getOriginal($field);
                 if ($oldValue != $newValue) {
-                    $changesToLog[] = [
-                        'field_name' => $key,
+                    $changes[] = [
+                        'field_name' => $field,
                         'old_value' => is_array($oldValue) ? json_encode($oldValue) : $oldValue,
                         'new_value' => is_array($newValue) ? json_encode($newValue) : $newValue,
                     ];
                 }
             }
         } elseif ($action === 'create') {
-            $attributesToLog = $model->getGuarded() === []
-                ? $model->getAttributes()
-                : array_intersect_key(
-                    $model->getAttributes(),
-                    array_flip($model->getFillable())
-                );
-
-            foreach ($attributesToLog as $key => $newValue) {
-                if (!in_array($key, [
-                    $model->getCreatedAtColumn(),
-                    $model->getUpdatedAtColumn(),
-                    $model->getDeletedAtColumn(),
-                    'created_by',
-                    'updated_by',
-                    'deleted_by'
-                ], true)) {
-                    $changesToLog[] = [
-                        'field_name' => $key,
+            foreach ($model->getAttributes() as $field => $value) {
+                if (!in_array($field, ['created_at','updated_at','deleted_at','created_by','updated_by','deleted_by'], true)) {
+                    $changes[] = [
+                        'field_name' => $field,
                         'old_value' => null,
-                        'new_value' => is_array($newValue) ? json_encode($newValue) : $newValue,
+                        'new_value' => is_array($value) ? json_encode($value) : $value,
                     ];
                 }
             }
         } elseif ($action === 'delete') {
-            $attributesToLog = $model->getGuarded() === []
-                ? $model->getOriginal()
-                : array_intersect_key(
-                    $model->getOriginal(),
-                    array_flip($model->getFillable())
-                );
-
-            foreach ($attributesToLog as $key => $oldValue) {
-                if (!in_array($key, [
-                    $model->getCreatedAtColumn(),
-                    $model->getUpdatedAtColumn(),
-                    $model->getDeletedAtColumn(),
-                    'created_by',
-                    'updated_by',
-                    'deleted_by'
-                ], true)) {
-                    $changesToLog[] = [
-                        'field_name' => $key,
-                        'old_value' => is_array($oldValue) ? json_encode($oldValue) : $oldValue,
+            foreach ($model->getOriginal() as $field => $value) {
+                if (!in_array($field, ['created_at','updated_at','deleted_at','created_by','updated_by','deleted_by'], true)) {
+                    $changes[] = [
+                        'field_name' => $field,
+                        'old_value' => is_array($value) ? json_encode($value) : $value,
                         'new_value' => null,
                     ];
                 }
             }
         }
 
-        if (!empty($changesToLog)) {
-            // Shared hosting ByetHost tidak menjalankan queue worker secara permanen.
-            // Jalankan sinkron agar log langsung tersimpan pada request yang sama.
-            ProcessActivityLog::dispatchSync(
-                $authenticatedUserId,
-                $authenticatedUserType,
-                $action,
-                get_class($model),
-                (int) $model->getKey(),
-                $changesToLog,
-                static::getClientIp(),
-                Request::userAgent(),
-                static::getLogDescription($model, $action)
-            );
+        if (empty($changes)) {
+            return;
         }
+
+        DB::transaction(function () use ($user, $userType, $action, $model, $changes) {
+            $log = LogAktivitas::create([
+                'user_id' => $user->id,
+                'user_type' => $userType,
+                'action' => $action,
+                'model_type' => get_class($model),
+                'model_id' => $model->getKey(),
+                'changes' => null,
+                'ip_address' => static::getClientIp(),
+                'user_agent' => Request::userAgent(),
+                'description' => static::getLogDescription($model, $action),
+            ]);
+
+            $rows = [];
+            foreach ($changes as $change) {
+                $rows[] = [
+                    'activity_log_id' => $log->id,
+                    'field_name' => $change['field_name'],
+                    'old_value' => $change['old_value'] ?? null,
+                    'new_value' => $change['new_value'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if ($rows) {
+                ActivityLogChange::insert($rows);
+            }
+        });
     }
 
     protected static function getLogDescription($model, $action)
     {
-        $modelName = class_basename($model);
-
+        $name = class_basename($model);
         return [
-            'create' => "Membuat data {$modelName} baru",
-            'update' => "Mengubah data {$modelName}",
-            'delete' => "Menghapus data {$modelName}",
+            'create' => "Membuat data {$name} baru",
+            'update' => "Mengubah data {$name}",
+            'delete' => "Menghapus data {$name}",
         ][$action] ?? '';
     }
 
@@ -169,10 +129,7 @@ trait HasLogAktivitas
     public function recentActivity($limit = 10)
     {
         return LogAktivitas::where('user_id', $this->id)
-            ->select(['id', 'user_id', 'user_type', 'action', 'model_type', 'model_id', 'description', 'created_at'])
-            ->with('changesDetails')
-            ->latest()
-            ->take($limit)
-            ->get();
+            ->select(['id','user_id','user_type','action','model_type','model_id','description','created_at'])
+            ->with('changesDetails')->latest()->take($limit)->get();
     }
 }
