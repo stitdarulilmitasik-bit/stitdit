@@ -35,3 +35,23 @@
         <a class="dropdown-item {{ Route::is('dosen.akademik.khs-*') ? 'active' : '' }}" href="{{ route('dosen.akademik.khs-render') }}">KHS (Kartu Hasil Studi)</a>
     </div>
 </li>
+<li class="nav-item dropdown">
+    <a class="nav-link {{ Route::is('dosen.pmb.*') ? 'active' : '' }} dropdown-toggle" href="#navbar-dosen-pmb" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false">
+        <span class="nav-link-icon d-md-none d-lg-inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-users-group" width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 1 0 0 -10a5 5 0 0 0 0 10z"/><path d="M21 12a4 4 0 1 0 -4 -4"/><path d="M2 21v-2a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v2"/><path d="M17 16h2a3 3 0 0 1 3 3v2"/>
+            </svg>
+        </span>
+        <span class="nav-link-title">Master PMB</span>
+    </a>
+    <div class="dropdown-menu">
+        <a class="dropdown-item {{ Route::is('dosen.pmb.pendaftar-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.pendaftar-render') }}">Pendaftar PMB</a>
+        <a class="dropdown-item {{ Route::is('dosen.pmb.syarat-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.syarat-render') }}">Syarat Pendaftaran</a>
+        <a class="dropdown-item {{ Route::is('dosen.pmb.jalur-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.jalur-render') }}">Jalur Pendaftaran</a>
+        <a class="dropdown-item {{ Route::is('dosen.pmb.periode-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.periode-render') }}">Periode Pendaftaran</a>
+        <a class="dropdown-item {{ Route::is('dosen.pmb.gelombang-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.gelombang-render') }}">Gelombang Pendaftaran</a>
+        <a class="dropdown-item {{ Route::is('dosen.pmb.jadwal-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.jadwal-render') }}">Jadwal PMB</a>
+        <a class="dropdown-item {{ Route::is('dosen.pmb.biaya-render') ? 'active' : '' }}" href="{{ route('dosen.pmb.biaya-render') }}">Biaya Pendaftaran</a>
+    </div>
+</li>
+
