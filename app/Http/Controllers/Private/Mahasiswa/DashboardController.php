@@ -155,14 +155,76 @@ class DashboardController extends Controller
 
     private function attendance(&$data, $user)
     {
-        $data['kehadiran_bulan_ini'] = null; $data['total_pertemuan'] = null; $data['hadir'] = null; $data['kehadiran_tersedia'] = false;
+        $data['kehadiran_bulan_ini'] = 0;
+        $data['total_pertemuan'] = 0;
+        $data['hadir'] = 0;
+        $data['izin'] = 0;
+        $data['sakit'] = 0;
+        $data['alpha'] = 0;
+        $data['kehadiran_tersedia'] = false;
+        $data['kehadiran_rekap'] = [];
+        $data['kehadiran_semester'] = null;
+
         try {
-            if (!class_exists('App\\Models\\Akademik\\Presensi')) return;
-            $rows = \App\Models\Akademik\Presensi::where('mahasiswa_id', $user->id)->get();
-            if ($rows->isEmpty()) return;
-            $total = $rows->count(); $hadir = $rows->filter(fn ($r) => strtolower((string) ($r->status ?? $r->keterangan ?? '')) === 'hadir')->count();
-            $data['total_pertemuan'] = $total; $data['hadir'] = $hadir; $data['kehadiran_bulan_ini'] = round(($hadir / $total) * 100); $data['kehadiran_tersedia'] = true;
-        } catch (\Throwable $e) {}
+            $semester = \App\Models\Akademik\TahunAkademik::where('status', 'Aktif')
+                ->where('start_date', '<=', now())
+                ->where('ended_date', '>=', now())
+                ->first()
+                ?? \App\Models\Akademik\TahunAkademik::latest('start_date')->first();
+
+            if (!$semester) {
+                return;
+            }
+
+            $data['kehadiran_semester'] = $semester;
+            $nilai = Nilai::where('mahasiswa_id', $user->id)
+                ->where('taka_id', $semester->id)
+                ->with(['mataKuliah', 'kehadiranMahasiswa'])
+                ->get();
+
+            $rows = collect();
+            foreach ($nilai as $item) {
+                foreach ($item->kehadiranMahasiswa as $attendance) {
+                    $rows->push($attendance);
+                }
+
+                $att = $item->kehadiranMahasiswa;
+                if (!$item->mataKuliah || $att->isEmpty()) {
+                    continue;
+                }
+
+                $hadir = $att->where('status', 'Hadir')->count();
+                $izin = $att->where('status', 'Izin')->count();
+                $sakit = $att->where('status', 'Sakit')->count();
+                $alpha = $att->where('status', 'Alpa')->count();
+                $total = $att->count();
+
+                $data['kehadiran_rekap'][] = [
+                    'mata_kuliah' => $item->mataKuliah->name ?? $item->mataKuliah->nama ?? '-',
+                    'kode_mk' => $item->mataKuliah->code ?? $item->mataKuliah->kode_mk ?? '-',
+                    'total' => $total,
+                    'hadir' => $hadir,
+                    'izin' => $izin,
+                    'sakit' => $sakit,
+                    'alpha' => $alpha,
+                    'persentase' => $total > 0 ? round(($hadir / $total) * 100, 1) : 0,
+                ];
+            }
+
+            if ($rows->isEmpty()) {
+                return;
+            }
+
+            $data['total_pertemuan'] = $rows->count();
+            $data['hadir'] = $rows->where('status', 'Hadir')->count();
+            $data['izin'] = $rows->where('status', 'Izin')->count();
+            $data['sakit'] = $rows->where('status', 'Sakit')->count();
+            $data['alpha'] = $rows->where('status', 'Alpa')->count();
+            $data['kehadiran_bulan_ini'] = round(($data['hadir'] / $data['total_pertemuan']) * 100);
+            $data['kehadiran_tersedia'] = true;
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function finance(&$data, $user)
