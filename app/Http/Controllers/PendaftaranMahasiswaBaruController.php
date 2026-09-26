@@ -36,6 +36,7 @@ class PendaftaranMahasiswaBaruController extends Controller
             ->get();
 
         $data['jenisKelas'] = JenisKelas::orderBy('name')->get();
+        $data['syaratByJalur'] = SyaratPendaftaran::orderBy('name')->get(['id', 'jalur_id', 'name', 'desc'])->groupBy('jalur_id');
 
         $data['jalurs'] = JalurPendaftaran::with('periode')
             ->whereHas('periode', function ($query) {
