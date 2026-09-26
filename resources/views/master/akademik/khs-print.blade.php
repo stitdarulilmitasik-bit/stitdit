@@ -200,7 +200,9 @@
             color: #555;
             text-align: center;
         }
-    </style>
+    
+.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+</style>
 </head>
 <body>
     @if ($khs->status_generate == 'Published')
@@ -435,5 +437,6 @@
         &nbsp;|&nbsp; Printed via SIAKAD STIT-Darul Ilmi Tasikmalaya
     </div>
 
+<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
 </body>
 </html>
