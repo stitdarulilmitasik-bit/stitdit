@@ -38,7 +38,9 @@
             font-size: 10px;
             color: #666;
         }
-    </style>
+    
+.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+</style>
 </head>
 <body>
     @include('shared.pdf.kop-surat')
@@ -76,5 +78,6 @@
     <div class="footer">
         <p>Dicetak pada: {{ now()->format('d F Y H:i:s') }}</p>
     </div>
+<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
 </body>
 </html> 
