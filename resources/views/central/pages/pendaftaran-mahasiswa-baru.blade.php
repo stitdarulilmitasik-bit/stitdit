@@ -90,10 +90,12 @@
         <form action="{{ route('root.pendaftaran-mahasiswa-baru-store') }}" method="POST" enctype="multipart/form-data" class="pmb-card">
             @csrf
             <div class="card-header">
-                <h2 class="card-title mb-1">Formulir Pendaftaran</h2>
-                <div class="text-secondary">Kolom bertanda <span class="text-danger">*</span> wajib diisi.</div>
+                <h2 class="card-title mb-0">Formulir Pendaftaran</h2>
             </div>
             <div class="card-body">
+                <div class="text-secondary small mb-3">
+                    Kolom bertanda <span class="text-danger fw-bold">*</span> wajib diisi.
+                </div>
                 @if($errors->any())
                     <div class="alert alert-danger">
                         <div class="fw-bold mb-1">Periksa kembali data pendaftaran:</div>
