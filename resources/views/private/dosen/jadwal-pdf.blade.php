@@ -27,7 +27,7 @@
         .center { text-align: center; }
         .footer { margin-top: 18px; font-size: 8px; color: #555; text-align: right; }
     
-.pdf-system-footer{position:fixed;left:0;right:0;bottom:-7mm;border-top:1px solid #777;padding-top:2px;text-align:center;font-size:6.5pt;color:#555}.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(pages);}
+.pdf-system-footer .page:after{content:"Halaman " counter(page) " dari " counter(page);}
 </style>
 </head>
 <body>
@@ -81,7 +81,6 @@
         </tbody>
     </table>
 
-    <div class="footer">Dokumen dihasilkan oleh Sistem Informasi Akademik STIT Darul Ilmi Tasikmalaya.</div>
-<div class="pdf-system-footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya &nbsp;|&nbsp; <span class="page"></span></div>
+    <div class="footer">Printed via SIAKAD STIT Darul Ilmi Tasikmalaya | Halaman <span class="page"></span><br>Dokumen dihasilkan oleh Sistem Informasi Akademik STIT Darul Ilmi Tasikmalaya.</div>
 </body>
 </html>
