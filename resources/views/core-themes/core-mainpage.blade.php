@@ -566,6 +566,10 @@
                             <input type="radio" name="whatsapp_target" value="pmb" class="form-selectgroup-input">
                             <span class="form-selectgroup-label">Admin Penerimaan Mahasiswa Baru</span>
                         </label>
+                        <label class="form-selectgroup-item">
+                            <input type="radio" name="whatsapp_target" value="operator" class="form-selectgroup-input">
+                            <span class="form-selectgroup-label">Operator</span>
+                        </label>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -717,12 +721,14 @@
             const numbers = {
                 website: @json($webs->whatsapp_admin_website ?? ''),
                 keuangan: @json($webs->whatsapp_admin_keuangan ?? ''),
-                pmb: @json($webs->whatsapp_admin_pmb ?? '')
+                pmb: @json($webs->whatsapp_admin_pmb ?? ''),
+                operator: @json($webs->whatsapp_admin_operator ?? '')
             };
             const labels = {
                 website: 'Admin Website',
                 keuangan: 'Admin Keuangan',
-                pmb: 'Admin Penerimaan Mahasiswa Baru'
+                pmb: 'Admin Penerimaan Mahasiswa Baru',
+                operator: 'Operator'
             };
 
             const recipient = normalizeWhatsAppNumber(numbers[target]);
@@ -740,10 +746,20 @@
                 return;
             }
 
+            const now = new Date();
+            const dateTime = new Intl.DateTimeFormat('id-ID', {
+                dateStyle: 'full',
+                timeStyle: 'medium',
+                timeZone: 'Asia/Jakarta'
+            }).format(now);
+
             const formattedMessage =
                 'Halo ' + labels[target] + ', saya ' + name + '.\n' +
                 'Nomor WhatsApp saya: +' + sender + '\n\n' +
-                message;
+                message + '\n\n' +
+                '---\n' +
+                'Sent from: http://siakadstitdit.byethost24.com\n' +
+                'Time and Date: ' + dateTime;
 
             const whatsappUrl = 'https://wa.me/' + recipient + '?text=' + encodeURIComponent(formattedMessage);
             window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
