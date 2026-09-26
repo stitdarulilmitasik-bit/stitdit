@@ -206,7 +206,7 @@
                                     <ul class="info-list">
                                         <li>
                                             <div class="label">User</div>
-                                            <div class="value">{{ $log->user->name }}</div>
+                                            <div class="value">{{ optional($log->user)->name ?? 'Pengguna tidak ditemukan' }}</div>
                                         </li>
                                         <li>
                                             <div class="label">Tipe User</div>
