@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class MaintenanceController extends Controller
@@ -115,26 +116,93 @@ class MaintenanceController extends Controller
 
 
     /**
-     * Jalankan migration database yang belum diterapkan.
+     * Tampilkan daftar migration dan statusnya.
      * Hanya Web Administrator (type 0).
      */
-    public function migrate(): RedirectResponse
+    public function migrate()
     {
         $user = Auth::guard('web')->user();
-
         abort_unless($user && (int) $user->raw_type === 0, 403);
 
-        try {
-            Artisan::call('migrate', ['--force' => true]);
+        $ran = DB::table('migrations')->pluck('migration')->flip();
+        $files = collect(File::files(database_path('migrations')))
+            ->filter(fn ($file) => $file->getExtension() === 'php')
+            ->sortBy(fn ($file) => $file->getFilename())
+            ->map(fn ($file) => [
+                'name' => pathinfo($file->getFilename(), PATHINFO_FILENAME),
+                'file' => $file->getFilename(),
+                'ran' => $ran->has(pathinfo($file->getFilename(), PATHINFO_FILENAME)),
+            ])
+            ->values();
 
-            return back()
-                ->with('maintenance_success', 'Migration database berhasil dijalankan.')
-                ->with('maintenance_output', trim(Artisan::output()));
+        return view('central.maintenance-migrations', compact('files'));
+    }
+
+    /**
+     * Jalankan hanya migration yang dipilih Administrator.
+     * Migration dijalankan satu per satu sesuai urutan nama file.
+     */
+    public function runMigrations(Request $request): RedirectResponse
+    {
+        $user = Auth::guard('web')->user();
+        abort_unless($user && (int) $user->raw_type === 0, 403);
+
+        $selected = $request->input('migrations', []);
+        if (! is_array($selected)) {
+            $selected = [];
+        }
+
+        $selected = collect($selected)
+            ->filter(fn ($name) => is_string($name) && preg_match('/^[A-Za-z0-9_]+$/', $name))
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($selected->isEmpty()) {
+            return back()->with('maintenance_error', 'Pilih minimal satu migration yang belum dijalankan.');
+        }
+
+        $ran = DB::table('migrations')->pluck('migration')->flip();
+        $available = collect(File::files(database_path('migrations')))
+            ->filter(fn ($file) => $file->getExtension() === 'php')
+            ->keyBy(fn ($file) => pathinfo($file->getFilename(), PATHINFO_FILENAME));
+
+        $output = [];
+        $success = [];
+
+        try {
+            foreach ($selected as $name) {
+                if ($ran->has($name)) {
+                    continue;
+                }
+
+                $file = $available->get($name);
+                if (! $file) {
+                    throw new \RuntimeException('Migration tidak ditemukan: ' . $name);
+                }
+
+                $relativePath = 'database/migrations/' . $file->getFilename();
+                Artisan::call('migrate', [
+                    '--path' => $relativePath,
+                    '--force' => true,
+                ]);
+
+                $result = trim(Artisan::output());
+                $output[] = '[' . $name . '] ' . ($result !== '' ? $result : 'OK');
+                $success[] = $name;
+                $ran->put($name, true);
+            }
+
+            return redirect()
+                ->route('web-admin.maintenance.migrate')
+                ->with('maintenance_success', count($success) . ' migration berhasil dijalankan.')
+                ->with('maintenance_output', implode("\\n\\n", $output));
         } catch (Throwable $e) {
             report($e);
 
             return back()
-                ->with('maintenance_error', 'Migration database gagal: ' . $e->getMessage());
+                ->with('maintenance_error', 'Migration database gagal: ' . $e->getMessage())
+                ->with('maintenance_output', implode("\\n\\n", $output));
         }
     }
 
