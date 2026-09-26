@@ -36,7 +36,16 @@ class DashboardController extends Controller
 
     private function academic(&$data, $user)
     {
-        $krs = KRS::where('mahasiswa_id', $user->id)->with(['details.mataKuliah', 'details.nilai', 'tahunAkademik'])->get();
+        $data['ips'] = 0;
+        $data['ipk'] = 0;
+        $data['total_sks'] = 0;
+        $data['total_sks_lulus'] = 0;
+        $data['sks_kebutuhan'] = (int) ($user->programStudi?->sks_lulus ?? 144);
+        $data['progress_sks'] = 0;
+        $data['jumlah_krs'] = 0;
+
+        try {
+            $krs = KRS::where('mahasiswa_id', $user->id)->with(['details.mataKuliah', 'details.nilai', 'tahunAkademik'])->get();
         $totalSks = 0; $totalSksLulus = 0; $totalMutu = 0; $semesterResults = [];
         foreach ($krs as $item) {
             $semesterSks = 0; $semesterMutu = 0; $semesterKey = (string) ($item->semester ?? '0');
@@ -55,8 +64,11 @@ class DashboardController extends Controller
         $data['total_sks'] = $totalSks;
         $data['total_sks_lulus'] = $totalSksLulus;
         $data['sks_kebutuhan'] = (int) ($user->programStudi->sks_lulus ?? 144);
-        $data['progress_sks'] = $data['sks_kebutuhan'] > 0 ? min(100, round(($totalSksLulus / $data['sks_kebutuhan']) * 100, 1)) : 0;
-        $data['jumlah_krs'] = $krs->count();
+            $data['progress_sks'] = $data['sks_kebutuhan'] > 0 ? min(100, round(($totalSksLulus / $data['sks_kebutuhan']) * 100, 1)) : 0;
+            $data['jumlah_krs'] = $krs->count();
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function nilaiMutu($nilai)
@@ -73,6 +85,13 @@ class DashboardController extends Controller
     private function schedule(&$data, $user)
     {
         $today = Carbon::today();
+        $data['tanggal_hari_ini'] = $today->locale('id')->translatedFormat('l, d F Y');
+        $data['jadwal_hari_ini'] = [];
+        $data['jadwal_dashboard'] = [];
+        $data['jadwal_akan_datang'] = [];
+        $data['jadwal_sudah_dilaksanakan'] = [];
+
+        try {
         $day = $today->locale('id')->translatedFormat('l');
         $query = JadwalKuliah::with(['mataKuliah', 'dosen', 'ruang', 'waktuKuliah', 'kelas'])
             ->whereHas('kelas.mahasiswas', fn ($q) => $q->where('id', $user->id));
@@ -97,11 +116,14 @@ class DashboardController extends Controller
             ->values()
             ->all();
 
-        $data['jadwal_sudah_dilaksanakan'] = collect($data['jadwal_dashboard'])
-            ->where('status', 'selesai')
-            ->sortByDesc(fn ($item) => $item['tanggal_sort'] ?? '')
-            ->values()
-            ->all();
+            $data['jadwal_sudah_dilaksanakan'] = collect($data['jadwal_dashboard'])
+                ->where('status', 'selesai')
+                ->sortByDesc(fn ($item) => $item['tanggal_sort'] ?? '')
+                ->values()
+                ->all();
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function scheduleRow($item)
@@ -166,12 +188,17 @@ class DashboardController extends Controller
     private function activities(&$data, $user)
     {
         $activities = [];
+        try {
         $krs = KRS::where('mahasiswa_id', $user->id)->latest()->first();
         if ($krs) $activities[] = ['title' => 'KRS terakhir diperbarui', 'description' => 'Data KRS mahasiswa telah tersimpan.', 'time' => $krs->updated_at, 'badge' => 'KRS', 'badge_color' => 'primary'];
         $nilai = Nilai::where('mahasiswa_id', $user->id)->latest('updated_at')->first();
         if ($nilai) $activities[] = ['title' => 'Nilai terbaru tersedia', 'description' => 'Ada data nilai yang baru diperbarui.', 'time' => $nilai->updated_at, 'badge' => 'Nilai', 'badge_color' => 'info'];
         foreach ($data['riwayat_pembayaran'] as $payment) $activities[] = ['title' => 'Pembayaran berhasil', 'description' => 'Pembayaran Rp ' . number_format($payment['amount'], 0, ',', '.') . ' tercatat.', 'time' => $payment['updated_at'], 'badge' => 'Keuangan', 'badge_color' => 'success'];
         usort($activities, fn ($a, $b) => strtotime((string) $b['time']) <=> strtotime((string) $a['time']));
-        $data['aktivitas_terbaru'] = array_slice($activities, 0, 5);
+            $data['aktivitas_terbaru'] = array_slice($activities, 0, 5);
+        } catch (\Throwable $e) {
+            report($e);
+            $data['aktivitas_terbaru'] = [];
+        }
     }
 }
