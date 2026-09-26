@@ -123,7 +123,7 @@ class AkademikController extends Controller
                 $mime = $disk->mimeType($logoPath) ?: 'image/png';
                 $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($bytes);
                 break;
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 continue;
             }
         }
@@ -156,7 +156,7 @@ class AkademikController extends Controller
         $user = Auth::guard('mahasiswa')->user();
         abort_unless($user, 403);
 
-        $khs = \\App\\Models\\Akademik\\KHS::with([
+        $khs = \App\Models\Akademik\KHS::with([
             'mahasiswa.programStudi.fakultas',
             'tahunAkademik',
             'nilaiSemester.mataKuliah',
@@ -187,7 +187,7 @@ class AkademikController extends Controller
                 $mime = $disk->mimeType($logoPath) ?: 'image/png';
                 $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode($bytes);
                 break;
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 continue;
             }
         }
