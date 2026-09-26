@@ -35,24 +35,7 @@ th { background:#eee; }
 </style>
 </head>
 <body>
-<div class="kop">
-    <table class="kop-table">
-        <tr>
-            <td class="logo">
-                @if(!empty($logoDataUri))
-                    <img src="{{ $logoDataUri }}" alt="Logo STIT Darul Ilmi">
-                @endif
-            </td>
-            <td class="kop-text">
-                <div class="line1">SEKOLAH TINGGI ILMU TARBIYAH</div>
-                <div class="line2">STIT DARUL ILMI TASIKMALAYA</div>
-                <div class="line3">SK Menteri Agama RI No. 536 Tahun 2026</div>
-                <div class="address">Alamat : Jl. Cirahayu Sindangraja Jamanis Kabupaten Tasikmalaya Jawa Barat 46175</div>
-            </td>
-            <td style="width:105px"></td>
-        </tr>
-    </table>
-</div>
+@include('shared.pdf.kop-surat')
 <div style="text-align:center; margin-bottom:14px;">
     <h3 style="margin:2px 0;">KARTU RENCANA STUDI (KRS)</h3>
     <p style="margin:2px 0;">{{ $currentSemester->name ?? '' }}</p>
