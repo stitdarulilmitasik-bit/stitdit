@@ -113,6 +113,31 @@ class MaintenanceController extends Controller
         }
     }
 
+
+    /**
+     * Jalankan migration database yang belum diterapkan.
+     * Hanya Web Administrator (type 0).
+     */
+    public function migrate(): RedirectResponse
+    {
+        $user = Auth::guard('web')->user();
+
+        abort_unless($user && (int) $user->raw_type === 0, 403);
+
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+
+            return back()
+                ->with('maintenance_success', 'Migration database berhasil dijalankan.')
+                ->with('maintenance_output', trim(Artisan::output()));
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()
+                ->with('maintenance_error', 'Migration database gagal: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Tampilkan terminal Composer khusus Administrator.
      */
