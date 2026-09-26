@@ -17,7 +17,7 @@
 </div>
 <div class="card-body">
 <div class="row mb-4"><div class="col-md-12"><div class="d-flex align-items-center mb-3">
-<img src="{{ stit_gallery_image_url($galeri->photo) }}" alt="{{ $galeri->name }}" class="img-fluid rounded" style="max-height:200px">
+<img src="{{ route($spref . 'publikasi.galeri-cover-file', $galeri->code) }}" alt="{{ $galeri->name }}" class="img-fluid rounded" style="max-height:200px">
 <div class="ms-3"><h4>{{ $galeri->name }}</h4><p class="text-muted mb-2">Kategori: {{ $galeri->kategori->name }}</p><span class="badge bg-{{ $galeri->status == 'Publish' ? 'success' : ($galeri->status == 'Draft' ? 'warning' : 'secondary') }}">{{ $galeri->status }}</span></div>
 </div><h6>Deskripsi:</h6><p>{{ $galeri->content }}</p></div></div>
 
@@ -37,7 +37,7 @@
 
 @if($galeri->fotos->count())
 <div class="gallery-grid">@foreach($galeri->fotos as $foto)<div class="gallery-item">
-<img src="{{ filter_var($foto->photo, FILTER_VALIDATE_URL) ? $foto->photo : asset('storage/' . ltrim($foto->photo, '/')) }}" alt="{{ $foto->desc ?: 'Foto dokumentasi '.$galeri->name }}" loading="lazy">
+<img src="{{ route($spref . 'publikasi.galeri-foto-file', $foto->code) }}" alt="{{ $foto->desc ?: 'Foto dokumentasi '.$galeri->name }}" loading="lazy">
 <div class="overlay">{{ $foto->desc ? Str::limit($foto->desc,50) : 'Dokumentasi kegiatan' }}</div>
 <div class="actions"><button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete('{{ $foto->code }}')"><i class="fas fa-trash"></i></button></div>
 </div>@endforeach</div>
