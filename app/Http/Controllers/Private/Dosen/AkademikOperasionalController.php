@@ -269,6 +269,43 @@ class AkademikOperasionalController extends Controller
         ])->with('success', 'Kehadiran ' . ($nilai->mahasiswa->name ?? 'mahasiswa') . ' berhasil disimpan.');
     }
 
+    /** Export report kehadiran sesuai filter halaman Dosen. */
+    public function dosenKehadiranExportPdf(Request $request)
+    {
+        $dosen = $this->dosen();
+        $semester = max(1, min(8, (int) $request->input('semester', 1)));
+        $mahasiswaId = $request->input('mahasiswa_id');
+        $mataKuliahId = $request->input('mata_kuliah_id');
+
+        $nilai = Nilai::with([
+            'mahasiswa.programStudi.fakultas',
+            'mataKuliah',
+            'kehadiranMahasiswa',
+            'tahunAkademik',
+        ])
+            ->where('semester', $semester)
+            ->whereHas('mataKuliah', $this->mataKuliahDiampu($dosen->id))
+            ->when($mahasiswaId, fn ($q) => $q->where('mahasiswa_id', $mahasiswaId))
+            ->when($mataKuliahId, fn ($q) => $q->where('matkul_id', $mataKuliahId))
+            ->orderBy('matkul_id')
+            ->orderBy('mahasiswa_id')
+            ->get();
+
+        abort_if($nilai->isEmpty(), 404, 'Belum ada data kehadiran untuk filter yang dipilih.');
+
+        $webs = WebSetting::first();
+        $pdf = Pdf::loadView('private.dosen.kehadiran-report-pdf', [
+            'nilai' => $nilai,
+            'semester' => $semester,
+            'mahasiswaId' => $mahasiswaId,
+            'mataKuliahId' => $mataKuliahId,
+            'webs' => $webs,
+        ])->setPaper('a4', 'landscape');
+
+        $suffix = $mataKuliahId ? '-mata-kuliah' : ($mahasiswaId ? '-mahasiswa' : '-semua');
+        return $pdf->download('report-kehadiran-semester-' . $semester . $suffix . '.pdf');
+    }
+
     /** Export rekap kehadiran mahasiswa dari dashboard Dosen. */
     public function dosenKehadiranPdf(Request $request, $mahasiswaId)
     {
