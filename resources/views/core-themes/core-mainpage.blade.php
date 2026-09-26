@@ -434,15 +434,15 @@
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
                             <span class="avatar avatar-sm overflow-hidden position-relative">
-                                @if ($user && $user->photo)
+                                @if (isset($user) && $user && $user->photo)
                                     <img src="{{ $user->photo }}"
-                                         alt="{{ $user->name }}"
+                                         alt="{{ $user->name ?? '' }}"
                                          class="w-100 h-100"
                                          style="object-fit: cover; display: block;"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                 @endif
                                 <span class="profile-avatar-fallback bg-primary-lt align-items-center justify-content-center w-100 h-100"
-                                      style="{{ ($user && $user->photo) ? 'display:none;' : 'display:flex;' }}"
+                                      style="{{ (isset($user) && $user && $user->photo) ? 'display:none;' : 'display:flex;' }}"
                                       aria-hidden="true">
                                     <svg xmlns="http://www.w3.org/2000/svg"
                                          width="22"
